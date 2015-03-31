@@ -63,6 +63,6 @@ $(EXEDIR)/%.exe: $(OBJDIR)/%.o $(LIBFILE)
 
 $(SRCDIR)/small_tree.cpp $(INCDIR)/small_tree.hpp: dummy_small_tree.all
 dummy_small_tree.all: $(EXEDIR)/generate_small_tree.exe 
-	./$< 
+	./$< -t
 
 .DELETE_ON_ERROR:
