@@ -11,6 +11,9 @@ float ntrupv_mean
 float met
 float met_phi
 float ht
+float ht_nonb
+float ht_isr
+float ht_isr_tru
 float mht
 float mt
 float mt_reliso
@@ -29,6 +32,15 @@ float dphi_wlep_reliso
 float mindphin_metjet
 float min_mt_bmet
 float min_mt_bmet_with_w_mass
+float min_dphi_bb
+float max_dphi_bb
+float m_bb_min_dphi
+float m_bb_max_dphi
+float pt_bb_min_dphi
+float pt_bb_max_dphi
+float tru_tt_dphi
+float tru_tt_m
+float tru_tt_pt
 
 ##################   Leptons   ################
 int nleps
@@ -131,12 +143,23 @@ int nbt
 std::vector<float> jets_pt
 std::vector<float> jets_eta
 std::vector<float> jets_phi
+std::vector<float> jets_m
 std::vector<float> jets_csv
 std::vector<float> jets_id
 std::vector<float> jets_islep
 std::vector<int>   jets_fjet_index
+std::vector<int>   jets_fgenjet_index
 std::vector<float> jets_gen_pt
 std::vector<float> jets_parton_pt
+std::vector<int>   jets_isr_code
+
+int ngenjets
+
+std::vector<float> genjets_pt
+std::vector<float> genjets_eta
+std::vector<float> genjets_phi
+std::vector<float> genjets_m
+std::vector<int>   genjets_isr_code
 
 ####################   MC   ###################
 unsigned mc_type
@@ -155,3 +178,11 @@ std::vector<float> fjets_eta
 std::vector<float> fjets_phi
 std::vector<float> fjets_m
 std::vector<float> fjets_nconst
+
+int nfgenjets
+float gen_mj
+std::vector<float> fgenjets_pt
+std::vector<float> fgenjets_eta
+std::vector<float> fgenjets_phi
+std::vector<float> fgenjets_m
+std::vector<float> fgenjets_nconst
