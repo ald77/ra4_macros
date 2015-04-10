@@ -10,6 +10,7 @@
 #include "TLine.h"
 #include "TString.h"
 #include "TColor.h"
+#include "TMath.h"
 
 #include "styles.hpp"
 #include "utilities.hpp"
@@ -59,7 +60,33 @@ public:
   bool isSig;
 };
 
+void calc_chi2(TH1D *histo, float &chi2, int &ndof, float &pvalue, float &average){
+
+  vector<double> vals[2];
+  double sumx_sig2(0), sum_sig2(0);
+  ndof = 0;
+  for(int bin(1); bin<=histo->GetNbinsX(); bin++){
+    if(histo->GetBinError(bin) > 0){
+      vals[0].push_back(histo->GetBinContent(bin));
+      vals[1].push_back(histo->GetBinError(bin));
+      
+      sumx_sig2 += vals[0][ndof]/pow(vals[1][ndof],2);
+      sum_sig2 += 1/pow(vals[1][ndof],2);
+      ndof++;
+    }
+  }
+  if(sum_sig2<=0){cout<<"All errors in histo are zero. Exiting."<<endl; return;}
+  average = sumx_sig2/sum_sig2;
+  chi2 = 0; ndof--;
+  for(int ival(0); ival < ndof; ival++)
+    chi2 += pow((vals[0][ival]-average)/vals[1][ival],2);
+  
+  pvalue = TMath::Prob(chi2,ndof);
+}
+
 int main(){ 
+  TH1::SetDefaultSumw2(true);
+
   styles style("LargeLabels"); style.setDefaultStyle();
   vector<hfeats> vars;
   TCanvas can;
@@ -154,7 +181,7 @@ int main(){
 
   TString luminosity="4";
   float minLog = 0.04, maxLog = 10;
-  double legX = 0.6, legY = 0.88, legSingle = 0.055;
+  double legX = 0.6, legY = 0.87, legSingle = 0.055;
   double legW = 0.12, legH = legSingle*vars[0].samples.size();
   TLegend leg(legX, legY-legH, legX+legW, legY);
   leg.SetTextSize(0.052); leg.SetFillColor(0); leg.SetFillStyle(0); leg.SetBorderSize(0);
@@ -203,9 +230,9 @@ int main(){
       //cout<<totCut<<endl;
       histo[0][var][sam]->Sumw2();
       chain[isam]->Project(histo[0][var][sam]->GetName(), variable, totCut);
-      histo[0][var][sam]->SetBinContent(vars[var].nbins,
-					  histo[0][var][sam]->GetBinContent(vars[var].nbins)+
-					  histo[0][var][sam]->GetBinContent(vars[var].nbins+1));
+      // histo[0][var][sam]->SetBinContent(vars[var].nbins,
+      // 					  histo[0][var][sam]->GetBinContent(vars[var].nbins)+
+      // 					  histo[0][var][sam]->GetBinContent(vars[var].nbins+1));
       nentries.push_back(histo[0][var][sam]->Integral(1,vars[var].nbins));
       histo[0][var][sam]->SetXTitle(vars[var].title);
       ytitle = "Entries for "+luminosity+" fb^{-1}";
@@ -219,10 +246,10 @@ int main(){
       histo[0][var][sam]->SetYTitle(ytitle);
       // Cloning histos for later
       for(int bin(0); bin<=histo[0][var][sam]->GetNbinsX()+1; bin++){
-	float val(histo[0][var][sam]->GetBinContent(bin)), errval(histo[0][var][sam]->GetBinError(bin));
-	float thisbinW(histo[0][var][sam]->GetBinWidth(bin));
-	histo[0][var][sam]->SetBinContent(bin, val*binW/thisbinW);
-	histo[0][var][sam]->SetBinError(bin, errval*binW/thisbinW);
+	//float val(histo[0][var][sam]->GetBinContent(bin)), errval(histo[0][var][sam]->GetBinError(bin));
+	//float thisbinW(histo[0][var][sam]->GetBinWidth(bin));
+	//histo[0][var][sam]->SetBinContent(bin, val*binW/thisbinW);
+	//histo[0][var][sam]->SetBinError(bin, errval*binW/thisbinW);
 	histo[1][var][sam]->SetBinContent(bin, histo[0][var][sam]->GetBinContent(bin));
       }
       if(!isSig){ // Adding previous bkg histos
@@ -351,17 +378,31 @@ int main(){
   histo[0][3][bkg_ind[3]]->SetMarkerStyle(20);
   histo[0][1][bkg_ind[1]]->SetMaximum(histo[0][1][bkg_ind[1]]->GetMaximum()*1.3);
   histo[0][1][bkg_ind[1]]->SetMaximum(0.25);
-  histo[0][1][bkg_ind[1]]->SetYTitle("High m_{T} to low m_{T} ratio");
+  histo[0][1][bkg_ind[1]]->SetTitle("High m_{T} to low m_{T} ratio");
+  histo[0][1][bkg_ind[1]]->SetYTitle("R");
 
   histo[0][1][bkg_ind[1]]->Draw("");
   histo[0][3][bkg_ind[3]]->Draw("same");
 
+  TString leglabel;
+  float chi2, pvalue, average;
+  int ndof;
   leg.Clear();
   leg.SetY1NDC(legY-legSingle*2);
-  leg.SetX1NDC(0.8);
-  leg.SetX2NDC(0.8+legW);
-  leg.AddEntry(histo[0][1][bkg_ind[1]], "n_{b} #geq 2","lm");
-  leg.AddEntry(histo[0][3][bkg_ind[3]], "n_{b} = 1","lm");
+  leg.SetX1NDC(0.45);
+  leg.SetX2NDC(0.45+legW);
+
+  calc_chi2(histo[0][1][bkg_ind[1]], chi2, ndof, pvalue, average);
+  leglabel = ("n_{b} #geq 2 (#chi^{2}/n = "+RoundNumber(chi2,1)+"/");
+  leglabel += ndof;
+  leglabel += (", p = "+RoundNumber(pvalue*100,1)+"%)");
+  leg.AddEntry(histo[0][1][bkg_ind[1]], leglabel,"lm");
+
+  calc_chi2(histo[0][3][bkg_ind[3]], chi2, ndof, pvalue, average);
+  leglabel = ("n_{b} = 1 (#chi^{2}/n = "+RoundNumber(chi2,1)+"/");
+  leglabel += ndof;
+  leglabel += (", p = "+RoundNumber(pvalue*100,1)+"%)");
+  leg.AddEntry(histo[0][3][bkg_ind[3]], leglabel,"lm");
   leg.Draw();
   can.SetLogy(0);
   pname = "plots/1d/ratio_"+vars[1].tag+".eps";
@@ -370,10 +411,18 @@ int main(){
   histo[0][1][bkg_ind[1]]->Divide(histo[0][3][bkg_ind[3]]);
   histo[0][1][bkg_ind[1]]->Draw("");
   histo[0][1][bkg_ind[1]]->SetMaximum(3);
-  histo[0][1][bkg_ind[1]]->SetYTitle("Doble ratio n_{b} #geq 2 to n_{b} = 1");
-  float mean_dratio(histo[0][1][bkg_ind[1]]->GetMean(2));
-  mean_dratio = 1; // Not sure why GetMean(2) doesn't work
-  line.DrawLine(0,mean_dratio,mj_binning[mj_nbins],mean_dratio);
+  histo[0][1][bkg_ind[1]]->SetTitle("Double ratio n_{b} #geq 2 to n_{b} = 1");
+  histo[0][1][bkg_ind[1]]->SetYTitle("R_{2b}/R_{1b}");
+
+  leg.Clear();
+  calc_chi2(histo[0][1][bkg_ind[1]], chi2, ndof, pvalue, average);
+  leglabel = ("R_{2b}/R_{1b} (#chi^{2}/n = "+RoundNumber(chi2,1)+"/");
+  leglabel += ndof;
+  leglabel += (", p = "+RoundNumber(pvalue*100,1)+"%)");
+  leg.AddEntry(histo[0][1][bkg_ind[1]], leglabel,"lm");
+  leg.Draw();
+
+  line.DrawLine(0,average,mj_binning[mj_nbins],average);
   pname = "plots/1d/doubleratio_"+vars[1].tag+".eps";
   can.SaveAs(pname);
 
