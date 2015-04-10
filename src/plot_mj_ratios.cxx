@@ -107,7 +107,7 @@ int main(){
   vector<TString> s_tt;
   s_tt.push_back(folder+"*_TTJet*");
   vector<TString> s_wjets;
-  s_wjets.push_back(folder+"*WJets*");
+  s_wjets.push_back(folder+"*_WJets*");
   vector<TString> s_single;
   s_single.push_back(folder+"*_T*channel*");
   vector<TString> s_ttv;
@@ -246,10 +246,10 @@ int main(){
       histo[0][var][sam]->SetYTitle(ytitle);
       // Cloning histos for later
       for(int bin(0); bin<=histo[0][var][sam]->GetNbinsX()+1; bin++){
-	//float val(histo[0][var][sam]->GetBinContent(bin)), errval(histo[0][var][sam]->GetBinError(bin));
-	//float thisbinW(histo[0][var][sam]->GetBinWidth(bin));
-	//histo[0][var][sam]->SetBinContent(bin, val*binW/thisbinW);
-	//histo[0][var][sam]->SetBinError(bin, errval*binW/thisbinW);
+	float val(histo[0][var][sam]->GetBinContent(bin)), errval(histo[0][var][sam]->GetBinError(bin));
+	float thisbinW(histo[0][var][sam]->GetBinWidth(bin));
+	histo[0][var][sam]->SetBinContent(bin, val*binW/thisbinW);
+	histo[0][var][sam]->SetBinError(bin, errval*binW/thisbinW);
 	histo[1][var][sam]->SetBinContent(bin, histo[0][var][sam]->GetBinContent(bin));
       }
       if(!isSig){ // Adding previous bkg histos
@@ -365,56 +365,66 @@ int main(){
     } // Loop over samples
   }// Loop over variables
 
+  int hden1(0), hnum2(3), hden2(2);
 
   cout<<endl<<endl;
-  histo[0][1][bkg_ind[1]]->Divide(histo[0][0][bkg_ind[0]]);
-  histo[0][3][bkg_ind[3]]->Divide(histo[0][2][bkg_ind[2]]);
+  histo[0][hnum2][bkg_ind[hnum2]]->Divide(histo[0][hden2][bkg_ind[hden2]]);
+  histo[0][1][bkg_ind[1]]->Divide(histo[0][hden1][bkg_ind[hden1]]);
 
   histo[0][1][bkg_ind[1]]->SetLineColor(4);
-  histo[0][3][bkg_ind[3]]->SetLineColor(2);
+  histo[0][hnum2][bkg_ind[hnum2]]->SetLineColor(2);
   histo[0][1][bkg_ind[1]]->SetMarkerColor(4);
-  histo[0][3][bkg_ind[3]]->SetMarkerColor(2);
+  histo[0][hnum2][bkg_ind[hnum2]]->SetMarkerColor(2);
   histo[0][1][bkg_ind[1]]->SetMarkerStyle(20);
-  histo[0][3][bkg_ind[3]]->SetMarkerStyle(20);
+  histo[0][hnum2][bkg_ind[hnum2]]->SetMarkerStyle(20);
   histo[0][1][bkg_ind[1]]->SetMaximum(histo[0][1][bkg_ind[1]]->GetMaximum()*1.3);
+  histo[0][1][bkg_ind[1]]->SetMaximum(2.5);
   histo[0][1][bkg_ind[1]]->SetMaximum(0.25);
-  histo[0][1][bkg_ind[1]]->SetTitle("High m_{T} to low m_{T} ratio");
+  histo[0][1][bkg_ind[1]]->SetTitle("n_{b} #geq 2 to n_{b} = 1 ratio");
+  histo[0][1][bkg_ind[1]]->SetTitle("High-m_{T} to low-m_{T} ratio");
   histo[0][1][bkg_ind[1]]->SetYTitle("R");
 
   histo[0][1][bkg_ind[1]]->Draw("");
-  histo[0][3][bkg_ind[3]]->Draw("same");
+  histo[0][hnum2][bkg_ind[hnum2]]->Draw("same");
 
   TString leglabel;
   float chi2, pvalue, average;
   int ndof;
   leg.Clear();
   leg.SetY1NDC(legY-legSingle*2);
-  leg.SetX1NDC(0.45);
-  leg.SetX2NDC(0.45+legW);
+  leg.SetX1NDC(0.17);
+  leg.SetX2NDC(0.17+legW);
 
   calc_chi2(histo[0][1][bkg_ind[1]], chi2, ndof, pvalue, average);
+  leglabel = ("m_{T} #geq 150 (#chi^{2}/n = "+RoundNumber(chi2,1)+"/");
   leglabel = ("n_{b} #geq 2 (#chi^{2}/n = "+RoundNumber(chi2,1)+"/");
   leglabel += ndof;
   leglabel += (", p = "+RoundNumber(pvalue*100,1)+"%)");
   leg.AddEntry(histo[0][1][bkg_ind[1]], leglabel,"lm");
+  line.SetLineColor(4);
+  line.DrawLine(0,average,mj_binning[mj_nbins],average);
 
-  calc_chi2(histo[0][3][bkg_ind[3]], chi2, ndof, pvalue, average);
+  calc_chi2(histo[0][hnum2][bkg_ind[hnum2]], chi2, ndof, pvalue, average);
+  leglabel = ("m_{T} < 150 (#chi^{2}/n = "+RoundNumber(chi2,1)+"/");
   leglabel = ("n_{b} = 1 (#chi^{2}/n = "+RoundNumber(chi2,1)+"/");
   leglabel += ndof;
   leglabel += (", p = "+RoundNumber(pvalue*100,1)+"%)");
-  leg.AddEntry(histo[0][3][bkg_ind[3]], leglabel,"lm");
+  leg.AddEntry(histo[0][hnum2][bkg_ind[hnum2]], leglabel,"lm");
   leg.Draw();
+  line.SetLineColor(2);
+  line.DrawLine(0,average,mj_binning[mj_nbins],average);
   can.SetLogy(0);
   pname = "plots/1d/ratio_"+vars[1].tag+".eps";
   can.SaveAs(pname);
 
-  histo[0][1][bkg_ind[1]]->Divide(histo[0][3][bkg_ind[3]]);
+  histo[0][1][bkg_ind[1]]->Divide(histo[0][hnum2][bkg_ind[hnum2]]);
   histo[0][1][bkg_ind[1]]->Draw("");
   histo[0][1][bkg_ind[1]]->SetMaximum(3);
   histo[0][1][bkg_ind[1]]->SetTitle("Double ratio n_{b} #geq 2 to n_{b} = 1");
   histo[0][1][bkg_ind[1]]->SetYTitle("R_{2b}/R_{1b}");
 
   leg.Clear();
+  line.SetLineColor(4);
   calc_chi2(histo[0][1][bkg_ind[1]], chi2, ndof, pvalue, average);
   leglabel = ("R_{2b}/R_{1b} (#chi^{2}/n = "+RoundNumber(chi2,1)+"/");
   leglabel += ndof;
