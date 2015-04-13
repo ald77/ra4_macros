@@ -60,8 +60,8 @@ public:
   bool isSig;
 };
 
+// Function that calculates the chi2 of a histogram with respect to the flat hypothesis
 void calc_chi2(TH1D *histo, float &chi2, int &ndof, float &pvalue, float &average){
-
   vector<double> vals[2];
   double sumx_sig2(0), sum_sig2(0);
   ndof = 0;
@@ -78,9 +78,41 @@ void calc_chi2(TH1D *histo, float &chi2, int &ndof, float &pvalue, float &averag
   if(sum_sig2<=0){cout<<"All errors in histo are zero. Exiting."<<endl; return;}
   average = sumx_sig2/sum_sig2;
   chi2 = 0; ndof--;
-  for(int ival(0); ival < ndof; ival++)
+  for(int ival(0); ival <= ndof; ival++){
     chi2 += pow((vals[0][ival]-average)/vals[1][ival],2);
-  
+  }
+  pvalue = TMath::Prob(chi2,ndof);
+}
+
+// Function that calculates the chi2 from the difference of 2 histos, after normalizing their areas
+void calc_chi2_diff(TH1D *histo1, TH1D *histo2, float &chi2, int &ndof, float &pvalue, float average[]){
+  TH1D *histos[] = {histo1, histo2};
+  vector<double> vals[2][2];
+  double sumx_sig2[] = {0,0}, sum_sig2[] = {0,0};
+  int ndofs[] = {0,0};
+  for(int his(0); his<2; his++){
+    for(int bin(1); bin<=histos[his]->GetNbinsX(); bin++){
+      if(histos[his]->GetBinError(bin) > 0){
+	vals[his][0].push_back(histos[his]->GetBinContent(bin));
+	vals[his][1].push_back(histos[his]->GetBinError(bin));
+	
+	sumx_sig2[his] += vals[his][0][ndofs[his]];
+	sum_sig2[his] += 1;
+	ndofs[his]++;
+      }
+    }
+    if(sum_sig2[his]<=0){cout<<"All errors in histo are zero. Exiting."<<endl; return;}
+    average[his] = sumx_sig2[his]/sum_sig2[his];
+    ndofs[his]--;
+  } // Loop over histos
+  if(ndofs[0] != ndofs[1]) {cout<<"First histo has "<<ndofs[0]<<" ndof and second "<<ndofs[1]<<endl; return;}
+  else ndof = ndofs[0];
+  chi2 = 0; 
+  double Raver = average[0]/average[1];
+  for(int ival(0); ival <= ndof; ival++){    
+    double error(sqrt(pow(vals[0][1][ival],2)+pow(vals[1][1][ival]*Raver,2)));
+    chi2 += pow((vals[0][0][ival]-vals[1][0][ival]*Raver)/error,2);
+  }
   pvalue = TMath::Prob(chi2,ndof);
 }
 
@@ -230,9 +262,12 @@ int main(){
       //cout<<totCut<<endl;
       histo[0][var][sam]->Sumw2();
       chain[isam]->Project(histo[0][var][sam]->GetName(), variable, totCut);
-      // histo[0][var][sam]->SetBinContent(vars[var].nbins,
-      // 					  histo[0][var][sam]->GetBinContent(vars[var].nbins)+
-      // 					  histo[0][var][sam]->GetBinContent(vars[var].nbins+1));
+      histo[0][var][sam]->SetBinContent(vars[var].nbins,
+       					  histo[0][var][sam]->GetBinContent(vars[var].nbins)+
+       					  histo[0][var][sam]->GetBinContent(vars[var].nbins+1));
+      histo[0][var][sam]->SetBinError(vars[var].nbins,
+				      sqrt(pow(histo[0][var][sam]->GetBinError(vars[var].nbins),2)+
+					   pow(histo[0][var][sam]->GetBinError(vars[var].nbins+1),2)));
       nentries.push_back(histo[0][var][sam]->Integral(1,vars[var].nbins));
       histo[0][var][sam]->SetXTitle(vars[var].title);
       ytitle = "Entries for "+luminosity+" fb^{-1}";
@@ -365,77 +400,91 @@ int main(){
     } // Loop over samples
   }// Loop over variables
 
-  int hden1(0), hnum2(3), hden2(2);
 
-  cout<<endl<<endl;
-  histo[0][hnum2][bkg_ind[hnum2]]->Divide(histo[0][hden2][bkg_ind[hden2]]);
-  histo[0][1][bkg_ind[1]]->Divide(histo[0][hden1][bkg_ind[hden1]]);
-
-  histo[0][1][bkg_ind[1]]->SetLineColor(4);
-  histo[0][hnum2][bkg_ind[hnum2]]->SetLineColor(2);
-  histo[0][1][bkg_ind[1]]->SetMarkerColor(4);
-  histo[0][hnum2][bkg_ind[hnum2]]->SetMarkerColor(2);
-  histo[0][1][bkg_ind[1]]->SetMarkerStyle(20);
-  histo[0][hnum2][bkg_ind[hnum2]]->SetMarkerStyle(20);
-  histo[0][1][bkg_ind[1]]->SetMaximum(histo[0][1][bkg_ind[1]]->GetMaximum()*1.3);
-  histo[0][1][bkg_ind[1]]->SetMaximum(2.5);
-  histo[0][1][bkg_ind[1]]->SetMaximum(0.25);
-  histo[0][1][bkg_ind[1]]->SetTitle("n_{b} #geq 2 to n_{b} = 1 ratio");
-  histo[0][1][bkg_ind[1]]->SetTitle("High-m_{T} to low-m_{T} ratio");
-  histo[0][1][bkg_ind[1]]->SetYTitle("R");
-
-  histo[0][1][bkg_ind[1]]->Draw("");
-  histo[0][hnum2][bkg_ind[hnum2]]->Draw("same");
+  bool do_2b1b(true);
+  //bool do_2b1b(false);
 
   TString leglabel;
-  float chi2, pvalue, average;
+  float chi2, pvalue, average[2];
   int ndof;
+  int hden1(3), hnum2(0), hden2(2);
+  if(!do_2b1b) {hden1=0; hnum2=3;}
   leg.Clear();
   leg.SetY1NDC(legY-legSingle*2);
   leg.SetX1NDC(0.17);
   leg.SetX2NDC(0.17+legW);
 
-  calc_chi2(histo[0][1][bkg_ind[1]], chi2, ndof, pvalue, average);
-  leglabel = ("m_{T} #geq 150 (#chi^{2}/n = "+RoundNumber(chi2,1)+"/");
-  leglabel = ("n_{b} #geq 2 (#chi^{2}/n = "+RoundNumber(chi2,1)+"/");
+  cout<<endl<<endl;
+  calc_chi2_diff(histo[0][1][bkg_ind[1]], histo[0][hden1][bkg_ind[hden1]], chi2, ndof, pvalue, average);
+	
+  histo[0][1][bkg_ind[1]]->SetLineColor(4);
+  histo[0][1][bkg_ind[1]]->SetMarkerColor(4);
+  histo[0][1][bkg_ind[1]]->SetMarkerStyle(20);
+  histo[0][1][bkg_ind[1]]->SetMaximum(histo[0][1][bkg_ind[1]]->GetMaximum()*1.3);
+  if(do_2b1b) {
+    histo[0][1][bkg_ind[1]]->SetMaximum(2.5);
+    histo[0][1][bkg_ind[1]]->SetTitle("n_{b} #geq 2 to n_{b} = 1 ratio");
+    leglabel = ("m_{T} #geq 150 (#chi^{2}/n = "+RoundNumber(chi2,1)+"/");
+  }else{
+    histo[0][1][bkg_ind[1]]->SetMaximum(0.25);
+    histo[0][1][bkg_ind[1]]->SetTitle("High-m_{T} to low-m_{T} ratio");
+    leglabel = ("n_{b} #geq 2 (#chi^{2}/n = "+RoundNumber(chi2,1)+"/");
+  }
+  histo[0][1][bkg_ind[1]]->SetYTitle("R");
+
   leglabel += ndof;
   leglabel += (", p = "+RoundNumber(pvalue*100,1)+"%)");
   leg.AddEntry(histo[0][1][bkg_ind[1]], leglabel,"lm");
-  line.SetLineColor(4);
-  line.DrawLine(0,average,mj_binning[mj_nbins],average);
 
-  calc_chi2(histo[0][hnum2][bkg_ind[hnum2]], chi2, ndof, pvalue, average);
-  leglabel = ("m_{T} < 150 (#chi^{2}/n = "+RoundNumber(chi2,1)+"/");
-  leglabel = ("n_{b} = 1 (#chi^{2}/n = "+RoundNumber(chi2,1)+"/");
+  histo[0][1][bkg_ind[1]]->Divide(histo[0][hden1][bkg_ind[hden1]]);
+  histo[0][1][bkg_ind[1]]->Draw("");
+  line.SetLineColor(4);
+  line.DrawLine(0,average[0]/average[1],mj_binning[mj_nbins],average[0]/average[1]);
+
+
+  calc_chi2_diff(histo[0][hnum2][bkg_ind[hnum2]], histo[0][hden2][bkg_ind[hden2]], chi2, ndof, pvalue, average);
+  histo[0][hnum2][bkg_ind[hnum2]]->Divide(histo[0][hden2][bkg_ind[hden2]]);
+  histo[0][hnum2][bkg_ind[hnum2]]->SetLineColor(2);
+  histo[0][hnum2][bkg_ind[hnum2]]->SetMarkerColor(2);
+  histo[0][hnum2][bkg_ind[hnum2]]->SetMarkerStyle(20);
+  histo[0][hnum2][bkg_ind[hnum2]]->Draw("same");
+
+  if(do_2b1b) leglabel = ("m_{T} < 150 (#chi^{2}/n = "+RoundNumber(chi2,1)+"/");
+  else leglabel = ("n_{b} = 1 (#chi^{2}/n = "+RoundNumber(chi2,1)+"/");
   leglabel += ndof;
   leglabel += (", p = "+RoundNumber(pvalue*100,1)+"%)");
   leg.AddEntry(histo[0][hnum2][bkg_ind[hnum2]], leglabel,"lm");
   leg.Draw();
   line.SetLineColor(2);
-  line.DrawLine(0,average,mj_binning[mj_nbins],average);
+  line.DrawLine(0,average[0]/average[1],mj_binning[mj_nbins],average[0]/average[1]);
   can.SetLogy(0);
-  pname = "plots/1d/ratio_"+vars[1].tag+".eps";
+  pname = "plots/1d/ratio_"+vars[1].tag+(do_2b1b?"_2b1b.eps":"_mt.eps");
   can.SaveAs(pname);
 
+  calc_chi2_diff(histo[0][1][bkg_ind[1]], histo[0][hnum2][bkg_ind[hnum2]], chi2, ndof, pvalue, average);
   histo[0][1][bkg_ind[1]]->Divide(histo[0][hnum2][bkg_ind[hnum2]]);
   histo[0][1][bkg_ind[1]]->Draw("");
   histo[0][1][bkg_ind[1]]->SetMaximum(3);
-  histo[0][1][bkg_ind[1]]->SetTitle("Double ratio n_{b} #geq 2 to n_{b} = 1");
-  histo[0][1][bkg_ind[1]]->SetYTitle("R_{2b}/R_{1b}");
-
+  if(do_2b1b) {
+    histo[0][1][bkg_ind[1]]->SetTitle("Double ratio high-m_{T} to low-m_{T}");
+    histo[0][1][bkg_ind[1]]->SetYTitle("R_{high}/R_{low}");
+    leglabel = ("R_{high}/R_{low} (#chi^{2}/n = "+RoundNumber(chi2,1)+"/");
+  } else {
+    histo[0][1][bkg_ind[1]]->SetTitle("Double ratio n_{b} #geq 2 to n_{b} = 1");
+    histo[0][1][bkg_ind[1]]->SetYTitle("R_{2b}/R_{1b}");
+    leglabel = ("R_{2b}/R_{1b} (#chi^{2}/n = "+RoundNumber(chi2,1)+"/");
+  }
   leg.Clear();
   line.SetLineColor(4);
-  calc_chi2(histo[0][1][bkg_ind[1]], chi2, ndof, pvalue, average);
-  leglabel = ("R_{2b}/R_{1b} (#chi^{2}/n = "+RoundNumber(chi2,1)+"/");
   leglabel += ndof;
   leglabel += (", p = "+RoundNumber(pvalue*100,1)+"%)");
   leg.AddEntry(histo[0][1][bkg_ind[1]], leglabel,"lm");
   leg.Draw();
 
-  line.DrawLine(0,average,mj_binning[mj_nbins],average);
-  pname = "plots/1d/doubleratio_"+vars[1].tag+".eps";
+  line.DrawLine(0,average[0]/average[1],mj_binning[mj_nbins],average[0]/average[1]);
+  pname = "plots/1d/doubleratio_"+vars[1].tag+(do_2b1b?"_2b1b.eps":"_mt.eps");
   can.SaveAs(pname);
-
+ 
   cout<<endl;
 
   for(unsigned his(0); his < 2; his++){
