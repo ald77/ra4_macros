@@ -27,7 +27,7 @@ public:
     color = icolor; style = istyle;
     isSig = ifile[0].Contains("T1tttt");// && ifile.Contains("1200");
     factor = "1";
-    if(ifile[0].Contains("TTW")) factor = "0.36";
+    //if(ifile[0].Contains("TTW")) factor = "0.36";
   }
   vector<TString> file;
   TString label, cut, factor;
@@ -81,11 +81,13 @@ int main(){
   }
 
   
-  TString name = "txt/ra4_yields.tex";
-  TString cuts_1b("(nmus+nels)==1&&ht>500&&met>250&&nbm==1&&njets>=6");
-  TString cuts_2b("(nmus+nels)==1&&ht>500&&met>250&&nbm>=2&&njets>=6");
-  TString cuts_2l("(nmus+nels)==2&&ht>500&&met>200&&nbm==1&&njets>=4");
-  TString cuts_2lp("(nmus+nels)==2&&ht>500&&met>250&&nbm==1&&njets>=6");
+  TString name = "txt/ra4_yields.tex", metcut("200");
+  TString cuts_1b("(nmus+nels)==1&&ht>500&&met>"+metcut+"&&nbm==1&&njets>=6");
+  TString cuts_2b("(nmus+nels)==1&&ht>500&&met>"+metcut+"&&nbm==2&&njets>=6");
+  TString cuts_3b("(nmus+nels)==1&&ht>500&&met>"+metcut+"&&nbm>=3&&njets>=6");
+  TString cuts_2l("(nmus+nels)==2&&ht>500&&met>"+metcut+"&&nbm==1&&njets>=4");
+  TString cuts_2lp("(nmus+nels)==2&&ht>500&&met>"+metcut+"&&nbm==2&&njets>=4");
+  TString cuts_2l_3b("(nmus+nels)==2&&ht>500&&met>"+metcut+"&&nbm>=3&&njets>=4");
   ofstream file(name);
   
   file << "\n\\begin{tabular}{ l | rrrrrr | r | rr | rr}\\hline\\hline\n";
@@ -97,29 +99,74 @@ int main(){
     file << " & "<<Samples[sam].label<< " & {\\bf S/B} ";
   file << "\\\\ \\hline \n ";
 
-  file << " \\multicolumn{"<< Samples.size()+nsig*2<<"}{c}{"<< "$H_T>500, MET>250, n_{\\rm jets}\\geq 6, "
+  //////////// Standard //////////////////////
+  file << " \\multicolumn{"<< Samples.size()+nsig*2<<"}{c}{"<< "$H_T>500, \\mathrm{MET}>"+metcut
+       <<", n_{\\rm jets}\\geq 6, "
        <<"n_b=1, n_{\\rm lep}=1$"<<"} \\\\ \\hline\n";
   file << YieldsCut("$m_T  < 150,m_J< 600$      ", "mj<600&&mt<150&&"+cuts_1b, chain, Samples, nsig);
   file << YieldsCut("$m_T  < 150,m_J\\geq 600$  ", "mj>=600&&mt<150&&"+cuts_1b, chain, Samples, nsig);
   file << YieldsCut("$m_T\\geq 150,m_J< 600$    ", "mj<600&&mt>=150&&"+cuts_1b, chain, Samples, nsig);
   file << YieldsCut("$m_T\\geq 150,m_J\\geq 600$", "mj>=600&&mt>=150&&"+cuts_1b, chain, Samples, nsig);
 
-  file << " \\hline\\multicolumn{"<< Samples.size()+nsig*2<<"}{c}{"<< "$H_T>500, MET>250, n_{\\rm jets}\\geq 6, "
-       <<"n_b=1, n_{\\rm lep}=1$"<<"} \\\\ \\hline\n";
+  file << " \\hline\\multicolumn{"<< Samples.size()+nsig*2<<"}{c}{"<< "$H_T>500, \\mathrm{MET}>"+metcut
+       <<", n_{\\rm jets}\\geq 6, "
+       <<"n_b= 2, n_{\\rm lep}=1$"<<"} \\\\ \\hline\n";
   file << YieldsCut("$m_T  < 150,m_J< 600$      ", "mj<600&&mt<150&&"+cuts_2b, chain, Samples, nsig);
   file << YieldsCut("$m_T  < 150,m_J\\geq 600$  ", "mj>=600&&mt<150&&"+cuts_2b, chain, Samples, nsig);
   file << YieldsCut("$m_T\\geq 150,m_J< 600$    ", "mj<600&&mt>=150&&"+cuts_2b, chain, Samples, nsig);
   file << YieldsCut("$m_T\\geq 150,m_J\\geq 600$", "mj>=600&&mt>=150&&"+cuts_2b, chain, Samples, nsig);
 
-  file << " \\hline\\multicolumn{"<< Samples.size()+nsig*2<<"}{c}{"<< "$H_T>500, MET>250, n_{\\rm jets}\\geq 6, "
-       <<"n_b=1, n_{\\rm lep}=2$"<<"} \\\\ \\hline\n";
-  file << YieldsCut("$m_J< 600$", "mj<600&&"+cuts_2lp, chain, Samples, nsig);
-  file << YieldsCut("$m_J\\geq 600$", "mj>=600&&"+cuts_2lp, chain, Samples, nsig);
-
-  file << " \\hline\\multicolumn{"<< Samples.size()+nsig*2<<"}{c}{"<< "$H_T>500, MET>200, n_{\\rm jets}\\geq 4, "
+  file << " \\hline\\multicolumn{"<< Samples.size()+nsig*2<<"}{c}{"<< "$H_T>500, \\mathrm{MET}>"+metcut
+       <<", n_{\\rm jets}\\geq 4, "
        <<"n_b=1, n_{\\rm lep}=2$"<<"} \\\\ \\hline\n";
   file << YieldsCut("$m_J< 600$", "mj<600&&"+cuts_2l, chain, Samples, nsig);
   file << YieldsCut("$m_J\\geq 600$", "mj>=600&&"+cuts_2l, chain, Samples, nsig);
+
+  file << " \\hline\\multicolumn{"<< Samples.size()+nsig*2<<"}{c}{"<< "$H_T>500, \\mathrm{MET}>"+metcut
+       <<", n_{\\rm jets}\\geq 4, "
+       <<"n_b= 2, n_{\\rm lep}=2$"<<"} \\\\ \\hline\n";
+  file << YieldsCut("$m_J< 600$", "mj<600&&"+cuts_2lp, chain, Samples, nsig);
+  file << YieldsCut("$m_J\\geq 600$", "mj>=600&&"+cuts_2lp, chain, Samples, nsig);
+  //////////// Standard //////////////////////
+
+
+  // metcut = "200";
+  // cuts_3b.ReplaceAll("met>250","met>200");
+  // cuts_2l_3b.ReplaceAll("met>250","met>200");
+  // file << " \\multicolumn{"<< Samples.size()+nsig*2<<"}{c}{"<< "$H_T>500, \\mathrm{MET}>"+metcut
+  //      <<", n_{\\rm jets}\\geq 6, "
+  //      <<"n_b\\geq 3, n_{\\rm lep}=1$"<<"} \\\\ \\hline\n";
+  // file << YieldsCut("$m_T  < 150,m_J< 600$      ", "mj<600&&mt<150&&"+cuts_3b, chain, Samples, nsig);
+  // file << YieldsCut("$m_T  < 150,m_J\\geq 600$  ", "mj>=600&&mt<150&&"+cuts_3b, chain, Samples, nsig);
+  // file << YieldsCut("$m_T\\geq 150,m_J< 600$    ", "mj<600&&mt>=150&&"+cuts_3b, chain, Samples, nsig);
+  // file << YieldsCut("$m_T\\geq 150,m_J\\geq 600$", "mj>=600&&mt>=150&&"+cuts_3b, chain, Samples, nsig);
+
+  // file << " \\hline\\multicolumn{"<< Samples.size()+nsig*2<<"}{c}{"<< "$H_T>500, \\mathrm{MET}>"+metcut
+  //      <<", n_{\\rm jets}\\geq 4, "
+  //      <<"n_b\\geq 3, n_{\\rm lep}=2$"<<"} \\\\ \\hline\n";
+  // file << YieldsCut("$m_J< 600$", "mj<600&&"+cuts_2l_3b, chain, Samples, nsig);
+  // file << YieldsCut("$m_J\\geq 600$", "mj>=600&&"+cuts_2l_3b, chain, Samples, nsig);
+
+  // metcut = "250";
+  // cuts_3b.ReplaceAll("met>200","met>250");
+  // cuts_2l_3b.ReplaceAll("met>200","met>250");
+  // file << " \\multicolumn{"<< Samples.size()+nsig*2<<"}{c}{"<< "$H_T>500, \\mathrm{MET}>"+metcut
+  //      <<", n_{\\rm jets}\\geq 6, "
+  //      <<"n_b\\geq 3, n_{\\rm lep}=1$"<<"} \\\\ \\hline\n";
+  // file << YieldsCut("$m_T  < 150,m_J< 600$      ", "mj<600&&mt<150&&"+cuts_3b, chain, Samples, nsig);
+  // file << YieldsCut("$m_T  < 150,m_J\\geq 600$  ", "mj>=600&&mt<150&&"+cuts_3b, chain, Samples, nsig);
+  // file << YieldsCut("$m_T\\geq 150,m_J< 600$    ", "mj<600&&mt>=150&&"+cuts_3b, chain, Samples, nsig);
+  // file << YieldsCut("$m_T\\geq 150,m_J\\geq 600$", "mj>=600&&mt>=150&&"+cuts_3b, chain, Samples, nsig);
+
+  // file << " \\hline\\multicolumn{"<< Samples.size()+nsig*2<<"}{c}{"<< "$H_T>500, \\mathrm{MET}>"+metcut
+  //      <<", n_{\\rm jets}\\geq 4, "
+  //      <<"n_b\\geq 3, n_{\\rm lep}=2$"<<"} \\\\ \\hline\n";
+  // file << YieldsCut("$m_J< 600$", "mj<600&&"+cuts_2l_3b, chain, Samples, nsig);
+  // file << YieldsCut("$m_J\\geq 600$", "mj>=600&&"+cuts_2l_3b, chain, Samples, nsig);
+
+
+
+
 
   file << " \\hline\\multicolumn{1}{c|}{Cuts} ";
   for(unsigned sam(0); sam < Samples.size()-nsig; sam++)
