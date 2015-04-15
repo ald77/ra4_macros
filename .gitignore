@@ -1,7 +1,7 @@
 *~
 *#
 small_tree*.*pp
-plots/*.pdf
-plots/*.eps
+plots/*
 run/*.exe
 archive
+*.tex
