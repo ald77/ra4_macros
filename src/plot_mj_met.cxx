@@ -19,48 +19,6 @@ using namespace std;
 using std::cout;
 using std::endl;
 
-class hfeats {
-public:
-  hfeats(TString ivarname, int inbins, float* ibinning, vector<int> isamples,
-	 TString ititle="", TString icuts="1", float icut=-1){
-    varname = ivarname; nbins = inbins; binning = ibinning; title = ititle;
-    cuts = icuts; cut = icut; samples = isamples;
-    tag = ivarname+"_"+cuts; tag.ReplaceAll("_1",""); tag.ReplaceAll(".",""); 
-    tag.ReplaceAll("(",""); tag.ReplaceAll("$","");  tag.ReplaceAll(")",""); 
-    tag.ReplaceAll("[",""); tag.ReplaceAll("]",""); tag.ReplaceAll("||","_");
-    tag.ReplaceAll("/","_"); tag.ReplaceAll("*",""); tag.ReplaceAll("&&","_");
-    tag.ReplaceAll(">=","ge"); tag.ReplaceAll("<=","se"); 
-    tag.ReplaceAll(">","g"); tag.ReplaceAll("<","s"); tag.ReplaceAll("=","");
-    tag.ReplaceAll("+",""); 
-    tag += "_slices";
-    unit = "";
-
-    minx = binning[0]; maxx = binning[nbins];
-    if(title.Contains("GeV)")) unit = "GeV";
-    if(title.Contains("phi")) unit = "rad";
-  }
-  TString title, varname, tag, cuts, unit;
-  int nbins;
-  float minx, maxx, cut;
-  vector<int> samples;
-  float *binning;
-};
-
-class sfeats {
-public:
-  sfeats(vector<TString> ifile, TString ilabel, int icolor, int istyle=1, TString icut="1"){
-    file = ifile; label = ilabel; cut = icut;
-    color = icolor; style = istyle;
-    isSig = ifile[0].Contains("T1tttt");// && ifile.Contains("1200");
-    factor = "1";
-    if(ifile[0].Contains("TTW")) factor = "0.36";
-  }
-  vector<TString> file;
-  TString label, cut, factor;
-  int color, style;
-  bool isSig;
-};
-
 int main(){ 
   TH1::SetDefaultSumw2(true);
 

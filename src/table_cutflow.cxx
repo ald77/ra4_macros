@@ -19,22 +19,6 @@ using namespace std;
 using std::cout;
 using std::endl;
 
-
-class sfeats {
-public:
-  sfeats(vector<TString> ifile, TString ilabel, int icolor, int istyle=1, TString icut="1"){
-    file = ifile; label = ilabel; cut = icut;
-    color = icolor; style = istyle;
-    isSig = ifile[0].Contains("T1tttt");// && ifile.Contains("1200");
-    factor = "1";
-    //if(ifile[0].Contains("TTW")) factor = "0.36";
-  }
-  vector<TString> file;
-  TString label, cut, factor;
-  int color, style;
-  bool isSig;
-};
-
 TString YieldsCut(TString title, TString cuts, vector<TChain*> chain, vector<sfeats> Samples, int nsig);
 
 int main(){
