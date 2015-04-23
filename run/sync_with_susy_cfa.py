@@ -14,13 +14,10 @@ subprocess.call(['git','clone','git@github.com:manuelfs/susy_cfa'])
 
 susy_cfa = temp_dir+'/susy_cfa'
 
-copy2(susy_cfa+'/txt/plot_styles.txt',orig_dir+'/txt')
 copy2(susy_cfa+'/src/generate_small_tree.cxx',orig_dir+'/src')
-copy2(susy_cfa+'/src/styles.cpp',orig_dir+'/src')
 copy2(susy_cfa+'/src/timer.cpp',orig_dir+'/src')
 copy2(susy_cfa+'/src/utilities.cpp',orig_dir+'/src')
 copy2(susy_cfa+'/inc/generate_small_tree.hpp',orig_dir+'/inc')
-copy2(susy_cfa+'/inc/styles.hpp',orig_dir+'/inc')
 copy2(susy_cfa+'/inc/timer.hpp',orig_dir+'/inc')
 copy2(susy_cfa+'/inc/utilities.hpp',orig_dir+'/inc')
 

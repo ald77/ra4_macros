@@ -13,6 +13,7 @@
 
 #include "styles.hpp"
 #include "utilities.hpp"
+#include "utilities_macros.hpp"
 
 using namespace std;
 using std::cout;
@@ -101,7 +102,7 @@ int main(){
 
   TString luminosity="4";
   float minLog = 0.04, maxLog = 20;
-  double legX = 0.6, legY = 0.89, legSingle = 0.055;
+  double legX = 0.6, legY = 0.88, legSingle = 0.055;
   double legW = 0.12, legH = legSingle*vars[0].samples.size();
   TLegend leg(legX, legY-legH, legX+legW, legY);
   leg.SetTextSize(0.052); leg.SetFillColor(0); leg.SetFillStyle(0); leg.SetBorderSize(0);
@@ -203,6 +204,7 @@ int main(){
       if(isSig) histo[0][var][sam]->Draw("same");
     }
     legH = legSingle*vars[var].samples.size(); leg.SetY1NDC(legY-legH);
+    leg.SetX1NDC(legX); leg.SetX2NDC(legX+legW);
     leg.Draw(); 
     if(histo[0][var][firstplotted]->GetMinimum() > minLog) histo[0][var][firstplotted]->SetMinimum(minLog);
     histo[0][var][firstplotted]->SetMinimum(minLog);
@@ -223,6 +225,7 @@ int main(){
 
     //////////// Plotting area-normalized distributions ////////////
     leg.Clear(); maxhisto = -999;
+    leg.SetX1NDC(legX-0.08); leg.SetX2NDC(legX+legW-0.08);
     for(unsigned sam(0); sam < vars[var].samples.size(); sam++){
       int isam = vars[var].samples[sam];
       histo[1][var][sam]->SetLineColor(Samples[isam].color);

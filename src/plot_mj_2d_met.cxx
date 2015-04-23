@@ -15,6 +15,7 @@
 
 #include "styles.hpp"
 #include "utilities.hpp"
+#include "utilities_macros.hpp"
 
 using namespace std;
 using std::cout;
