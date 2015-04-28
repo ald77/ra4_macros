@@ -13,14 +13,15 @@
 class hfeats {
 public:
   hfeats(TString ivarname, int inbins, float iminx, float imaxx, std::vector<int> isamples,
-	 TString ititle="", TString icuts="1", float icut=-1);
+	 TString ititle="", TString icuts="1", float icut=-1, TString itagname="");
   hfeats(TString ivarname, int inbins, float* ibinning, std::vector<int> isamples,
-	 TString ititle="", TString icuts="1", float icut=-1);
+	 TString ititle="", TString icuts="1", float icut=-1, TString itagname="");
   TString title, varname, tag, cuts, unit;
   int nbins;
   float *binning;
   float minx, maxx, cut;
   std::vector<int> samples;
+  TString tagname;
   void format_tag();
 };
 
@@ -28,7 +29,7 @@ class sfeats {
 public:
   sfeats(std::vector<TString> ifile, TString ilabel, int icolor, int istyle=1, TString icut="1");
   std::vector<TString> file;
-  TString label, cut, factor;
+  TString label, cut, factor,tag;
   int color, style;
   bool isSig;
 };

@@ -21,7 +21,7 @@ using namespace std;
 
 
 hfeats::hfeats(TString ivarname, int inbins, float iminx, float imaxx, vector<int> isamples,
-	       TString ititle, TString icuts, float icut):
+	       TString ititle, TString icuts, float icut, TString itagname):
   title(ititle),
   varname(ivarname),
   cuts(icuts),
@@ -29,7 +29,8 @@ hfeats::hfeats(TString ivarname, int inbins, float iminx, float imaxx, vector<in
   minx(iminx),
   maxx(imaxx),
   cut(icut),
-  samples(isamples) {
+  samples(isamples),
+  tagname(itagname){
   format_tag();
   unit = "";
   if(title.Contains("GeV)")) unit = "GeV";
@@ -37,14 +38,15 @@ hfeats::hfeats(TString ivarname, int inbins, float iminx, float imaxx, vector<in
   }
 
 hfeats::hfeats(TString ivarname, int inbins, float *ibinning, vector<int> isamples,
-	       TString ititle, TString icuts, float icut):
+	       TString ititle, TString icuts, float icut, TString itagname):
   title(ititle),
   varname(ivarname),
   cuts(icuts),
   nbins(inbins),
   binning(ibinning),
   cut(icut),
-  samples(isamples) {
+  samples(isamples),
+  tagname(itagname) {
   minx = binning[0]; maxx = binning[nbins];
   format_tag();
   unit = "";
@@ -53,7 +55,11 @@ hfeats::hfeats(TString ivarname, int inbins, float *ibinning, vector<int> isampl
   }
 
 void hfeats::format_tag(){
-  tag = varname+"_"+cuts; tag.ReplaceAll("_1",""); tag.ReplaceAll(".",""); 
+  tag = varname; 
+  if(cuts!="1")   tag+="_"+cuts;
+  if(tagname!="") tag+="_"+tagname;
+
+  tag.ReplaceAll(".",""); 
   tag.ReplaceAll("(",""); tag.ReplaceAll("$","");  tag.ReplaceAll(")",""); 
   tag.ReplaceAll("[",""); tag.ReplaceAll("]",""); tag.ReplaceAll("||","_");
   tag.ReplaceAll("/","_"); tag.ReplaceAll("*",""); tag.ReplaceAll("&&","_");
@@ -67,6 +73,9 @@ sfeats::sfeats(vector<TString> ifile, TString ilabel, int icolor, int istyle, TS
   color = icolor; style = istyle;
   isSig = ifile[0].Contains("T1tttt");
   factor = "1";
+  tag = label; 
+  tag.ReplaceAll("(",""); tag.ReplaceAll(",","_");  tag.ReplaceAll(")",""); 
+  tag.ReplaceAll("{",""); tag.ReplaceAll("#,","");  tag.ReplaceAll("}",""); 
 }
 
 // Function that calculates the chi2 of a histogram with respect to the flat hypothesis

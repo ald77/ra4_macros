@@ -84,6 +84,20 @@ int main(){
   ra4_sam.push_back(6);
   ra4_sam.push_back(7);
 
+  vector<int> ra4_tt_t1;
+  ra4_tt_t1.push_back(4);
+  ra4_tt_t1.push_back(5);
+  ra4_tt_t1.push_back(6);
+  ra4_tt_t1.push_back(7);
+
+  vars.push_back(hfeats("lep_pt",30,0,600, ra4_sam, "Lepton p_{T} (GeV)",
+  			"ht>500&&met>250&&njets>=6&&nbm>=2&&(nmus+nels)==1"));
+  vars.push_back(hfeats("lep_pt",30,0,600, ra4_tt_t1, "Lepton p_{T} (GeV)",
+  			"ht>500&&met>250&&njets>=6&&nbm>=2&&(nmus+nels)==1",-1,"shapes"));
+  vars.push_back(hfeats("lep_pt",30,0,600, ra4_sam, "Lepton p_{T} (GeV)",
+  			"ht>500&&met>250&&njets>=6&&nbm>=2&&mt>150&&(nmus+nels)==1"));
+
+  //////////////////// N-1 plots ////////////////////////////////
   // // Run without skim
   // vars.push_back(hfeats("met",20,0,800, ra4_sam, "MET (GeV)","ht>500&&nbm>=2&&njets>=6&&(nmus+nels)==1",250));
   // vars.push_back(hfeats("ht",35,0,3500, ra4_sam, "H_{T} (GeV)","met>250&&nbm>=2&&njets>=6&&(nmus+nels)==1",500));
@@ -96,13 +110,14 @@ int main(){
   vars.push_back(hfeats("mj",20,0,1600, ra4_sam, "M_{J} (GeV)","ht>500&&met>250&&nbm>=2&&njets>=6&&mt>150&&(nmus+nels)==1",600));
 
   vars.push_back(hfeats("mt",20,0,600, ra4_sam, "m_{T} (GeV)","ht>500&&met>400&&nbm>=2&&njets>=6&&(nmus+nels)==1",150));
-  vars.push_back(hfeats("mj",20,0,1600, ra4_sam, "M_{J} (GeV)","ht>500&&met>400&&nbm>=2&&njets>=6&&mt>150&&(nmus+nels)==1",600));
+  vars.push_back(hfeats("mj",16,0,1600, ra4_sam, "M_{J} (GeV)","ht>500&&met>400&&nbm>=2&&njets>=6&&mt>150&&(nmus+nels)==1",600));
+  //////////////////// N-1 plots ////////////////////////////////
 
 
 
   TString luminosity="4";
   float minLog = 0.04, maxLog = 20;
-  double legX = 0.6, legY = 0.88, legSingle = 0.055;
+  double legX = 0.58, legY = 0.88, legSingle = 0.055;
   double legW = 0.12, legH = legSingle*vars[0].samples.size();
   TLegend leg(legX, legY-legH, legX+legW, legY);
   leg.SetTextSize(0.052); leg.SetFillColor(0); leg.SetFillStyle(0); leg.SetBorderSize(0);
