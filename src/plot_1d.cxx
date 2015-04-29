@@ -228,6 +228,7 @@ int main(){
       histo[0][var][firstplotted]->SetMinimum(0.2);
       histo[0][var][firstplotted]->SetMaximum(maxhisto*2);
     }
+    histo[0][var][firstplotted]->Draw("axis same");
     if(vars[var].cut>0) line.DrawLine(vars[var].cut, 0, vars[var].cut, maxhisto*maxLog);
     can.SetLogy(1);
     pname = "plots/1d/log_lumi_"+vars[var].tag+".eps";
@@ -261,6 +262,7 @@ int main(){
     leg.Draw(); 
     if(vars[var].cut>0) line.DrawLine(vars[var].cut, 0, vars[var].cut, maxhisto*1.1);
     histo[1][var][0]->SetMaximum(maxhisto*1.1);
+    histo[1][var][0]->Draw("axis same");
     can.SetLogy(0);
     pname = "plots/1d/shapes_"+vars[var].tag+".eps";
     can.SaveAs(pname);

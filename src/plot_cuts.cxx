@@ -85,22 +85,33 @@ int main(){
   ra4_sam.push_back(6);
   ra4_sam.push_back(7);
 
-  const int scanbins(1000);
+  const int scanbins(100);
+  vars.push_back(hfeats("met",scanbins,200,1200, ra4_sam, "Cut on MET (GeV)",
+			"ht>500&&nbm>=2&&njets>=8&&mt>125&&(nmus+nels)==1",400));
+  vars.push_back(hfeats("njets",18,-0.5,17.5, ra4_sam, "Cut on n_{jets}",
+			"ht>500&&met>400&&nbm>=2&&mt>125&&(nmus+nels)==1",6));
+  vars.push_back(hfeats("nbm",6,-0.5,5.5, ra4_sam, "Cut on n_{b}",
+			"ht>500&&met>400&&njets>=6&&mt>125&&(nmus+nels)==1",2));
+  vars.push_back(hfeats("mt",scanbins,0,600, ra4_sam, "Cut on m_{T} (GeV)",
+  			"ht>500&&met>250&&nbm>=2&&njets>=6&&(nmus+nels)==1",150));
   vars.push_back(hfeats("mj",scanbins,0,1600, ra4_sam, "Cut on M_{J} (GeV)",
-			"ht>500&&met>400&&nbm>=2&&njets>=6&&mt>150&&(nmus+nels)==1",600));
+  			"ht>500&&met>250&&nbm>=2&&njets>=6&&mt>150&&(nmus+nels)==1",600));
+  vars.push_back(hfeats("mj",scanbins,0,1600, ra4_sam, "Cut on M_{J} (GeV)",
+  			"ht>500&&met>400&&nbm>=2&&njets>=6&&mt>150&&(nmus+nels)==1",600));
 
 
 
   TString luminosity="4";
   double Syserr(pow(0.3,2));
-  double legX = 0.6, legY = 0.88, legSingle = 0.055;
-  double legW = 0.12, legH = legSingle*vars[0].samples.size();
+  double legX = 0.66, legY = 0.86, legSingle = 0.061;
+  double legW = 0.12, legH = legSingle*2;
   TLegend leg(legX, legY-legH, legX+legW, legY);
   leg.SetTextSize(0.052); leg.SetFillColor(0); leg.SetFillStyle(0); leg.SetBorderSize(0);
   leg.SetTextFont(132);
 
   TLine line; line.SetLineColor(28); line.SetLineWidth(4); line.SetLineStyle(2);
-  vector< vector<TH1D*> > histo[2];
+  const unsigned Nhis(4);
+  vector< vector<TH1D*> > histo[Nhis];
   vector<TH1D*> varhisto;
   vector<float> nentries;
   TString hname, pname, variable, leghisto, totCut, title;
@@ -119,7 +130,7 @@ int main(){
     title.ReplaceAll("met", "MET"); title.ReplaceAll("ht", "H_{T}");  title.ReplaceAll("mt", "m_{T}"); 
     title.ReplaceAll("nleps==1", "1 lepton");  title.ReplaceAll("nbm","n_{b}"); title.ReplaceAll("==", " = "); 
     title.ReplaceAll("nbl[1]","n_{b,l}");
-    for(unsigned his(0); his < 2; his++){
+    for(unsigned his(0); his < Nhis; his++){
       varhisto.resize(0);
       for(unsigned sam(0); sam < vars[var].samples.size(); sam++){
 	int isam = vars[var].samples[sam];
@@ -133,7 +144,7 @@ int main(){
       histo[his].push_back(varhisto);
     }
 
-    //// Plotting Zbi in histo[0], S/B in histo[1] ///
+    //// Plotting Zbi in histo[0], S/B in histo[1], B in histo[2], S in hisot[3] ///
     leg.Clear();
     nentries.resize(0);
     variable = vars[var].varname;
@@ -152,8 +163,10 @@ int main(){
 				      sqrt(pow(histo[0][var][sam]->GetBinError(vars[var].nbins),2)+
 					   pow(histo[0][var][sam]->GetBinError(vars[var].nbins+1),2)));
       nentries.push_back(histo[0][var][sam]->Integral(1,vars[var].nbins));
-      histo[0][var][sam]->SetYTitle("Z_{bi} for "+Samples[isam].label+" (#sigma)");
-      histo[1][var][sam]->SetYTitle("S/#sqrt{B}");
+      histo[0][var][sam]->SetYTitle("Z_{bi} (#sigma)");
+      histo[1][var][sam]->SetYTitle("S/#sqrt{B} (#sigma)");
+      histo[2][var][sam]->SetYTitle("Events");
+      histo[2][var][sam]->SetLineColor(1);
       if(!isSig){ // Adding previous bkg histos
 	for(int bsam(sam-1); bsam >= 0; bsam--){
 	  histo[0][var][sam]->Add(histo[0][var][bsam]);
@@ -167,10 +180,14 @@ int main(){
       int isam = vars[var].samples[sam];
       if(!(Samples[isam].isSig)) continue;
 
+      double maxhisto[Nhis];
+      for(unsigned his(0); his<Nhis; his++) maxhisto[his] = -1;
       for(int bin(1); bin<=vars[var].nbins; bin++){
 	double Nerr(0);
 	const double Nsig(histo[0][var][sam]->Integral(bin,vars[var].nbins+1));
 	const double Nbkg(histo[0][var][bkgind]->IntegralAndError(bin,vars[var].nbins+1,Nerr)); 
+	histo[2][var][sam]->SetBinContent(bin,Nbkg);
+	histo[3][var][sam]->SetBinContent(bin,Nsig);
 	if(Nbkg==0){
 	  histo[0][var][sam]->SetBinContent(bin,0);
 	  histo[1][var][sam]->SetBinContent(bin,0);
@@ -179,19 +196,39 @@ int main(){
 	  histo[0][var][sam]->SetBinContent(bin,Zbi>0?Zbi:0);
 	  histo[1][var][sam]->SetBinContent(bin,Nsig/sqrt(Nbkg));
 	}
+	for(unsigned his(0); his<Nhis; his++) 
+	  if(maxhisto[his] < histo[his][var][sam]->GetBinContent(bin)) 
+	    maxhisto[his] = histo[his][var][sam]->GetBinContent(bin);
       }
-      histo[0][var][sam]->Draw("hist");
+      leg.Clear();
+      legH = legSingle*2;
+      leg.SetY1NDC(legY-legH);
+      leg.SetHeader("#font[22]{   L = "+luminosity+" fb^{-1}}");
+      leg.AddEntry(histo[0][var][sam], Samples[isam].label);
+      histo[0][var][sam]->Draw("l hist");
       if(vars[var].cut>0) line.DrawLine(vars[var].cut, 0, vars[var].cut, histo[0][var][sam]->GetMaximum()*1.05);
+      leg.Draw();
       pname = "plots/zbi_"+Samples[isam].tag+"_"+vars[var].tag+".eps";
       can.SaveAs(pname);
-      histo[1][var][sam]->Draw("hist");
+      histo[1][var][sam]->Draw("l hist");
       if(vars[var].cut>0) line.DrawLine(vars[var].cut, 0, vars[var].cut, histo[1][var][sam]->GetMaximum()*1.05);
+      pname = "plots/s_sqrtb_"+Samples[isam].tag+"_"+vars[var].tag+".eps";
+      leg.Draw();
+      can.SaveAs(pname);
+      histo[2][var][sam]->SetMaximum(max(histo[2][var][sam]->GetMaximum(),histo[3][var][sam]->GetMaximum())*1.05);
+      histo[2][var][sam]->Draw("l hist");
+      histo[3][var][sam]->Draw("l hist same");
+      if(vars[var].cut>0) line.DrawLine(vars[var].cut, 0, vars[var].cut, histo[2][var][sam]->GetMaximum());
+      leg.AddEntry(histo[2][var][sam], "Total bkg.");
+      legH = legSingle*3;
+      leg.SetY1NDC(legY-legH);
+      leg.Draw();
       pname = "plots/sb_"+Samples[isam].tag+"_"+vars[var].tag+".eps";
       can.SaveAs(pname);
     } // Loop over samples
   }// Loop over variables
 
-  for(unsigned his(0); his < 2; his++){
+  for(unsigned his(0); his < Nhis; his++){
     for(unsigned var(0); var<vars.size(); var++){
       for(unsigned sam(0); sam < vars[var].samples.size(); sam++)
 	if(histo[his][var][sam]) histo[his][var][sam]->Delete();
