@@ -10,12 +10,19 @@
 #include "TString.h"
 #include "TH1D.h"
 
+struct pfeats{
+  pfeats(const std::vector<int> &isamples, const TString &icut = "1", const TString &itagname="");
+
+  std::vector<int> samples;
+  TString cut, tagname;
+};
+
 class hfeats {
 public:
   hfeats(TString ivarname, int inbins, float iminx, float imaxx, std::vector<int> isamples,
-	 TString ititle="", TString icuts="1", float icut=-1, TString itagname="");
+         TString ititle="", TString icuts="1", float icut=-1, TString itagname="");
   hfeats(TString ivarname, int inbins, float* ibinning, std::vector<int> isamples,
-	 TString ititle="", TString icuts="1", float icut=-1, TString itagname="");
+         TString ititle="", TString icuts="1", float icut=-1, TString itagname="");
   TString title, varname, tag, cuts, unit;
   int nbins;
   float *binning;
@@ -36,6 +43,5 @@ public:
 
 void calc_chi2_diff(TH1D *histo1, TH1D *histo2, float &chi2, int &ndof, float &pvalue, float *average);
 void calc_chi2(TH1D *histo, float &chi2, int &ndof, float &pvalue, float &average);
-
 
 #endif
