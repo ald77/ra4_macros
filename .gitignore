@@ -1,7 +1,39 @@
-*~
-*#
 small_tree*.*pp
 plots/*
 run/*.exe
 archive
+
+# Compiled Object files
+*.slo
+*.lo
+*.o
+
+# Compiled Dynamic libraries
+*.so
+*.d
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+
+# Compiled executables
+*.exe
+
+# Generated source files
+bin/*
+
+# emacs backups
+*~
+*#
+
+# Other
+*.root
+*.log
+*.pdf
+*.eps
 *.tex
+*.aux
+gmon.out
+out
+archive

@@ -55,8 +55,10 @@ int main(){
 			   "((mc_type&0x0F00)/0x100+(mc_type&0x000F)-(mc_type&0x00F0)/0x10)<=1"));
   Samples.push_back(sfeats(s_tt, "$t\\bar{t}$ ($2\\ell$)", 1006,1,
 			   "((mc_type&0x0F00)/0x100+(mc_type&0x000F)-(mc_type&0x00F0)/0x10)>=2"));
-  int nsig(2);
+  int nsig(3);
   Samples.push_back(sfeats(s_t1t, "T1tttt NC", 2));
+  Samples.push_back(sfeats(s_t1t, "T1tttt NC, 1l", 2, 1,
+			   "((mc_type&0x0F00)/0x100+(mc_type&0x000F)-(mc_type&0x00F0)/0x10)<=1"));
   Samples.push_back(sfeats(s_t1tc, "T1tttt C", 2,2));
 
   for(unsigned sam(0); sam < Samples.size(); sam++){
@@ -67,32 +69,44 @@ int main(){
 
   
   TString name = "txt/ra4_cutflow.tex";
+  ifstream header("txt/header.tex");
+  ifstream footer("txt/footer.tex");
   ofstream file(name);
-  TString cuts("(nmus+nels)==1&&ht>500&&met>250&&nbm>=1&&njets>=4");
+  file<<header.rdbuf();
+  TString cuts("(nmus+nels)==1&&ht>500&&met>200&&nbm>=2&&njets>=6&&mt>125");
   
-  file << "\n\\begin{tabular}{ l | rrrrrr | r | rr | rr}\\hline\\hline\n";
+  file << "\n\\begin{tabular}{ l | ";
+  for(unsigned sam(0); sam < Samples.size()-nsig; sam++) file << "r";
+  file<<" | r ";
+  for(int sam(0); sam < nsig; sam++) file<<"| rr ";
+  file<<"}\\hline\\hline\n";
   file << " \\multicolumn{1}{c|}{Cuts} ";
   for(unsigned sam(0); sam < Samples.size()-nsig; sam++)
     file << " & "<<Samples[sam].label;
   file<< " & SM bkg. ";
   for(unsigned sam(Samples.size()-nsig); sam < Samples.size(); sam++)
-    file << " & "<<Samples[sam].label<< " & S/B ";
+    file << " & "<<Samples[sam].label<< " & $Z_{\\rm bi}$ ";
   file << "\\\\ \\hline \n ";
 
   //////////////////////////////////// Cutflow for Jae //////////////////////////////////
-  //  file << " \\multicolumn{"<< Samples.size()+nsig*2<<"}{c}{"<< "$H_T>500, \\mathrm{MET}>200, m_T>150, n_{\\rm jets}\\geq 6, " <<"n_b=1, n_{\\rm lep}=1$"<<"} \\\\ \\hline\n";
-  //file << YieldsCut("1 lepton, $H_T>500,{\\rm MET}>250,n_{\\rm jets}\\geq 4, n_b\\geq 1$", cuts, 
-  file << YieldsCut("Baseline", cuts, 
+  file << " \\multicolumn{"<< Samples.size()+1+nsig<<"}{c}{"
+       << "$H_T>500, \\mathrm{MET}>200, m_T>125, n_{\\rm jets}\\geq 6, n_b\\geq 2, n_{\\rm lep}=1$"
+       <<"} \\\\ \\hline\n";
+  file << YieldsCut("$M_J > 400$", cuts+"&&mj>400", 
 		    chain, Samples, nsig);
-  file << YieldsCut("+ $n_{\\rm jets}\\geq 6$", cuts+"&&njets>=6", 
+  file << YieldsCut("$M_J > 400$, LV", cuts+"&&mj>400&&(nvels+nvmus)==1", 
 		    chain, Samples, nsig);
-  file << YieldsCut("+ $n_{b}\\geq 2$", cuts+"&&njets>=6&&nbm>=2", 
+  file << YieldsCut("$M_J > 400$, $n_{\\rm jets} \\geq 8$", cuts+"&&mj>400&&njets>=8", 
 		    chain, Samples, nsig);
-  file << YieldsCut("+ $m_T \\geq 150$", cuts+"&&njets>=6&&nbm>=2&&mt>=150", 
+  file << YieldsCut("$M_J > 400$, $n_{\\rm jets} \\geq 8$, LV", cuts+"&&mj>400&&(nvels+nvmus)==1&&njets>=8", 
 		    chain, Samples, nsig);
-  file << YieldsCut("+ $M_J \\geq 600$", cuts+"&&njets>=6&&nbm>=2&&mt>=150&&mj>=600", 
+  file << YieldsCut("$M_J > 400$, MET$ > 400$", cuts+"&&mj>400&&met>400", 
 		    chain, Samples, nsig);
-  file << YieldsCut("+ MET$ \\geq 400$", cuts+"&&njets>=6&&nbm>=2&&mt>=150&&mj>=600&&met>=400", 
+  file << YieldsCut("$M_J > 400$, MET$ > 400$, LV", cuts+"&&mj>400&&met>400&&(nvels+nvmus)==1", 
+		    chain, Samples, nsig);
+  file << YieldsCut("$M_J > 600$, MET$ > 400$", cuts+"&&mj>600&&met>400", 
+		    chain, Samples, nsig);
+  file << YieldsCut("$M_J > 600$, MET$ > 400$, LV", cuts+"&&mj>600&&met>400&&(nvels+nvmus)==1", 
 		    chain, Samples, nsig);
   //////////////////////////////////// Cutflow for Jae //////////////////////////////////
 
@@ -106,10 +120,11 @@ int main(){
     file << " & "<<Samples[sam].label;
   file<< " & SM bkg. ";
   for(unsigned sam(Samples.size()-nsig); sam < Samples.size(); sam++)
-    file << " & "<<Samples[sam].label<< " & S/B ";
+    file << " & "<<Samples[sam].label<< " & $Z_{\\rm bi}$ ";
   file << "\\\\ \n ";
 
   file<< "\\hline\\hline\n\\end{tabular}"<<endl<<endl;
+  file<<footer.rdbuf();
   file.close();
   cout<<"Written "<<name<<endl;
 }
@@ -138,11 +153,12 @@ TString YieldsCut(TString title, TString cuts, vector<TChain*> chain, vector<sfe
   for(int sam(0); sam < nsam-nsig; sam++) out += (" \t & " + RoundNumber(yield[sam],1));
   out += (" \t &  $"+RoundNumber(bkg,1))+" \\pm "+RoundNumber(bkg_err,1)+"$";
   for(int sam(nsam-nsig); sam < nsam; sam++) {
+    float fracerr(sqrt(pow(bkg_err/bkg,2)+0.3*0.3+0.24*0.24));
     out += (" \t& $" + RoundNumber(yield[sam],1)+" \\pm "+RoundNumber(error[sam],1) + "$ \t& " +
-	    RoundNumber(yield[sam],2,bkg));
+	    //RoundNumber(yield[sam],2,bkg));
+	    RoundNumber(RooStats::NumberCountingUtils::BinomialExpZ(yield[sam], bkg, fracerr),2));
     cout<<", S = "<<RoundNumber(yield[sam],1)+" +- "+RoundNumber(error[sam],1)<<" with Zbi = ";
-    cout<<RoundNumber(RooStats::NumberCountingUtils::BinomialExpZ(yield[sam], bkg, 
-								  sqrt(pow(bkg_err/bkg,2)+0.3*0.3+0.24*0.24)),2);
+    cout<<RoundNumber(RooStats::NumberCountingUtils::BinomialExpZ(yield[sam], bkg, fracerr),2);
   }
   out += " \\\\ \n";
   cout<<endl;

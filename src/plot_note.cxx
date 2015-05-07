@@ -69,8 +69,8 @@ int main(){
   Samples.push_back(sfeats(s_tt, "t#bar{t}, 1 l", 1000,1,"((mc_type&0x0F00)/0x100+(mc_type&0x000F)-(mc_type&0x00F0)/0x10)<=1"));
   Samples.push_back(sfeats(s_t1t, "T1tttt(1500,100)", 2));
   Samples.push_back(sfeats(s_t1tc, "T1tttt(1200,800)", 2,2));
+  Samples.push_back(sfeats(s_tt, "t#bar{t}", 1000,1));
   Samples.push_back(sfeats(s_tt_noskim, "t#bar{t}", 1000,1));
-  //Samples.push_back(sfeats(s_tt, "t#bar{t}", 1000,1));
 
   for(unsigned sam(0); sam < Samples.size(); sam++){
     chain.push_back(new TChain("tree"));
@@ -89,22 +89,21 @@ int main(){
   ra4_sam.push_back(7);
 
   vector<int> ra4_tt_t1;
-  // ra4_tt_t1.push_back(4);
-  //ra4_tt_t1.push_back(5);
   ra4_tt_t1.push_back(6);
   ra4_tt_t1.push_back(7);
   ra4_tt_t1.push_back(8);
 
-  vars.push_back(hfeats("Max$(mc_pt*(abs(mc_id)==13))",60,0,300, ra4_tt_t1, "Leading gen #mu p_{T} (GeV)",
+  vector<int> ra4_tt_t1_noskim;
+  ra4_tt_t1_noskim.push_back(6);
+  ra4_tt_t1_noskim.push_back(7);
+  ra4_tt_t1_noskim.push_back(9);
+
+  vars.push_back(hfeats("Max$(mc_pt*(abs(mc_id)==13))",60,0,300, ra4_tt_t1_noskim, "Leading gen #mu p_{T} (GeV)",
 			"Sum$(abs(mc_id)==13)>0",20,"muon"));
-  vars.push_back(hfeats("Max$(mc_pt*(abs(mc_id)==11))",60,0,300, ra4_tt_t1, "Leading gen e p_{T} (GeV)",
+  vars.push_back(hfeats("Max$(mc_pt*(abs(mc_id)==11))",60,0,300, ra4_tt_t1_noskim, "Leading gen e p_{T} (GeV)",
 			"Sum$(abs(mc_id)==11)>0",20,"electron"));
-  vars.push_back(hfeats("Max$(mc_pt*(abs(mc_id)==13))",60,0,300, ra4_tt_t1, "Leading gen #mu p_{T} (GeV)",
-			"ht>500&&met>200&&Sum$(abs(mc_id)==13)>0",20,"muon"));
-  vars.push_back(hfeats("Max$(mc_pt*(abs(mc_id)==11))",60,0,300, ra4_tt_t1, "Leading gen e p_{T} (GeV)",
-			"ht>500&&met>200&&Sum$(abs(mc_id)==11)>0",20,"electron"));
-  vars.push_back(hfeats("Max$(mus_pt*(mus_sigid&&mus_miniso_tr10<0.2))",60,0,300, ra4_tt_t1, "Leading reco #mu p_{T} (GeV)",
-			"ht>500&&met>200&&Sum$(mus_sigid&&mus_miniso_tr10<0.2)>0",20,"muon"));
+  vars.push_back(hfeats("Max$(mus_pt*(mus_sigid&&mus_miniso_tr10<0.2))",60,0,300, ra4_tt_t1_noskim, "Leading reco #mu p_{T} (GeV)",
+			"Sum$(mus_sigid&&mus_miniso_tr10<0.2)>0",20,"muon"));
 
   // vars.push_back(hfeats("lep_pt",30,0,600, ra4_sam, "Lepton p_{T} (GeV)",
   // 			"ht>500&&met>250&&njets>=6&&nbm>=2&&(nmus+nels)==1"));
