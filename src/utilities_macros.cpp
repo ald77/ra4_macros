@@ -19,9 +19,14 @@
 
 using namespace std;
 
+pfeats::pfeats(const vector<int> &isamples, const TString &icut, const TString &itagname):
+  samples(isamples),
+  cut(icut),
+  tagname(itagname){
+  }
 
 hfeats::hfeats(TString ivarname, int inbins, float iminx, float imaxx, vector<int> isamples,
-	       TString ititle, TString icuts, float icut, TString itagname):
+               TString ititle, TString icuts, float icut, TString itagname):
   title(ititle),
   varname(ivarname),
   cuts(icuts),
@@ -38,7 +43,7 @@ hfeats::hfeats(TString ivarname, int inbins, float iminx, float imaxx, vector<in
   }
 
 hfeats::hfeats(TString ivarname, int inbins, float *ibinning, vector<int> isamples,
-	       TString ititle, TString icuts, float icut, TString itagname):
+               TString ititle, TString icuts, float icut, TString itagname):
   title(ititle),
   varname(ivarname),
   cuts(icuts),
@@ -55,17 +60,17 @@ hfeats::hfeats(TString ivarname, int inbins, float *ibinning, vector<int> isampl
   }
 
 void hfeats::format_tag(){
-  tag = varname; 
+  tag = varname;
   if(cuts!="1")   tag+="_"+cuts;
   if(tagname!="") tag+="_"+tagname;
 
-  tag.ReplaceAll(".",""); 
-  tag.ReplaceAll("(",""); tag.ReplaceAll("$","");  tag.ReplaceAll(")",""); 
+  tag.ReplaceAll(".","");
+  tag.ReplaceAll("(",""); tag.ReplaceAll("$","");  tag.ReplaceAll(")","");
   tag.ReplaceAll("[",""); tag.ReplaceAll("]",""); tag.ReplaceAll("||","_");
   tag.ReplaceAll("/","_"); tag.ReplaceAll("*",""); tag.ReplaceAll("&&","_");
-  tag.ReplaceAll(">=","ge"); tag.ReplaceAll("<=","se"); 
+  tag.ReplaceAll(">=","ge"); tag.ReplaceAll("<=","se");
   tag.ReplaceAll(">","g"); tag.ReplaceAll("<","s"); tag.ReplaceAll("=","");
-  tag.ReplaceAll("+",""); 
+  tag.ReplaceAll("+","");
 }
 
 sfeats::sfeats(vector<TString> ifile, TString ilabel, int icolor, int istyle, TString icut){
@@ -73,9 +78,9 @@ sfeats::sfeats(vector<TString> ifile, TString ilabel, int icolor, int istyle, TS
   color = icolor; style = istyle;
   isSig = ifile[0].Contains("T1tttt");
   factor = "1";
-  tag = label; 
-  tag.ReplaceAll("(",""); tag.ReplaceAll(",","_");  tag.ReplaceAll(")",""); 
-  tag.ReplaceAll("{",""); tag.ReplaceAll("#,","");  tag.ReplaceAll("}",""); 
+  tag = label;
+  tag.ReplaceAll("(",""); tag.ReplaceAll(",","_");  tag.ReplaceAll(")","");
+  tag.ReplaceAll("{",""); tag.ReplaceAll("#,","");  tag.ReplaceAll("}","");
 }
 
 // Function that calculates the chi2 of a histogram with respect to the flat hypothesis
@@ -87,7 +92,7 @@ void calc_chi2(TH1D *histo, float &chi2, int &ndof, float &pvalue, float &averag
     if(histo->GetBinError(bin) > 0){
       vals[0].push_back(histo->GetBinContent(bin));
       vals[1].push_back(histo->GetBinError(bin));
-      
+
       sumx_sig2 += vals[0][ndof]/pow(vals[1][ndof],2);
       sum_sig2 += 1/pow(vals[1][ndof],2);
       ndof++;
@@ -111,12 +116,12 @@ void calc_chi2_diff(TH1D *histo1, TH1D *histo2, float &chi2, int &ndof, float &p
   for(int his(0); his<2; his++){
     for(int bin(1); bin<=histos[his]->GetNbinsX(); bin++){
       if(histos[his]->GetBinError(bin) > 0){
-	vals[his][0].push_back(histos[his]->GetBinContent(bin));
-	vals[his][1].push_back(histos[his]->GetBinError(bin));
-	
-	sumx_sig2[his] += vals[his][0][ndofs[his]];
-	sum_sig2[his] += 1;
-	ndofs[his]++;
+        vals[his][0].push_back(histos[his]->GetBinContent(bin));
+        vals[his][1].push_back(histos[his]->GetBinError(bin));
+
+        sumx_sig2[his] += vals[his][0][ndofs[his]];
+        sum_sig2[his] += 1;
+        ndofs[his]++;
       }
     }
     if(sum_sig2[his]<=0){cout<<"All errors in histo are zero. Exiting."<<endl; return;}
@@ -127,12 +132,11 @@ void calc_chi2_diff(TH1D *histo1, TH1D *histo2, float &chi2, int &ndof, float &p
   // In principle, we should use just bins where both histos have entries. To be modified
   if(ndofs[0] != ndofs[1]) {cout<<"First histo has "<<ndofs[0]<<" ndof and second "<<ndofs[1]<<endl; return;}
   else ndof = ndofs[0];
-  chi2 = 0; 
+  chi2 = 0;
   double Raver = average[0]/average[1];
-  for(int ival(0); ival <= ndof; ival++){    
+  for(int ival(0); ival <= ndof; ival++){
     double error(sqrt(pow(vals[0][1][ival],2)+pow(vals[1][1][ival]*Raver,2)));
     chi2 += pow((vals[0][0][ival]-vals[1][0][ival]*Raver)/error,2);
   }
   pvalue = TMath::Prob(chi2,ndof);
 }
-
