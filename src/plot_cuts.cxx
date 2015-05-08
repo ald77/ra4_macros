@@ -36,7 +36,7 @@ int main(){
   TColor sig_gold(1008, 215/255.,162/255.,50/255.);
   TColor seal_brown(1010, 89/255.,38/255.,11/255.);
 
-  TString folder="archive/15-03-17/skims/";
+  TString folder="archive/15-05-02/skim/";
   //TString folder="archive/15-03-17/";
   vector<TString> s_tt;
   s_tt.push_back(folder+"*_TTJet*");
@@ -86,25 +86,35 @@ int main(){
   ra4_sam.push_back(7);
 
   const int scanbins(100);
-  vars.push_back(hfeats("met",scanbins,200,1200, ra4_sam, "Cut on MET (GeV)",
-			"ht>500&&nbm>=2&&njets>=8&&mt>125&&(nmus+nels)==1",400));
-  vars.push_back(hfeats("njets",18,-0.5,17.5, ra4_sam, "Cut on n_{jets}",
-			"ht>500&&met>400&&nbm>=2&&mt>125&&(nmus+nels)==1",6));
-  vars.push_back(hfeats("nbm",6,-0.5,5.5, ra4_sam, "Cut on n_{b}",
-			"ht>500&&met>400&&njets>=6&&mt>125&&(nmus+nels)==1",2));
   vars.push_back(hfeats("mt",scanbins,0,600, ra4_sam, "Cut on m_{T} (GeV)",
-  			"ht>500&&met>250&&nbm>=2&&njets>=6&&(nmus+nels)==1",150));
-  vars.push_back(hfeats("mj",scanbins,0,1600, ra4_sam, "Cut on M_{J} (GeV)",
-  			"ht>500&&met>250&&nbm>=2&&njets>=6&&mt>150&&(nmus+nels)==1",600));
+  			"ht>500&&met>200&&nbm>=2&&njets>=6&&(nmus+nels)==1",150));
+  vars.push_back(hfeats("mt",scanbins,0,600, ra4_sam, "Cut on m_{T} (GeV)",
+  			"ht>500&&met>400&&nbm>=2&&njets>=6&&(nmus+nels)==1",150));
+  vars.push_back(hfeats("met",scanbins,200,1200, ra4_sam, "Cut on MET (GeV)",
+			"ht>500&&nbm>=2&&njets>=6&&mt>150&&(nmus+nels)==1",400));
+  vars.push_back(hfeats("njets",18,-0.5,17.5, ra4_sam, "Cut on n_{jets}",
+			"ht>500&&met>400&&nbm>=2&&mt>150&&(nmus+nels)==1",6));
+  vars.push_back(hfeats("nbm",7,-0.5,6.5, ra4_sam, "Cut on n_{b}",
+			"ht>500&&met>400&&njets>=6&&mt>150&&(nmus+nels)==1",2));
   vars.push_back(hfeats("mj",scanbins,0,1600, ra4_sam, "Cut on M_{J} (GeV)",
   			"ht>500&&met>400&&nbm>=2&&njets>=6&&mt>150&&(nmus+nels)==1",600));
 
+  vars.push_back(hfeats("met",scanbins,200,1200, ra4_sam, "Cut on MET (GeV)",
+			"ht>500&&nbm>=2&&njets>=8&&mt>150&&(nmus+nels)==1",400));
+  vars.push_back(hfeats("nbm",7,-0.5,6.5, ra4_sam, "Cut on n_{b}",
+			"ht>500&&met>400&&njets>=8&&mt>150&&(nmus+nels)==1",2));
+  vars.push_back(hfeats("mt",scanbins,0,600, ra4_sam, "Cut on m_{T} (GeV)",
+  			"ht>500&&met>400&&nbm>=2&&njets>=8&&(nmus+nels)==1",150));
+  vars.push_back(hfeats("mj",scanbins,0,1600, ra4_sam, "Cut on M_{J} (GeV)",
+  			"ht>500&&met>400&&nbm>=2&&njets>=8&&mt>150&&(nmus+nels)==1",600));
 
 
-  TString luminosity="4";
+
+  TString luminosity="10";
+  TString plot_tag("_lumi"+luminosity+".eps");
   double Syserr(pow(0.3,2));
   double legX = 0.66, legY = 0.86, legSingle = 0.061;
-  double legW = 0.12, legH = legSingle*2;
+  double legW = 0.12, legH = legSingle*3;
   TLegend leg(legX, legY-legH, legX+legW, legY);
   leg.SetTextSize(0.052); leg.SetFillColor(0); leg.SetFillStyle(0); leg.SetBorderSize(0);
   leg.SetTextFont(132);
@@ -200,32 +210,45 @@ int main(){
 	  if(maxhisto[his] < histo[his][var][sam]->GetBinContent(bin)) 
 	    maxhisto[his] = histo[his][var][sam]->GetBinContent(bin);
       }
-      leg.Clear();
-      legH = legSingle*2;
-      leg.SetY1NDC(legY-legH);
-      leg.SetHeader("#font[22]{   L = "+luminosity+" fb^{-1}}");
-      leg.AddEntry(histo[0][var][sam], Samples[isam].label);
-      histo[0][var][sam]->Draw("l hist");
-      if(vars[var].cut>0) line.DrawLine(vars[var].cut, 0, vars[var].cut, histo[0][var][sam]->GetMaximum()*1.05);
-      leg.Draw();
-      pname = "plots/zbi_"+Samples[isam].tag+"_"+vars[var].tag+".eps";
-      can.SaveAs(pname);
-      histo[1][var][sam]->Draw("l hist");
-      if(vars[var].cut>0) line.DrawLine(vars[var].cut, 0, vars[var].cut, histo[1][var][sam]->GetMaximum()*1.05);
-      pname = "plots/s_sqrtb_"+Samples[isam].tag+"_"+vars[var].tag+".eps";
-      leg.Draw();
-      can.SaveAs(pname);
-      histo[2][var][sam]->SetMaximum(max(histo[2][var][sam]->GetMaximum(),histo[3][var][sam]->GetMaximum())*1.05);
-      histo[2][var][sam]->Draw("l hist");
-      histo[3][var][sam]->Draw("l hist same");
-      if(vars[var].cut>0) line.DrawLine(vars[var].cut, 0, vars[var].cut, histo[2][var][sam]->GetMaximum());
-      leg.AddEntry(histo[2][var][sam], "Total bkg.");
-      legH = legSingle*3;
-      leg.SetY1NDC(legY-legH);
-      leg.Draw();
-      pname = "plots/sb_"+Samples[isam].tag+"_"+vars[var].tag+".eps";
-      can.SaveAs(pname);
     } // Loop over samples
+
+    unsigned sam_nc(vars[var].samples.size()-2);
+    unsigned isam_nc = vars[var].samples[sam_nc];
+    unsigned sam_c(vars[var].samples.size()-1);
+    unsigned isam_c = vars[var].samples[sam_c];
+    leg.Clear();
+    legH = legSingle*3;
+    leg.SetY1NDC(legY-legH);
+    leg.SetHeader("#font[22]{   L = "+luminosity+" fb^{-1}}");
+    leg.AddEntry(histo[0][var][sam_nc], Samples[isam_nc].label);
+    leg.AddEntry(histo[0][var][sam_c], Samples[isam_c].label);
+    histo[0][var][sam_nc]->SetMinimum(0);
+    histo[0][var][sam_nc]->Draw("l hist");
+    histo[0][var][sam_c]->Draw("l hist same");
+    if(vars[var].cut>0) line.DrawLine(vars[var].cut, 0, vars[var].cut, histo[0][var][sam_nc]->GetMaximum()*1.05);
+    leg.Draw();
+    pname = "plots/zbi_"+vars[var].tag+plot_tag;
+    can.SaveAs(pname);
+    histo[1][var][sam_nc]->SetMinimum(0);
+    histo[1][var][sam_nc]->Draw("l hist");
+    histo[1][var][sam_c]->Draw("l hist same");
+    if(vars[var].cut>0) line.DrawLine(vars[var].cut, 0, vars[var].cut, histo[1][var][sam_nc]->GetMaximum()*1.05);
+    pname = "plots/s_sqrtb_"+vars[var].tag+plot_tag;
+    leg.Draw();
+    can.SaveAs(pname);
+    histo[2][var][sam_nc]->SetMaximum(max(histo[2][var][sam_nc]->GetMaximum(),
+      histo[3][var][sam_nc]->GetMaximum())*1.05);
+    histo[2][var][sam_nc]->Draw("l hist");
+    histo[3][var][sam_c]->Draw("l hist same");
+    histo[3][var][sam_nc]->Draw("l hist same");
+    if(vars[var].cut>0) line.DrawLine(vars[var].cut, 0, vars[var].cut, histo[2][var][sam_nc]->GetMaximum());
+    leg.AddEntry(histo[2][var][sam_nc], "Total bkg.");
+    legH = legSingle*4;
+    leg.SetY1NDC(legY-legH);
+    leg.Draw();
+    pname = "plots/sb_"+vars[var].tag+plot_tag;
+    can.SaveAs(pname);
+    
   }// Loop over variables
 
   for(unsigned his(0); his < Nhis; his++){

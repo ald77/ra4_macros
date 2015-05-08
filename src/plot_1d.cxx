@@ -35,8 +35,8 @@ int main(){
   TColor sig_gold(1008, 215/255.,162/255.,50/255.);
   TColor seal_brown(1010, 89/255.,38/255.,11/255.);
 
-  TString folder="archive/15-03-17/skims/";
-  TString folder_noskim="archive/15-03-17//";
+  TString folder="archive/15-05-02/skim/";
+  TString folder_noskim="archive/15-05-02//";
   vector<TString> s_tt;
   s_tt.push_back(folder+"*_TTJet*");
   vector<TString> s_tt_noskim;
@@ -95,43 +95,47 @@ int main(){
   ra4_tt_t1.push_back(7);
   ra4_tt_t1.push_back(8);
 
-  vars.push_back(hfeats("Max$(mc_pt*(abs(mc_id)==13))",60,0,300, ra4_tt_t1, "Leading gen #mu p_{T} (GeV)",
-			"Sum$(abs(mc_id)==13)>0",20,"muon"));
-  vars.push_back(hfeats("Max$(mc_pt*(abs(mc_id)==11))",60,0,300, ra4_tt_t1, "Leading gen e p_{T} (GeV)",
-			"Sum$(abs(mc_id)==11)>0",20,"electron"));
-  vars.push_back(hfeats("Max$(mc_pt*(abs(mc_id)==13))",60,0,300, ra4_tt_t1, "Leading gen #mu p_{T} (GeV)",
-			"ht>500&&met>200&&Sum$(abs(mc_id)==13)>0",20,"muon"));
-  vars.push_back(hfeats("Max$(mc_pt*(abs(mc_id)==11))",60,0,300, ra4_tt_t1, "Leading gen e p_{T} (GeV)",
-			"ht>500&&met>200&&Sum$(abs(mc_id)==11)>0",20,"electron"));
-  vars.push_back(hfeats("Max$(mus_pt*(mus_sigid&&mus_miniso_tr10<0.2))",60,0,300, ra4_tt_t1, "Leading reco #mu p_{T} (GeV)",
-			"ht>500&&met>200&&Sum$(mus_sigid&&mus_miniso_tr10<0.2)>0",20,"muon"));
-
   // vars.push_back(hfeats("lep_pt",30,0,600, ra4_sam, "Lepton p_{T} (GeV)",
-  // 			"ht>500&&met>250&&njets>=6&&nbm>=2&&(nmus+nels)==1"));
+  // 			"ht>500&&met>200&&njets>=6&&nbm>=2&&(nmus+nels)==1"));
   // vars.push_back(hfeats("lep_pt",30,0,600, ra4_tt_t1, "Lepton p_{T} (GeV)",
-  // 			"ht>500&&met>250&&njets>=6&&nbm>=2&&(nmus+nels)==1",-1,"shapes"));
+  // 			"ht>500&&met>200&&njets>=6&&nbm>=2&&(nmus+nels)==1",-1,"shapes"));
   // vars.push_back(hfeats("lep_pt",30,0,600, ra4_sam, "Lepton p_{T} (GeV)",
-  // 			"ht>500&&met>250&&njets>=6&&nbm>=2&&mt>150&&(nmus+nels)==1"));
+  // 			"ht>500&&met>200&&njets>=6&&nbm>=2&&mt>150&&(nmus+nels)==1"));
 
   //////////////////// N-1 plots ////////////////////////////////
   // // Run without skim
-  // vars.push_back(hfeats("met",20,0,800, ra4_sam, "MET (GeV)","ht>500&&nbm>=2&&njets>=6&&(nmus+nels)==1",250));
-  // vars.push_back(hfeats("ht",35,0,3500, ra4_sam, "H_{T} (GeV)","met>250&&nbm>=2&&njets>=6&&(nmus+nels)==1",500));
+  // vars.push_back(hfeats("met",20,0,800, ra4_sam, "MET (GeV)","ht>500&&nbm>=2&&njets>=6&&(nmus+nels)==1",200));
+  // vars.push_back(hfeats("ht",35,0,3500, ra4_sam, "H_{T} (GeV)","met>200&&nbm>=2&&njets>=6&&(nmus+nels)==1",500));
   // // Run without skim
 
-  // vars.push_back(hfeats("njets",17,-0.5,16.5, ra4_sam, "Number of 40 GeV jets","ht>500&&met>250&&nbm>=2&&(nmus+nels)==1",5.5));
-  // vars.push_back(hfeats("nbm",8,-0.5,7.5, ra4_sam, "Number of b-tags (CSVM)","ht>500&&met>250&&njets>=6&&(nmus+nels)==1",1.5));
 
-  // vars.push_back(hfeats("mt",20,0,600, ra4_sam, "m_{T} (GeV)","ht>500&&met>250&&nbm>=2&&njets>=6&&(nmus+nels)==1",150));
-  // vars.push_back(hfeats("mj",20,0,1600, ra4_sam, "M_{J} (GeV)","ht>500&&met>250&&nbm>=2&&njets>=6&&mt>150&&(nmus+nels)==1",600));
+  vars.push_back(hfeats("mt",48,0,600, ra4_sam, "m_{T} (GeV)",
+			"ht>500&&met>200&&nbm>=2&&njets>=6&&(nmus+nels)==1",150));
+  vars.push_back(hfeats("mt",48,0,600, ra4_sam, "m_{T} (GeV)",
+			"ht>500&&met>400&&nbm>=2&&njets>=6&&(nmus+nels)==1",150));
+  vars.push_back(hfeats("met",20,200,1200, ra4_sam, "MET (GeV)",
+			"ht>500&&nbm>=2&&njets>=6&&mt>150&&(nmus+nels)==1",400));
+  vars.push_back(hfeats("njets",18,-0.5,17.5, ra4_sam, "Number of 40 GeV jets",
+			"ht>500&&met>400&&nbm>=2&&mt>150&&(nmus+nels)==1",5.5));
+  vars.push_back(hfeats("nbm",7,-0.5,6.5, ra4_sam, "Number of b-tags (CSVM)",
+			"ht>500&&met>400&&njets>=6&&mt>150&&(nmus+nels)==1",1.5));
+  vars.push_back(hfeats("mj",32,0,1600, ra4_sam, "M_{J} (GeV)",
+			"ht>500&&met>400&&nbm>=2&&njets>=6&&mt>150&&(nmus+nels)==1",600));
 
-  // vars.push_back(hfeats("mt",20,0,600, ra4_sam, "m_{T} (GeV)","ht>500&&met>400&&nbm>=2&&njets>=6&&(nmus+nels)==1",150));
-  // vars.push_back(hfeats("mj",16,0,1600, ra4_sam, "M_{J} (GeV)","ht>500&&met>400&&nbm>=2&&njets>=6&&mt>150&&(nmus+nels)==1",600));
+  vars.push_back(hfeats("mt",48,0,600, ra4_sam, "m_{T} (GeV)",
+			"ht>500&&met>400&&nbm>=2&&njets>=8&&(nmus+nels)==1",150));
+  vars.push_back(hfeats("met",20,200,1200, ra4_sam, "MET (GeV)",
+			"ht>500&&nbm>=2&&njets>=8&&mt>150&&(nmus+nels)==1",400));
+  vars.push_back(hfeats("nbm",7,-0.5,6.5, ra4_sam, "Number of b-tags (CSVM)",
+			"ht>500&&met>400&&njets>=8&&mt>150&&(nmus+nels)==1",1.5));
+  vars.push_back(hfeats("mj",32,0,1600, ra4_sam, "M_{J} (GeV)",
+			"ht>500&&met>400&&nbm>=2&&njets>=8&&mt>150&&(nmus+nels)==1",600));
+
   //////////////////// N-1 plots ////////////////////////////////
 
 
 
-  TString luminosity="4";
+  TString luminosity="10";
   float minLog = 0.04, maxLog = 20;
   double legX = 0.58, legY = 0.88, legSingle = 0.055;
   double legW = 0.12, legH = legSingle*vars[0].samples.size();
@@ -241,10 +245,10 @@ int main(){
     if(histo[0][var][firstplotted]->GetMinimum() > minLog) histo[0][var][firstplotted]->SetMinimum(minLog);
     histo[0][var][firstplotted]->SetMinimum(minLog);
     histo[0][var][firstplotted]->SetMaximum(maxhisto*maxLog);
-    if(variable=="mt" && var==vars.size()-1) {
-      histo[0][var][firstplotted]->SetMinimum(0.2);
-      histo[0][var][firstplotted]->SetMaximum(maxhisto*2);
-    }
+    // if(variable=="mt" && var==vars.size()-1) {
+    //   histo[0][var][firstplotted]->SetMinimum(0.2);
+    //   histo[0][var][firstplotted]->SetMaximum(maxhisto*2);
+    // }
     histo[0][var][firstplotted]->Draw("axis same");
     if(vars[var].cut>0) line.DrawLine(vars[var].cut, 0, vars[var].cut, maxhisto*maxLog);
     can.SetLogy(1);
