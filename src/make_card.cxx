@@ -39,30 +39,32 @@ int main(){
 
   vector<double> mc_counts, mc_squares;
   GetMCTotals(mc_counts, mc_squares,
-	      ttbar_counts, ttbar_squares,
-	      other_counts, other_squares);
+              ttbar_counts, ttbar_squares,
+              other_counts, other_squares);
 
   vector<double> data_counts;
   MockUpData(data_counts, ttbar_counts, other_counts, sig_counts, include_signal);
 
   vector<double> kappas, kappa_uncerts;
   GetKappas(mc_counts, mc_squares,
-	    data_counts,
-	    kappas, kappa_uncerts);
+            data_counts,
+            kappas, kappa_uncerts);
 
   WriteFile(ttbar_counts, ttbar_squares,
-	    other_counts, other_squares,
-	    sig_counts, sig_squares,
-	    kappas, kappa_uncerts,
-	    data_counts);
+            other_counts, other_squares,
+            sig_counts, sig_squares,
+            kappas, kappa_uncerts,
+            data_counts);
 }
 
 void GetCounts(double lumi,
-	       small_tree_quick &tree,
-	       vector<double> &counts,
-	       vector<double> &squares){
+               small_tree_quick &tree,
+               vector<double> &counts,
+               vector<double> &squares){
   counts = vector<double>(9, 0.);
   squares = counts;
+
+  double sumw = 0., sumw2 = 0.;
 
   int num_entries = tree.GetEntries();
   Timer timer(num_entries, 1.);
@@ -80,8 +82,19 @@ void GetCounts(double lumi,
     size_t bin = LookUpBin(tree);
 
     double weight = lumi*tree.weight();
+
     counts.at(bin) += weight;
     squares.at(bin) += weight*weight;
+
+    sumw += weight;
+    sumw2 += weight*weight;
+  }
+
+  for(size_t bin = 0; bin < counts.size(); ++bin){
+    if(counts.at(bin) <= 0. || squares.at(bin) <= 0.){
+      counts.at(bin) = 0.;
+      squares.at(bin) = sumw2/sumw;
+    }
   }
 }
 
@@ -96,9 +109,9 @@ size_t LookUpBin(small_tree_quick &tree){
       return 0;
     }else{
       if(tree.njets()<=njets_thresh){
-	return 1;
+        return 1;
       }else{
-	return 2;
+        return 2;
       }
     }
   }else{
@@ -106,29 +119,29 @@ size_t LookUpBin(small_tree_quick &tree){
       return 3;
     }else{
       if(tree.njets()<=njets_thresh){
-	if(tree.met()<=met_thresh){
-	  if(tree.nbm()<=nbm_thresh){
-	    return 4;
-	  }else{
-	    return 5;
-	  }
-	}else{
-	  return 6;
-	}
+        if(tree.met()<=met_thresh){
+          if(tree.nbm()<=nbm_thresh){
+            return 4;
+          }else{
+            return 5;
+          }
+        }else{
+          return 6;
+        }
       }else{
-	if(tree.met()<=met_thresh){
-	  return 7;
-	}else{
-	  return 8;
-	}
+        if(tree.met()<=met_thresh){
+          return 7;
+        }else{
+          return 8;
+        }
       }
     }
   }
 }
 
 void GetMCTotals(vector<double> &mc_counts, vector<double> &mc_squares,
-		 const vector<double> &ttbar_counts, const vector<double> &ttbar_squares,
-		 const vector<double> &other_counts, const vector<double> &other_squares){
+                 const vector<double> &ttbar_counts, const vector<double> &ttbar_squares,
+                 const vector<double> &other_counts, const vector<double> &other_squares){
   mc_counts = ttbar_counts;
   mc_squares = ttbar_squares;
   for(size_t i = 0; i < mc_counts.size(); ++i){
@@ -138,10 +151,10 @@ void GetMCTotals(vector<double> &mc_counts, vector<double> &mc_squares,
 }
 
 void MockUpData(vector<double> &data,
-		const vector<double> &ttbar,
-		const vector<double> &other,
-		const vector<double> &sig,
-		bool use_sig){
+                const vector<double> &ttbar,
+                const vector<double> &other,
+                const vector<double> &sig,
+                bool use_sig){
   data = vector<double>(ttbar.size(), 0);
   for(size_t i = 0; i < ttbar.size(); ++i){
     data.at(i) = ttbar.at(i) + other.at(i);
@@ -150,21 +163,21 @@ void MockUpData(vector<double> &data,
 }
 
 void GetKappas(const vector<double> &mc_counts, const vector<double> &mc_squares,
-	       const vector<double> &data_counts,
-	       vector<double> &kappas, vector<double> &kappa_uncerts){
+               const vector<double> &data_counts,
+               vector<double> &kappas, vector<double> &kappa_uncerts){
   kappas = vector<double>(2, 1.);
   kappa_uncerts = vector<double>(2, 0.);
 
   GetKappa(kappas, kappa_uncerts, 0, 0, 1, 3,
-	   mc_counts, mc_squares, data_counts);
+           mc_counts, mc_squares, data_counts);
   GetKappa(kappas, kappa_uncerts, 1, 0, 2, 3,
-	   mc_counts, mc_squares, data_counts);
+           mc_counts, mc_squares, data_counts);
 }
 
 void GetKappa(vector<double> &kappas, vector<double> &kappa_uncerts,
-	      size_t ikappa, size_t ilowlow, size_t ilowhigh, size_t ihighlow,
-	      const vector<double> &mc_counts, const vector<double> &mc_squares,
-	      const vector<double> &data_counts){
+              size_t ikappa, size_t ilowlow, size_t ilowhigh, size_t ihighlow,
+              const vector<double> &mc_counts, const vector<double> &mc_squares,
+              const vector<double> &data_counts){
   kappas.at(ikappa) = mc_counts.at(ilowlow)/data_counts.at(ilowlow);
   kappas.at(ikappa) *= data_counts.at(ilowhigh)/mc_counts.at(ilowhigh);
   kappas.at(ikappa) *= data_counts.at(ihighlow)/mc_counts.at(ihighlow);
@@ -184,10 +197,10 @@ double sqr(double x){
 }
 
 void WriteFile(const vector<double> &ttbar_counts, const vector<double> &ttbar_squares,
-	       const vector<double> &other_counts, const vector<double> &other_squares,
-	       const vector<double> &sig_counts, const vector<double> &sig_squares,
-	       const vector<double> &kappas, const vector<double> &kappa_uncerts,
-	       const vector<double> &data_counts){
+               const vector<double> &other_counts, const vector<double> &other_squares,
+               const vector<double> &sig_counts, const vector<double> &sig_squares,
+               const vector<double> &kappas, const vector<double> &kappa_uncerts,
+               const vector<double> &data_counts){
   vector<size_t> bins(0), ikappas(0);
   bins.push_back(4); ikappas.push_back(0);
   bins.push_back(5); ikappas.push_back(0);
@@ -195,11 +208,11 @@ void WriteFile(const vector<double> &ttbar_counts, const vector<double> &ttbar_s
   bins.push_back(7); ikappas.push_back(1);
   bins.push_back(8); ikappas.push_back(1);
   size_t nbins = bins.size();
-  
+
   ofstream file("data_card.txt");
   file << "imax " << nbins << "   number of channels\n";
   file << "jmax 2   number of backgrounds\n";
-  file << "kmax " << 2+3*nbins << "  number of nusiance parameters\n";
+  file << "kmax " << 2+3*nbins << "  number of nuisance parameters\n";
   file << "------------\n";
   file << "bin        ";
   for(size_t bin = 0; bin < nbins; ++bin){
@@ -235,7 +248,7 @@ void WriteFile(const vector<double> &ttbar_counts, const vector<double> &ttbar_s
       << ' ' << setw(12) << sig_counts.at(bins.at(bin))
       << ' ' << setw(12) << ttbar_counts.at(bins.at(bin))*kappas.at(ikappas.at(bin))
       << ' ' << setw(12) << other_counts.at(bins.at(bin))*kappas.at(ikappas.at(bin));
-    cout << "Bin " << bin << ':' << endl;
+    cout << "Bin " << (bin+1) << ": " << GetBinName(bin) << endl;
     cout << "     Data: " << setw(12) << data_counts.at(bins.at(bin)) << endl;
     cout << "    kappa: " << setw(12) << kappas.at(ikappas.at(bin)) << " +- " << setw(12) <<  kappas.at(ikappas.at(bin))*kappa_uncerts.at(ikappas.at(bin)) << endl;
     cout << "Signal MC: " << setw(12) << sig_counts.at(bins.at(bin)) << " +- " << setw(12) << sqrt(sig_squares.at(bins.at(bin))) << endl;
@@ -249,48 +262,52 @@ void WriteFile(const vector<double> &ttbar_counts, const vector<double> &ttbar_s
     file << "rwght" << ikappa << " lnN             ";
     for(size_t bin = 0; bin < nbins; ++bin){
       if(ikappas.at(bin)==ikappa){
-	double kappa = 1.+kappa_uncerts.at(ikappas.at(bin));
-	file << ' ' << setw(12) << kappa << ' ' << setw(12) << kappa << ' ' << setw(12) << kappa;
+        double kappa = 1.+kappa_uncerts.at(ikappas.at(bin));
+        file << "            - " << setw(12) << kappa << ' ' << setw(12) << kappa;
       }else{
-	file << "            -            -            -";
+        file << "            -            -            -";
       }
     }
     file << '\n';
   }
   for(size_t rbin = 0; rbin < nbins; ++rbin){
-    double sig_wght = sig_squares.at(bins.at(rbin))/sig_counts.at(bins.at(rbin));
-    int sig_raw = max(1,TMath::Nint(sig_counts.at(bins.at(rbin))/sig_wght));
-    sig_wght = sig_counts.at(bins.at(rbin))/sig_raw;
-    file << "sstat" << rbin << " gmN " << setw(12) << sig_raw;
+    double gmn_wght;
+    int gmn_raw;
+    GetGammaParameters(gmn_raw, gmn_wght,
+                       sig_counts.at(bins.at(rbin)),
+                       sig_squares.at(bins.at(rbin)));
+    file << "sstat" << rbin << " gmN " << setw(12) << gmn_raw;
     for(size_t cbin = 0; cbin < nbins; ++cbin){
       if(cbin == rbin){
-	file << ' ' << setw(12) << sig_wght << "            -            -";
+        file << ' ' << setw(12) << gmn_wght << "            -            -";
       }else{
-	file << "            -            -            -";
+        file << "            -            -            -";
       }
     }
     file << '\n';
-    double ttbar_wght = ttbar_squares.at(bins.at(rbin))/ttbar_counts.at(bins.at(rbin));
-    int ttbar_raw = max(1,TMath::Nint(ttbar_counts.at(bins.at(rbin))/ttbar_wght));
-    ttbar_wght = ttbar_counts.at(bins.at(rbin))/ttbar_raw;
-    file << "tstat" << rbin << " gmN " << setw(12) << ttbar_raw;
+
+    GetGammaParameters(gmn_raw, gmn_wght,
+                       ttbar_counts.at(bins.at(rbin)),
+                       ttbar_squares.at(bins.at(rbin)));
+    file << "tstat" << rbin << " gmN " << setw(12) << gmn_raw;
     for(size_t cbin = 0; cbin < nbins; ++cbin){
       if(cbin == rbin){
-	file << "            - " << setw(12) << ttbar_wght << "            -";
+        file << "            - " << setw(12) << gmn_wght << "            -";
       }else{
-	file << "            -            -            -";
+        file << "            -            -            -";
       }
     }
     file << '\n';
-    double other_wght = other_squares.at(bins.at(rbin))/other_counts.at(bins.at(rbin));
-    int other_raw = max(1,TMath::Nint(other_counts.at(bins.at(rbin))/other_wght));
-    other_wght = other_counts.at(bins.at(rbin))/other_raw;
-    file << "ostat" << rbin << " gmN " << setw(12) << other_raw;
+
+    GetGammaParameters(gmn_raw, gmn_wght,
+                       other_counts.at(bins.at(rbin)),
+                       other_squares.at(bins.at(rbin)));
+    file << "ostat" << rbin << " gmN " << setw(12) << gmn_raw;
     for(size_t cbin = 0; cbin < nbins; ++cbin){
       if(cbin == rbin){
-	file << "            -            - " << setw(12) << other_wght;
+        file << "            -            - " << setw(12) << gmn_wght;
       }else{
-	file << "            -            -            -";
+        file << "            -            -            -";
       }
     }
     file << '\n';
@@ -298,4 +315,27 @@ void WriteFile(const vector<double> &ttbar_counts, const vector<double> &ttbar_s
 
   file << flush;
   file.close();
+}
+
+string GetBinName(size_t i){
+  switch(i){
+  case 0: return "low njets, low met, low nb";
+  case 1: return "low njets, low met, high nb";
+  case 2: return "low njets, high met";
+  case 3: return "high njets, low met";
+  case 4: return "high njets, high met";
+  default: return "BAD BIN!!!";
+  }
+}
+
+void GetGammaParameters(int &raw, double &weight,
+                        double sumw, double sumw2){
+  if(sumw>0.){
+    weight = sumw2/sumw;
+    raw = TMath::Nint(sumw/weight);
+    if(raw) weight = sumw/raw;
+  }else{
+    weight = sumw2;
+    raw = 0;
+  }
 }
