@@ -71,6 +71,7 @@ void hfeats::format_tag(){
   tag.ReplaceAll(">=","ge"); tag.ReplaceAll("<=","se");
   tag.ReplaceAll(">","g"); tag.ReplaceAll("<","s"); tag.ReplaceAll("=","");
   tag.ReplaceAll("+","");
+  tag.ReplaceAll("!","not");
 }
 
 sfeats::sfeats(vector<TString> ifile, TString ilabel, int icolor, int istyle, TString icut){
