@@ -18,7 +18,7 @@ public:
   void setDefaultStyle();
   void setHistoStyle(TH1 *h);
   void printValues();
-  void fixYAxis(TH1 *h, TPad *pad);
+  void moveYAxisLabel(TH1 *h, float maxi, bool isLog=false);
   void styleHist(TH1 *h, Int_t color = 1, Int_t fillstyle = 0,
                  Int_t symbol = 8,Double_t size = 0.7, Int_t width = 1);
   void setMarkers(TH1 *h, float Msize=0.6, int Mstyle=20) ;
@@ -32,7 +32,7 @@ public:
   TString confFile, Group;
   int nFont, nPads, nDivisions;
   int CanvasW, CanvasH;
-  float TextSize, TitleSize, LabelSize, xTitleOffset, yTitleOffset, zTitleOffset;
+  float LegendSize, TitleSize, LabelSize, xTitleOffset, yTitleOffset, zTitleOffset;
   float PadRightMargin, PadBottomMargin, PadLeftMargin, PadTopMargin;
 };
 

@@ -10,6 +10,20 @@
 #include "TString.h"
 #include "TH1D.h"
 
+namespace ra4{
+  // Had to define the TColor objects in the cpp
+  enum {
+    c_t1tttt   = 2,
+    c_tt_1l    = 1000, // ucsb_blue
+    c_tt_2l    = 1006, // tar_heel_blue
+    c_wjets    = 1001, // ucsb_gold
+    c_singlet  = kGreen+3,
+    c_ttv      = 1002, // penn_red
+    c_other    = kBlue+4
+  };
+
+}
+
 struct pfeats{
   pfeats(const std::vector<int> &isamples, const TString &icut = "1", const TString &itagname="");
 

@@ -37,9 +37,9 @@ void styles::setDefaultStyle() {
   setGlobalStyle();
   gStyle->SetCanvasDefW(CanvasW);
   gStyle->SetCanvasDefH(CanvasH);
-  gStyle->SetTextSize(TextSize);            // Set global text size
-  gStyle->SetTitleFontSize(TextSize);      // Set top title size
-  gStyle->SetTitleSize(TitleSize,"xyz");     // Set the 2 axes title size
+  gStyle->SetTextSize(LegendSize);            // Set global text size
+  gStyle->SetTitleFontSize(TitleSize);      // Set top title size
+  gStyle->SetTitleSize(LabelSize,"xyz");     // Set the 2 axes title size
   gStyle->SetLabelSize(LabelSize,"xyz");     // Set the 2 axes label size
 
   gStyle->SetTitleOffset(xTitleOffset,"x");     
@@ -84,26 +84,27 @@ void styles::setGroup(TString group){
 // Set default style for the specific group 
 void styles::readGroupStyle() {
   TString inames[] = {"CanvasW", "CanvasH"};
-  TString fnames[] = {"TextSize", "TitleSize", "LabelSize", "PadRightMargin", "PadTopMargin", "PadBottomMargin",
+  TString fnames[] = {"LegendSize", "TitleSize", "LabelSize", "PadRightMargin", "PadTopMargin", "PadBottomMargin",
                       "xTitleOffset", "PadLeftMargin", "yTitleOffset", "zTitleOffset"};
   int   *ivalues[] = {&CanvasW, &CanvasH};
-  float *fvalues[] = {&TextSize,&TitleSize,&LabelSize,&PadRightMargin,&PadTopMargin,&PadBottomMargin,
+  float *fvalues[] = {&LegendSize,&TitleSize,&LabelSize,&PadRightMargin,&PadTopMargin,&PadBottomMargin,
                       &xTitleOffset,&PadLeftMargin,&yTitleOffset,&zTitleOffset};
   parseStyleFile(Group, fnames, fvalues, 10, inames, ivalues, 2);
 }
 
 // Fix for y axes that have too much/little space for the label due to number of digits
-void styles::fixYAxis(TH1 *h, TPad *pad){
-  float maxi = h->GetMaximum()*1.15;
+void styles::moveYAxisLabel(TH1 *h, float maxi, bool isLog){
   int digits = static_cast<int>((log(maxi)/log(10.)+0.001)+1);
   if(digits<2) digits = 2;
-  TString Section = Group; Section += "_Digits_"; Section += digits;  
+  TString Section = Group; 
+  if(isLog)Section += "_Log";
+  else {Section += "_Digits_"; Section += digits;  }
   TString fnames[] = {"PadLeftMargin", "yTitleOffset"};
   float *fvalues[] = {&PadLeftMargin, &yTitleOffset};
-  parseStyleFile(Section, fnames, fvalues, 2, 0, 0, 0);
 
+  parseStyleFile(Section, fnames, fvalues, 2, 0, 0, 0);
   h->SetTitleOffset(yTitleOffset,"y");
-  pad->SetLeftMargin(PadLeftMargin);
+  //pad->SetLeftMargin(PadLeftMargin);
 }
 
 // Test the global style settings for a generic histogram.  
@@ -124,7 +125,7 @@ void styles::testGlobalStyle(bool fixY, float scale) {
   if(nPads == 4) c.Divide(2,2);
   if(nPads == 6) c.Divide(3,2);
   TPad *cPad = static_cast<TPad *>(c.cd(1)); h->Draw();
-  if(fixY) fixYAxis(h,cPad);
+  if(fixY) moveYAxisLabel(h,100);
   setTitles(h, "D^{(*)0/+} channels", "xlabel^{2}_{miss} (GeV^{2})", "Events/(10 MeV^{2})");
   float scales[] = {0.1, 10, 0.01};
   for(int pads = 2; pads<=4; pads++){
@@ -132,7 +133,7 @@ void styles::testGlobalStyle(bool fixY, float scale) {
       cPad = static_cast<TPad*>(c.cd(pads)); 
       hc[pads-2] = static_cast<TH1F*>(h->Clone());
       hc[pads-2]->Scale(scales[pads-2]); 
-      if(fixY) fixYAxis(hc[pads-2],cPad);
+      if(fixY) moveYAxisLabel(hc[pads-2],hc[pads-2]->GetMaximum());
       hc[pads-2]->Draw();
       setTitles(hc[pads-2], "D^{(*)0/+} channels", "xlabel^{2}_{miss} (GeV^{2})", "Events/(1000 MeV^{2})");
     }
@@ -148,7 +149,7 @@ void styles::printValues() {
   cout<<"nDivisions      = " << nDivisions      << endl;
   cout<<"CanvasW         = " << CanvasW         << endl;   
   cout<<"CanvasH         = " << CanvasH         << endl;   
-  cout<<"TextSize        = " << TextSize        << endl;   
+  cout<<"LegendSize      = " << LegendSize      << endl;   
   cout<<"TitleSize       = " << TitleSize       << endl;
   cout<<"LabelSize       = " << LabelSize       << endl;
   cout<<"PadRightMargin  = " << PadRightMargin  << endl;
@@ -172,12 +173,12 @@ void styles::setTitles(TH1 *h, TString xTitle, TString yTitle, TString Left, TSt
   if (0==h) {
     cout << " Histogram not defined" << endl;
   } else {
-    h->SetTitle(""); h->SetXTitle(xTitle); h->SetYTitle(yTitle);
+    h->SetXTitle(xTitle); h->SetYTitle(yTitle);
     TLatex label; label.SetNDC(kTRUE);
-    label.SetTextAlign(13);
-    label.DrawLatex(PadLeftMargin+0.04,1-PadTopMargin-0.03,Left);  
-    label.SetTextAlign(33);
-    label.DrawLatex(1-PadRightMargin-0.02,1-PadTopMargin-0.03,Right);  
+    label.SetTextAlign(11);
+    label.DrawLatex(PadLeftMargin+0.02,1-PadTopMargin+0.02,Left);  
+    label.SetTextAlign(31);
+    label.DrawLatex(1-PadRightMargin-0.02,1-PadTopMargin+0.02,Right);  
   }
 }
 

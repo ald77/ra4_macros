@@ -1,37 +1,59 @@
 [General]
-    nFont	    = 132
+    nFont	    = 42
     nDivisions	    = 708
 
-[Standard]
-    CanvasW	    = 1000
+[RA4]
+    CanvasW	    = 800
     CanvasH	    = 600
-    TextSize	    = 0.069     
-    TitleSize	    = 0.052    
-    LabelSize	    = 0.052     
-    PadRightMargin  = 0.038
-    PadTopMargin    = 0.035
-    PadBottomMargin = 0.12
-    xTitleOffset    = 0.977     
-    PadLeftMargin   = 0.1 
-    yTitleOffset    = 0.82
+    LegendSize	    = 0.05
+    TitleSize	    = 0.045 
+    LabelSize	    = 0.06     
+    PadRightMargin  = 0.047
+    PadTopMargin    = 0.075
+    PadBottomMargin = 0.14
+    xTitleOffset    = 1.1     
+    PadLeftMargin   = 0.175
+    yTitleOffset    = 1.5
 
-[Standard_Digits_2]
-    PadLeftMargin   = 0.09 
-    yTitleOffset    = 0.65 
-[Standard_Digits_3]
-    PadLeftMargin   = 0.1 
-    yTitleOffset    = 0.71 
-[Standard_Digits_4]
-    PadLeftMargin   = 0.11 
-    yTitleOffset    = 0.85 
-[Standard_Digits_5]
-    PadLeftMargin   = 0.13 
-    yTitleOffset    = 1. 
+[RA4_Log]
+    yTitleOffset    = 1.2
+[RA4_Digits_2]
+    yTitleOffset    = 1.
+[RA4_Digits_3]
+    yTitleOffset    = 1.28
+[RA4_Digits_4]
+    yTitleOffset    = 1.5
+[RA4_Digits_5]
+    yTitleOffset    = 1.55
+
+[CMSPaper]
+    CanvasW	    = 600
+    CanvasH	    = 600
+    LegendSize	    = 0.054
+    TitleSize	    = 0.043
+    LabelSize	    = 0.06     
+    PadRightMargin  = 0.05
+    PadTopMargin    = 0.075
+    PadBottomMargin = 0.14
+    xTitleOffset    = 1.1     
+    PadLeftMargin   = 0.19
+    yTitleOffset    = 1.5
+
+[CMSPaper_Log]
+    yTitleOffset    = 1.45
+[CMSPaper_Digits_2]
+    yTitleOffset    = 1.3
+[CMSPaper_Digits_3]
+    yTitleOffset    = 1.45
+[CMSPaper_Digits_4]
+    yTitleOffset    = 1.65
+[CMSPaper_Digits_5]
+    yTitleOffset    = 1.55
 
 [LargeLabels]
     CanvasW	    = 1000
     CanvasH	    = 660
-    TextSize	    = 0.055     
+    LegendSize	    = 0.055     
     TitleSize	    = 0.07    
     LabelSize	    = 0.065     
     PadRightMargin  = 0.042
@@ -41,23 +63,10 @@
     PadLeftMargin   = 0.131
     yTitleOffset    = 0.92
 
-[Paper]
-    CanvasW	    = 1000
-    CanvasH	    = 660
-    TextSize	    = 0.075     
-    TitleSize	    = 0.057    
-    LabelSize	    = 0.057     
-    PadRightMargin  = 0.038
-    PadTopMargin    = 0.1
-    PadBottomMargin = 0.132
-    xTitleOffset    = 1.0     
-    PadLeftMargin   = 0.11 
-    yTitleOffset    = 0.89
-
 [1Dtitle]
     CanvasW	    = 1000
     CanvasH	    = 600
-    TextSize	    = 0.069     
+    LegendSize	    = 0.069     
     TitleSize	    = 0.052    
     LabelSize	    = 0.052     
     PadRightMargin  = 0.038
@@ -70,7 +79,7 @@
 [2D]
     CanvasW	    = 1000
     CanvasH	    = 600
-    TextSize	    = 0.069     
+    LegendSize	    = 0.069     
     TitleSize	    = 0.05    
     LabelSize	    = 0.05     
     PadRightMargin  = 0.1
@@ -84,7 +93,7 @@
 [2Dtitle]
     CanvasW	    = 1000
     CanvasH	    = 600
-    TextSize	    = 0.069     
+    LegendSize	    = 0.069     
     TitleSize	    = 0.05    
     LabelSize	    = 0.05     
     PadRightMargin  = 0.15

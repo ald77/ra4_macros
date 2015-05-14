@@ -16,11 +16,11 @@
 #include "utilities.hpp"
 #include "utilities_macros.hpp"
 
-namespace ra4 {
+namespace localnames {
     TString luminosity="10";
 }
 
-using namespace ra4;
+using namespace localnames;
 
 using namespace std;
 using std::cout;
