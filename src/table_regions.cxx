@@ -17,9 +17,9 @@
 #include "utilities_macros.hpp"
 
 namespace ra4 {
-  TString luminosity="3";
+  TString luminosity="10";
   bool do_zbi=false;
-  bool do_8j=true;
+  bool do_8j=false;
 }
 
 using namespace ra4;
@@ -33,7 +33,7 @@ TString YieldsCut(TString title, TString cuts, vector<TChain*> chain, vector<sfe
 int main(){
 
   // Reading ntuples
-  TString folder="archive/15-05-02/skim/";
+  TString folder="/cms5r0/ald77/archive/2015_05_10/skim/";
   vector<TString> s_tt;
   s_tt.push_back(folder+"*_TTJet*");
   vector<TString> s_wjets;
@@ -77,9 +77,11 @@ int main(){
   if(!do_zbi) fom = "S/B";
   TString name = "txt/ra4_regions_lumi"+luminosity+".tex";
   TString cuts_1l("(nmus+nels)==1&&ht>500&&met>200&&nbm>=2&&njets>=6");
+  TString cuts_1l1b("(nmus+nels)==1&&ht>500&&met>200&&nbm==1&&njets>=6");
   TString cuts_2l("(nmus+nels)==2&&ht>500&&met>200&&nbm==1&&njets>=5");
   TString cuts_2lbb("(nmus+nels)==2&&ht>500&&met>200&&nbm==2&&njets>=5");
   TString cuts_1ltex("$H_T>500, \\mathrm{MET}>200, n_{\\rm jets}\\geq 6, n_b\\geq 2, n_{\\rm lep}=1$");
+  TString cuts_1l1btex("$H_T>500, \\mathrm{MET}>200, n_{\\rm jets}\\geq 6, n_b=1, n_{\\rm lep}=1$");
   TString cuts_2ltex("$H_T>500, \\mathrm{MET}>200, n_{\\rm jets}\\geq 5, n_b=1, n_{\\rm lep}=2$");
   TString cuts_2lbbtex("$H_T>500, \\mathrm{MET}>200, n_{\\rm jets}\\geq 5, n_b=2, n_{\\rm lep}=2$");
   if(do_8j){
@@ -91,17 +93,21 @@ int main(){
     cuts_2ltex.ReplaceAll("5,","7,");
     cuts_2lbbtex.ReplaceAll("5,","7,");
   }
+  if(do_zbi){
+    name.ReplaceAll("regions","regions_zbi");
+  }
 
   ifstream header("txt/header.tex");
   ifstream footer("txt/footer.tex");
   ofstream file(name);
   file<<header.rdbuf();
-  file << "\n\\begin{tabular}{ l | ";
+  file<<"\\vspace{80 mm}\n";
+  file << "\n\\begin{tabular}[!htb]{ l | ";
   for(unsigned sam(0); sam < Samples.size()-nsig; sam++) file << "r";
   file<<" | r ";
   for(int sam(0); sam < nsig; sam++) file<<"| rr ";
   file<<"}\\hline\\hline\n";
-  file << " \\multicolumn{1}{c|}{${\\cal L} = 10$ fb$^{-1}$} ";
+  file << " \\multicolumn{1}{c|}{${\\cal L} = "<<luminosity<<"$ fb$^{-1}$} ";
   for(unsigned sam(0); sam < Samples.size()-nsig; sam++)
     file << " & "<<Samples[sam].label;
   file<< " & SM bkg. ";
@@ -111,27 +117,54 @@ int main(){
 
   //////////////////////////////////// RA4 regions //////////////////////////////////
   file << " \\multicolumn{"<< Samples.size()+1+nsig<<"}{c}{"
-       << cuts_1ltex  <<"} \\\\ \\hline\n";
-  file << YieldsCut("$m_T  < 150,m_J< 600$      ", "mj<600&&mt<150&&"+cuts_1l, chain, Samples, nsig);
-  file << YieldsCut("$m_T  < 150,m_J\\geq 600$  ", "mj>=600&&mt<150&&"+cuts_1l, chain, Samples, nsig);
-  file << YieldsCut("$m_T\\geq 150,m_J< 600$    ", "mj<600&&mt>=150&&"+cuts_1l, chain, Samples, nsig);
-  file << YieldsCut("$m_T\\geq 150,m_J\\geq 600$", "mj>=600&&mt>=150&&"+cuts_1l, chain, Samples, nsig);
+       << cuts_1ltex  <<"} \\\\ \\hline \\hline\n";
+  file << YieldsCut("R1: $m_T  \\leq 140,m_J\\leq 500$      ", "mj<=500&&mt<=140&&"+cuts_1l, chain, Samples, nsig);
+  file << YieldsCut("R2: $m_T  \\leq 140,m_J> 500$  ", "mj>500&&mt<=140&&"+cuts_1l, chain, Samples, nsig);
+  file <<"\\hline\n";
+  file << YieldsCut("\\hspace{5 mm} low nj  ", "mj>500&&mt<=140&&njets<=7&&"+cuts_1l, chain, Samples, nsig);
+  file << YieldsCut("\\hspace{5 mm} high nj  ", "mj>500&&mt<=140&&njets>=8&&"+cuts_1l, chain, Samples, nsig);
+  file <<"\\hline\n";
+  file << YieldsCut("R3: $m_T > 140,m_J \\leq 500$    ", "mj<=500&&mt>140&&"+cuts_1l, chain, Samples, nsig);
+  file << YieldsCut("\\hspace{5 mm} low nb  ", "mj<=500&&mt>140&&nbm==2&&"+cuts_1l, chain, Samples, nsig);
+  file << YieldsCut("\\hspace{5 mm} high nb  ", "mj<=500&&mt>140&&nbm>=3&&"+cuts_1l, chain, Samples, nsig);
+  file <<"\\hline\n";
+  file << YieldsCut("R4: $m_T > 140,m_J > 500$", "mj>500&&mt>140&&"+cuts_1l, chain, Samples, nsig);
+  
+  file <<"\\hline\n";
+  file <<"\\hline\n";
+
+  file << YieldsCut("Bin 0: R4, low nj, low MET, low nb", "mj>500&&mt>140&&njets<=7&&met<=400&&nbm==2&&"+cuts_1l, chain, Samples, nsig);
+  file << YieldsCut("Bin 1: R4, low nj, low MET, high nb", "mj>500&&mt>140&&njets<=7&&met<=400&&nbm>=3&&"+cuts_1l, chain, Samples, nsig);
+  file << YieldsCut("Bin 0+1: R4, low nj, low MET, all nb", "mj>500&&mt>140&&njets<=7&&met<=400&&"+cuts_1l, chain, Samples, nsig);
+  file << YieldsCut("Bin 2: R4, low nj, high MET, all nb", "mj>500&&mt>140&&njets<=7&&met>400&&"+cuts_1l, chain, Samples, nsig);
+  file<<"\\hline\n";
+  file << YieldsCut("\\hspace{5 mm} low nb", "mj>500&&mt>140&&njets<=7&&met>400&&nbm==2&&"+cuts_1l, chain, Samples, nsig);
+  file << YieldsCut("\\hspace{5 mm} high nb", "mj>500&&mt>140&&njets<=7&&met>400&&nbm>=3&&"+cuts_1l, chain, Samples, nsig);
+  file<<"\\hline\n";
+  file << YieldsCut("Bin 3: R4, high nj, low MET, all nb", "mj>500&&mt>140&&njets>=8&&met<=400&&"+cuts_1l, chain, Samples, nsig);
+  file << YieldsCut("Bin 4: R4, high nj, high MET, all nb", "mj>500&&mt>140&&njets>=8&&met>400&&"+cuts_1l, chain, Samples, nsig);
+  file << "\\hline \n";
+  file << YieldsCut("\\hspace{5 mm} low nb", "mj>500&&mt>140&&njets>=8&&met>400&&nbm==2&&"+cuts_1l, chain, Samples, nsig);
+  file << YieldsCut("\\hspace{5 mm} high nb", "mj>500&&mt>140&&njets>=8&&met>400&&nbm>=3&&"+cuts_1l, chain, Samples, nsig);
+
+  file << "\\hline \\hline\\multicolumn{"<< Samples.size()+1+nsig<<"}{c}{"
+       <<cuts_2ltex <<"} \\\\ \\hline \\hline\n";
+  file << YieldsCut("$m_J \\leq 500$", "mj <= 500&&"+cuts_2l, chain, Samples, nsig);
+  file << YieldsCut("$m_J > 500$", "mj>500&&"+cuts_2l, chain, Samples, nsig);
+  file <<"\\hline\n";
+  file << YieldsCut("\\hspace{5 mm} low nj", "mj>500&&njets<=6&&"+cuts_2l, chain, Samples, nsig);
+  file << YieldsCut("\\hspace{5 mm} high nj", "mj>500&&njets>=7&&"+cuts_2l, chain, Samples, nsig);
+
+  file << "\\hline \\hline\\multicolumn{"<< Samples.size()+1+nsig<<"}{c}{"
+       << cuts_2lbbtex<<"} \\\\ \\hline \\hline\n";
+  file << YieldsCut("$m_J \\leq 500$", "mj<=500&&"+cuts_2lbb, chain, Samples, nsig);
+  file << YieldsCut("$m_J > 500$", "mj>500&&"+cuts_2lbb, chain, Samples, nsig);
+  file <<"\\hline\n";
+  file << YieldsCut("\\hspace{5 mm} low nj", "mj>500&&njets<=6&&"+cuts_2lbb, chain, Samples, nsig);
+  file << YieldsCut("\\hspace{5 mm} high nj", "mj>500&&njets>=7&&"+cuts_2lbb, chain, Samples, nsig);
 
 
-  file << "\\hline\\multicolumn{"<< Samples.size()+1+nsig<<"}{c}{"
-       <<cuts_2ltex <<"} \\\\ \\hline\n";
-  file << YieldsCut("$m_J< 600$", "mj<600&&"+cuts_2l, chain, Samples, nsig);
-  file << YieldsCut("$m_J\\geq 600$", "mj>=600&&"+cuts_2l, chain, Samples, nsig);
-
-  file << "\\hline\\multicolumn{"<< Samples.size()+1+nsig<<"}{c}{"
-       << cuts_2lbbtex<<"} \\\\ \\hline\n";
-  file << YieldsCut("$m_J< 600$", "mj<600&&"+cuts_2lbb, chain, Samples, nsig);
-  file << YieldsCut("$m_J\\geq 600$", "mj>=600&&"+cuts_2lbb, chain, Samples, nsig);
-
-
-
-
-  file << " \\hline\\multicolumn{1}{c|}{} ";
+  file << "\\hline\\multicolumn{1}{c|}{} ";
   for(unsigned sam(0); sam < Samples.size()-nsig; sam++)
     file << " & "<<Samples[sam].label;
   file<< " & SM bkg. ";
