@@ -42,7 +42,12 @@ int main(int argc, char *argv[]){
   other.Add(folder+"*ZJetsToLNu_HT*");
   other.Add(folder+"*DYJets*");
   other.Add(folder+"*H_HToBB*");
-  small_tree_quick sig(folder+"*T1tttt*1500*100*");
+  small_tree_quick *sig;
+  if(compressed){
+    sig = new small_tree_quick(folder+"*T1tttt*1200*800*");
+  }else{
+    sig = new small_tree_quick(folder+"*T1tttt*1500*100*");
+  }
 
   vector<double> ttbar_raw, ttbar_wght;
   vector<double> other_raw, other_wght;
@@ -50,7 +55,7 @@ int main(int argc, char *argv[]){
 
   GetCounts(lumi, ttbar, ttbar_raw, ttbar_wght);
   GetCounts(lumi, other, other_raw, other_wght);
-  GetCounts(lumi, sig, sig_raw, sig_wght);
+  GetCounts(lumi, *sig, sig_raw, sig_wght);
 
   vector<double> mc_raw, mc_wght;
   GetMCTotals(mc_raw, mc_wght,
