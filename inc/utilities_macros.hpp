@@ -60,5 +60,6 @@ void calc_chi2(TH1D *histo, float &chi2, int &ndof, float &pvalue, float &averag
 
 void plot_distributions(std::vector<sfeats> Samples, std::vector<hfeats> vars, TString luminosity="10", 
 			TString filetype=".eps", TString namestyle="LargeLabels");
+TString cuts2title(TString title);
 
 #endif

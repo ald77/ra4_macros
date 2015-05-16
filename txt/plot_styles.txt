@@ -77,30 +77,30 @@
     yTitleOffset    = 0.82
 
 [2D]
-    CanvasW	    = 1000
+    CanvasW	    = 800
     CanvasH	    = 600
-    LegendSize	    = 0.069     
-    TitleSize	    = 0.05    
-    LabelSize	    = 0.05     
-    PadRightMargin  = 0.1
-    PadTopMargin    = 0.08
-    PadBottomMargin = 0.12
-    xTitleOffset    = 0.977     
-    PadLeftMargin   = 0.1 
-    yTitleOffset    = 0.82
-    zTitleOffset    = 0.82
+    LegendSize	    = 0.05
+    TitleSize	    = 0.045 
+    LabelSize	    = 0.054    
+    PadRightMargin  = 0.155
+    PadTopMargin    = 0.075
+    PadBottomMargin = 0.14
+    xTitleOffset    = 1.1     
+    PadLeftMargin   = 0.13
+    yTitleOffset    = 1.1
+    zTitleOffset    = 0.95
 
 [2Dtitle]
-    CanvasW	    = 1000
+    CanvasW	    = 800
     CanvasH	    = 600
-    LegendSize	    = 0.069     
-    TitleSize	    = 0.05    
-    LabelSize	    = 0.05     
-    PadRightMargin  = 0.15
-    PadTopMargin    = 0.1
-    PadBottomMargin = 0.12
-    xTitleOffset    = 0.977     
-    PadLeftMargin   = 0.1 
-    yTitleOffset    = 0.82
-    zTitleOffset    = 0.82
+    LegendSize	    = 0.05
+    TitleSize	    = 0.045 
+    LabelSize	    = 0.054    
+    PadRightMargin  = 0.155
+    PadTopMargin    = 0.075
+    PadBottomMargin = 0.14
+    xTitleOffset    = 1.1     
+    PadLeftMargin   = 0.13
+    yTitleOffset    = 1.1
+    zTitleOffset    = 0.95
 

@@ -48,7 +48,7 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
   float minLog = 0.04, fracLeg = 0.36; // Fraction of the histo pad devoted to the legend
 
   double legLeft(style.PadLeftMargin+0.03), legRight(1-style.PadRightMargin-0.02);
-  double legY(0.905), legSingle = 0.052;
+  double legY(0.902), legSingle = 0.052;
   double legW = 0.13, legH = legSingle*(vars[0].samples.size()+1)/2;
   double legX1[] = {legLeft, legLeft+(legRight-legLeft)/2.*1.15};
   TLegend leg[2]; int nLegs(2);
@@ -67,23 +67,11 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
   for(unsigned var(0); var<vars.size(); var++){
     const unsigned Nsam(vars[var].samples.size());
     legH = (Nsam<=3?legSingle*Nsam:legSingle*(Nsam+1)/2);
-    fracLeg = legH/(1-style.PadTopMargin-style.PadBottomMargin)*1.15;
+    fracLeg = legH/(1-style.PadTopMargin-style.PadBottomMargin)*1.2;
     for(int ileg(0); ileg<nLegs; ileg++) leg[ileg].SetY1NDC(legY-legH); 
     cout<<endl;
     // Generating vector of histograms
-    title = vars[var].cuts; if(title=="1") title = "";
-    title.ReplaceAll("Sum$(abs(mc_id)==11)>0","");title.ReplaceAll("Sum$(abs(mc_id)==13)>0","");
-    title.ReplaceAll("nvmus==1&&nmus==1&&nvels==0","1 #mu");
-    title.ReplaceAll("nvmus10==0&&nvels10==0", "0 leptons");  
-    title.ReplaceAll("(nmus+nels)", "n_{lep}");  title.ReplaceAll("njets30","n_{jets}^{30}"); 
-    title.ReplaceAll("els_pt","p^{e}_{T}");title.ReplaceAll("mus_pt","p^{#mu}_{T}");
-    title.ReplaceAll("mus_reliso","RelIso"); title.ReplaceAll("els_reliso","RelIso");
-    title.ReplaceAll("mus_miniso_tr15","MiniIso"); title.ReplaceAll("els_miniso_tr15","MiniIso");
-    title.ReplaceAll("njets","n_{jets}");title.ReplaceAll("abs(lep_id)==13&&","");
-    title.ReplaceAll(">=", " #geq "); title.ReplaceAll(">", " > "); title.ReplaceAll("&&", ", "); 
-    title.ReplaceAll("met", "MET"); title.ReplaceAll("ht", "H_{T}");  title.ReplaceAll("mt", "m_{T}"); 
-    title.ReplaceAll("nleps==1", "1 lepton");  title.ReplaceAll("nbm","n_{b}"); title.ReplaceAll("==", " = "); 
-    title.ReplaceAll("nbl[1]","n_{b,l}");
+    title = cuts2title(vars[var].cuts); 
     if(namestyle=="CMSPaper") title = "";
     for(unsigned his(0); his < 2; his++){
       varhisto.resize(0);
@@ -211,7 +199,7 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
       if(namestyle!="CMSPaper") {
 	leghisto += " [#mu=";
 	int digits(0);
-	if(histo[1][var][sam]->GetMean()<50) digits = 1;
+	if(histo[1][var][sam]->GetMean()<30) digits = 1;
 	leghisto += RoundNumber(histo[1][var][sam]->GetMean(),digits) + "]";
       }
       unsigned ileg = (Nsam<=3?0:legcount>=(Nsam+1)/2);
@@ -241,6 +229,27 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
 	if(histo[his][var][sam]) histo[his][var][sam]->Delete();
     }
   }
+}
+
+TString cuts2title(TString title){
+  if(title=="1") title = "";
+  title.ReplaceAll("Sum$(abs(mc_id)==11)>0","");title.ReplaceAll("Sum$(abs(mc_id)==13)>0","");
+  title.ReplaceAll("Sum$(genels_pt>15)", "n^{true}_{e}");
+  title.ReplaceAll("Sum$(genmus_pt>15)", "n^{true}_{#mu}");
+  title.ReplaceAll("onmet", "MET"); title.ReplaceAll("onht", "H_{T}");  
+  title.ReplaceAll("nvmus==1&&nmus==1&&nvels==0","1 #mu");
+  title.ReplaceAll("nvmus10==0&&nvels10==0", "0 leptons");  
+  title.ReplaceAll("(nmus+nels)", "n_{lep}");  title.ReplaceAll("njets30","n_{jets}^{30}"); 
+  title.ReplaceAll("els_pt","p^{e}_{T}");title.ReplaceAll("mus_pt","p^{#mu}_{T}");
+  title.ReplaceAll("mus_reliso","RelIso"); title.ReplaceAll("els_reliso","RelIso");
+  title.ReplaceAll("mus_miniso_tr15","MiniIso"); title.ReplaceAll("els_miniso_tr15","MiniIso");
+  title.ReplaceAll("njets","n_{jets}");title.ReplaceAll("abs(lep_id)==13&&","");
+  title.ReplaceAll(">=", " #geq "); title.ReplaceAll(">", " > "); title.ReplaceAll("&&", ", "); 
+  title.ReplaceAll("met", "MET"); title.ReplaceAll("ht", "H_{T}");  title.ReplaceAll("mt", "m_{T}"); 
+  title.ReplaceAll("nleps==1", "1 lepton");  title.ReplaceAll("nbm","n_{b}"); title.ReplaceAll("==", " = "); 
+  title.ReplaceAll("nbl[1]","n_{b,l}");
+
+  return title;
 }
 
 
