@@ -233,9 +233,10 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
 
 TString cuts2title(TString title){
   if(title=="1") title = "";
-  title.ReplaceAll("Sum$(abs(mc_id)==11)>0","");title.ReplaceAll("Sum$(abs(mc_id)==13)>0","");
-  title.ReplaceAll("Sum$(genels_pt>15)", "n^{true}_{e}");
-  title.ReplaceAll("Sum$(genmus_pt>15)", "n^{true}_{#mu}");
+  title.ReplaceAll("Sum$(abs(mc_id)==11)","n^{true}_{e}");
+  title.ReplaceAll("Sum$(abs(mc_id)==13)","n^{true}_{#mu}");
+  title.ReplaceAll("Sum$(genels_pt>0)", "n^{true}_{e}");
+  title.ReplaceAll("Sum$(genmus_pt>0)", "n^{true}_{#mu}");
   title.ReplaceAll("onmet", "MET"); title.ReplaceAll("onht", "H_{T}");  
   title.ReplaceAll("nvmus==1&&nmus==1&&nvels==0","1 #mu");
   title.ReplaceAll("nvmus10==0&&nvels10==0", "0 leptons");  
