@@ -249,6 +249,7 @@ TString cuts2title(TString title){
   title.ReplaceAll("met", "MET"); title.ReplaceAll("ht", "H_{T}");  title.ReplaceAll("mt", "m_{T}"); 
   title.ReplaceAll("nleps==1", "1 lepton");  title.ReplaceAll("nbm","n_{b}"); title.ReplaceAll("==", " = "); 
   title.ReplaceAll("nbl[1]","n_{b,l}");
+  title.ReplaceAll("mj", " M_{J}");
 
   return title;
 }
@@ -309,6 +310,20 @@ void hfeats::format_tag(){
   tag.ReplaceAll(">","g"); tag.ReplaceAll("<","s"); tag.ReplaceAll("=","");
   tag.ReplaceAll("+",""); tag.ReplaceAll("&","");
   tag.ReplaceAll("!","not");
+}
+
+TString format_tag(TString tag){
+
+  tag.ReplaceAll(".","");
+  tag.ReplaceAll("(",""); tag.ReplaceAll("$","");  tag.ReplaceAll(")","");
+  tag.ReplaceAll("[",""); tag.ReplaceAll("]",""); tag.ReplaceAll("||","_");
+  tag.ReplaceAll("/","_"); tag.ReplaceAll("*",""); tag.ReplaceAll("&&","_");
+  tag.ReplaceAll(">=","ge"); tag.ReplaceAll("<=","se");
+  tag.ReplaceAll(">","g"); tag.ReplaceAll("<","s"); tag.ReplaceAll("=","");
+  tag.ReplaceAll("+",""); tag.ReplaceAll("&","");
+  tag.ReplaceAll("!","not");
+
+  return tag;
 }
 
 sfeats::sfeats(vector<TString> ifile, TString ilabel, int icolor, int istyle, TString icut){
