@@ -18,7 +18,7 @@ using namespace std;
 
 int main(int argc, char *argv[]){
   bool include_signal = false; //Include signal when mocking up data from MC?
-  string folder = "archive/current/skim/";
+  string folder = "/cms5r0/ald77/archive/2015_05_21/skim/";
 
   double lumi = 10.;
   string lumi_string = "10";
@@ -103,6 +103,7 @@ void GetCounts(double lumi,
        || tree.njets()<6
        || (tree.nmus()+tree.nels())!=1
        || tree.met()<=200.
+       || tree.ntks_chg_mini()>0
        || tree.ht()<=500.) continue;
 
     size_t bin = LookUpBin(tree);
@@ -135,7 +136,7 @@ void GetCounts(double lumi,
 
 size_t LookUpBin(small_tree_quick &tree){
   double mt_thresh = 140.;
-  double mj_thresh = 500.;
+  double mj_thresh = 400.;
   double njets_thresh = 7.5;
   double met_thresh = 400.;
   double nbm_thresh = 2.5;
@@ -155,6 +156,7 @@ size_t LookUpBin(small_tree_quick &tree){
     }else{
       if(tree.njets()<=njets_thresh){
         if(tree.met()<=met_thresh){
+	  return 5;
           if(tree.nbm()<=nbm_thresh){
             return 4;
           }else{
@@ -248,7 +250,7 @@ void WriteFile(const vector<double> &ttbar_raw, const vector<double> &ttbar_wght
                const vector<double> &kappas, const vector<double> &kappa_uncerts,
                const vector<double> &data_counts, const string &lumi_string, bool compressed){
   vector<size_t> bins(0), ikappas(0);
-  bins.push_back(4); ikappas.push_back(0);
+  //bins.push_back(4); ikappas.push_back(0);
   bins.push_back(5); ikappas.push_back(0);
   bins.push_back(6); ikappas.push_back(0);
   bins.push_back(7); ikappas.push_back(1);

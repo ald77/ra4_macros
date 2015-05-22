@@ -27,8 +27,8 @@ void MakeGraph(TString baseline,vector<TString> external,TString ratio_cut, vect
 
 int main(){
   TString luminosity = "10";
-  TString folder="/cms5r0/ald77/archive/2015_05_10/skim/";
-  TString folder_noskim="/cms5r0/ald77/archive/2015_05_10/";
+  TString folder="/cms5r0/ald77/archive/2015_05_21/skim/";
+  TString folder_noskim="/cms5r0/ald77/archive/2015_05_21/";
   vector<TString> s_t1t;
   s_t1t.push_back(folder+"*T1tttt*1500_*PU20*");
   vector<TString> s_t1tc;
@@ -55,9 +55,9 @@ int main(){
   Samples.push_back(sfeats(s_t1t, "T1tttt(1500,100)", ra4::c_t1tttt));//0
   Samples.push_back(sfeats(s_t1tc, "T1tttt(1200,800)", ra4::c_t1tttt,2));//1
   Samples.push_back(sfeats(s_tt, "t#bar{t}, 1 l", ra4::c_tt_1l, 1,
-			   "((mc_type&0x0F00)/0x100+(mc_type&0x000F)-(mc_type&0x00F0)/0x10)<=1"));//2
+			   "ntruleps<=1"));//2
   Samples.push_back(sfeats(s_tt, "t#bar{t}, 2 l", ra4::c_tt_2l,1,
-			   "((mc_type&0x0F00)/0x100+(mc_type&0x000F)-(mc_type&0x00F0)/0x10)>=2"));//3
+			   "ntruleps>=2"));//3
   Samples.push_back(sfeats(s_wjets, "W+jets", ra4::c_wjets));//4
   Samples.push_back(sfeats(s_singlet, "Single t", ra4::c_singlet));//5
   Samples.push_back(sfeats(s_ttv, "ttV", ra4::c_ttv));//6
@@ -98,7 +98,7 @@ int main(){
   //  const int nR=5;
   TString baseline = "ht>500&&met>200&&nbm>=2&&(nmus+nels)==1";
   TString baseline_no_lep = "ht>500&&met>200&&nbm>=2";
-   TString baseline1b = "ht>500&&met>200&&nbm>=1&&(nmus+nels)==1";
+  TString baseline1b = "ht>500&&met>200&&nbm>=1&&(nmus+nels)==1";
   //TString external[nR] = {"njets==4","njets==5","njets==6","njets==7","njets>=8"};
   vector<TString> externalvec;
   externalvec.push_back("njets==4");externalvec.push_back("njets==5");externalvec.push_back("njets==6");externalvec.push_back("njets==7");externalvec.push_back("njets>=8");
@@ -109,8 +109,8 @@ int main(){
   vector<TString> externalvec2;
   externalvec2.push_back("njets>=6&&njets<=7&&nbm==1");externalvec2.push_back("njets>=6&&njets<=7&&nbm==2");externalvec2.push_back("njets>=6&&njets<=7&&nbm>=3");externalvec2.push_back("njets>=8&&nbm==1");externalvec2.push_back("njets>=8&&nbm==2");externalvec2.push_back("njets>=8&&nbm>=3");
   /*vector<TString> cosmetic2;
-  cosmetic2.push_back("n_{B}=1, n_{j}=6-7");cosmetic2.push_back("n_{B}=2, n_{j}=6-7");cosmetic2.push_back("n_{B}=3+, n_{j}=6-7");
-  cosmetic2.push_back("n_{B}=1, n_{j}=8+");cosmetic2.push_back("n_{B}=2, n_{j}=8+");cosmetic2.push_back("n_{B}=3+, n_{j}=8+");*/
+    cosmetic2.push_back("n_{B}=1, n_{j}=6-7");cosmetic2.push_back("n_{B}=2, n_{j}=6-7");cosmetic2.push_back("n_{B}=3+, n_{j}=6-7");
+    cosmetic2.push_back("n_{B}=1, n_{j}=8+");cosmetic2.push_back("n_{B}=2, n_{j}=8+");cosmetic2.push_back("n_{B}=3+, n_{j}=8+");*/
   TString ratio_cut = "mt>140";
 
   // MakeGraph(baseline,externalvec,ratio_cut,sfeats(s_tt, "t#bar{t}", 15, 1),luminosity);
@@ -134,11 +134,11 @@ int main(){
   MakeGraph(baseline1b,externalvec2,ratio_cut,samples_MJ2,luminosity);
 
     
-  MakeGraph(baseline1b+"&&((mc_type&0x0F00)/0x100+(mc_type&0x000F)-(mc_type&0x00F0)/0x10)<=1",externalvec2,ratio_cut,samples_MJ,luminosity);
-  MakeGraph(baseline1b+"&&((mc_type&0x0F00)/0x100+(mc_type&0x000F)-(mc_type&0x00F0)/0x10)>=2",externalvec2,ratio_cut,samples_MJ,luminosity);
+  MakeGraph(baseline1b+"&&ntruleps<=1",externalvec2,ratio_cut,samples_MJ,luminosity);
+  MakeGraph(baseline1b+"&&ntruleps>=2",externalvec2,ratio_cut,samples_MJ,luminosity);
   
-  MakeGraph(baseline1b+"&&((mc_type&0x0F00)/0x100+(mc_type&0x000F)-(mc_type&0x00F0)/0x10)<=1",externalvec2,ratio_cut,samples_MJ2,luminosity);
-  MakeGraph(baseline1b+"&&((mc_type&0x0F00)/0x100+(mc_type&0x000F)-(mc_type&0x00F0)/0x10)>=2",externalvec2,ratio_cut,samples_MJ2,luminosity);
+  MakeGraph(baseline1b+"&&ntruleps<=1",externalvec2,ratio_cut,samples_MJ2,luminosity);
+  MakeGraph(baseline1b+"&&ntruleps>=2",externalvec2,ratio_cut,samples_MJ2,luminosity);
   
   ratio_cut = "mj>400";
   vector<sfeats> samples_mT;
@@ -147,6 +147,7 @@ int main(){
   samples_mT.push_back(sfeats(s_tt, "t#bar{t} reco dilepton", 8, 1,"(nmus+nels)==2"));
   MakeGraph(baseline_no_lep,externalvec,ratio_cut,samples_mT,luminosity);
   MakeGraph(baseline_no_lep,externalvec_nobjs,ratio_cut,samples_mT,luminosity);
+
   ratio_cut = "mj>500";
   MakeGraph(baseline_no_lep,externalvec,ratio_cut,samples_mT,luminosity);
   MakeGraph(baseline_no_lep,externalvec_nobjs,ratio_cut,samples_mT,luminosity);
@@ -157,7 +158,7 @@ int main(){
 
   
   // MakeGraph(baseline+"&&mj>400",externalvec,ratio_cut,sfeats(s_tt, "t#bar{t}", 15, 1),luminosity);
-  //MakeGraph(baseline+"&&mj<=400",externalvec,ratio_cut,sfeats(s_tt, "t#bar{t}", 15, 1),luminosity);
+  // MakeGraph(baseline+"&&mj<=400",externalvec,ratio_cut,sfeats(s_tt, "t#bar{t}", 15, 1),luminosity);
 
   
 }
@@ -173,18 +174,16 @@ void MakeGraph(TString baseline,vector<TString> external,TString ratio_cut, vect
   vector<TGraphErrors*> graphs;
   TGraphErrors* kappas;
   float max = 0.01;
-    int nR = static_cast<int>(external.size());
-    vector<double> x;
-    vector<double> x_err;
+  int nR = static_cast<int>(external.size());
+  vector<double> x;
+  vector<double> x_err;
   for(int isam = 0; isam<nsamples; isam++){
     /*double R[nR];
-    double R_err[nR];
-    double x[nR];
-    double x_err[nR];*/
+      double R_err[nR];
+      double x[nR];
+      double x_err[nR];*/
     vector<double> R;
     vector<double> R_err;
-    
-    
   
     for(int iR=0;iR<nR;iR++){
       double rholder;
@@ -202,9 +201,9 @@ void MakeGraph(TString baseline,vector<TString> external,TString ratio_cut, vect
     TGraphErrors *g = new TGraphErrors(nR,&x[0],&R[0],&x_err[0],&R_err[0]);
     graphs.push_back(g);
     
-  for(int imax = 0;imax<nR;imax++){
-    if(R[imax]>max) max=R[imax];
-  }
+    for(int imax = 0;imax<nR;imax++){
+      if(R[imax]>max) max=R[imax];
+    }
   }
 
 
@@ -227,7 +226,7 @@ void MakeGraph(TString baseline,vector<TString> external,TString ratio_cut, vect
   styles style("RA4"); style.setDefaultStyle();
   TCanvas can;
   //TPad *pad = static_cast<TPad *>(can.cd());
-  TString plot_tag("_lumi"+luminosity+".pdf");
+  TString plot_tag("_lumi"+luminosity+".eps");
 
   
   //make hist to define pad with labels on x-axis
@@ -245,10 +244,10 @@ void MakeGraph(TString baseline,vector<TString> external,TString ratio_cut, vect
   else {if(ratio_cut.Contains("400")) h->GetYaxis()->SetTitle("R_{MJ 400}");
     if(ratio_cut.Contains("500")) h->GetYaxis()->SetTitle("R_{MJ 500}");
     if(ratio_cut.Contains("600")) h->GetYaxis()->SetTitle("R_{MJ 600}");
-      }
+  }
   h->Draw();
 
-    double legX = 0.65, legY = 0.89, legSingle = 0.14;
+  double legX = 0.65, legY = 0.89, legSingle = 0.14;
   double legW = 0.22, legH = legSingle;
   TLegend leg(legX, legY-legH, legX+legW, legY);
   leg.SetTextSize(0.057); leg.SetFillColor(0); leg.SetFillStyle(0); leg.SetBorderSize(0);
@@ -262,10 +261,10 @@ void MakeGraph(TString baseline,vector<TString> external,TString ratio_cut, vect
     leg.AddEntry(graphs.at(ig), samples.at(ig).label,"p");
   }
   /*TF1 linfit("linfit","[0]+[1]*x",0, nR);
-  linfit.SetParameter(0, 200);  linfit.SetParameter(1, 0);
+    linfit.SetParameter(0, 200);  linfit.SetParameter(1, 0);
 
-  g->Fit(&linfit,"M N","", 0, nR);
-  TString leghisto = "[<R_{mT}> = "+RoundNumber(linfit.GetParameter(0),3)+" + "+
+    g->Fit(&linfit,"M N","", 0, nR);
+    TString leghisto = "[<R_{mT}> = "+RoundNumber(linfit.GetParameter(0),3)+" + "+
     RoundNumber(linfit.GetParameter(1),3)+"n_{jets}]";
   */
 
@@ -275,57 +274,58 @@ void MakeGraph(TString baseline,vector<TString> external,TString ratio_cut, vect
 
   TLine line; line.SetLineColor(28); line.SetLineWidth(4); line.SetLineStyle(2);
   if(external[0].Contains("nbm")){ line.DrawLine(2.5, 0, 2.5, 1.5*max);
-     TLatex *text67 = new TLatex(0.35,0.05,"n_{jets}= 6-7");
-      text67->SetNDC();
-        text67->SetTextSize(0.045);
-	text67->SetLineWidth(2);
-	text67->Draw();
-	TLatex *text8 = new TLatex(0.7,0.05,"n_{jets}= 8");
-	text8->SetNDC();
-        text8->SetTextSize(0.045);
-	text8->SetLineWidth(2);
-	text8->Draw();
+    TLatex *text67 = new TLatex(0.35,0.05,"n_{jets}= 6-7");
+    text67->SetNDC();
+    text67->SetTextSize(0.045);
+    text67->SetLineWidth(2);
+    text67->Draw();
+    TLatex *text8 = new TLatex(0.7,0.05,"n_{jets}= 8");
+    text8->SetNDC();
+    text8->SetTextSize(0.045);
+    text8->SetLineWidth(2);
+    text8->Draw();
 
   }
 
   
-  TString pname = "plots/ratios/ratios_"+format_tag(ratio_cut+samples.at(0).cut+external[0]+baseline)+".pdf";
+  TString pname = "plots/ratios/ratios_"+format_tag(ratio_cut+samples.at(0).cut+external[0]+baseline)+".eps";
   can.SaveAs(pname);
   
   for(int ig = 0;ig<nsamples;ig++) graphs.at(ig)->Delete();
 
   //now plot Kappa
-   TCanvas can2;
+  TCanvas can2;
   //TPad *pad = static_cast<TPad *>(can.cd());
 
   
   //make hist to define pad with labels on x-axis
 
-   h->SetMaximum(2.0);
+  h->SetMaximum(2.0);
   h->Draw();
 
-    kappas->SetMarkerStyle(20);
-    kappas->SetMarkerColor(kBlack);
-    kappas->SetLineColor(kBlack);
-    kappas->Draw("PZ");
+  kappas->SetMarkerStyle(20);
+  kappas->SetMarkerColor(kBlack);
+  kappas->SetLineColor(kBlack);
+  kappas->Draw("PZ");
+  line.DrawLine(h->GetBinLowEdge(1), 1, h->GetBinLowEdge(h->GetNbinsX()+1), 1);
   /*  double legX = 0.65, legY = 0.89, legSingle = 0.14;
-  double legW = 0.22, legH = legSingle;
-  TLegend leg(legX, legY-legH, legX+legW, legY);
-  leg.SetTextSize(0.057); leg.SetFillColor(0); leg.SetFillStyle(0); leg.SetBorderSize(0);
-  leg.SetTextFont(132);
+      double legW = 0.22, legH = legSingle;
+      TLegend leg(legX, legY-legH, legX+legW, legY);
+      leg.SetTextSize(0.057); leg.SetFillColor(0); leg.SetFillStyle(0); leg.SetBorderSize(0);
+      leg.SetTextFont(132);
   
-  for(int ig = 0;ig<nsamples;ig++){
-    graphs.at(ig)->SetMarkerStyle(20);
-    graphs.at(ig)->SetMarkerColor(samples.at(ig).color);
-    graphs.at(ig)->SetLineColor(samples.at(ig).color);
-    graphs.at(ig)->Draw("PZ");
-    leg.AddEntry(graphs.at(ig), samples.at(ig).label,"p");
-    }*/
+      for(int ig = 0;ig<nsamples;ig++){
+      graphs.at(ig)->SetMarkerStyle(20);
+      graphs.at(ig)->SetMarkerColor(samples.at(ig).color);
+      graphs.at(ig)->SetLineColor(samples.at(ig).color);
+      graphs.at(ig)->Draw("PZ");
+      leg.AddEntry(graphs.at(ig), samples.at(ig).label,"p");
+      }*/
   /*TF1 linfit("linfit","[0]+[1]*x",0, nR);
-  linfit.SetParameter(0, 200);  linfit.SetParameter(1, 0);
+    linfit.SetParameter(0, 200);  linfit.SetParameter(1, 0);
 
-  g->Fit(&linfit,"M N","", 0, nR);
-  TString leghisto = "[<R_{mT}> = "+RoundNumber(linfit.GetParameter(0),3)+" + "+
+    g->Fit(&linfit,"M N","", 0, nR);
+    TString leghisto = "[<R_{mT}> = "+RoundNumber(linfit.GetParameter(0),3)+" + "+
     RoundNumber(linfit.GetParameter(1),3)+"n_{jets}]";
   */
 
@@ -335,21 +335,21 @@ void MakeGraph(TString baseline,vector<TString> external,TString ratio_cut, vect
 
 
   if(external[0].Contains("nbm")){ line.DrawLine(2.5, 0, 2.5, 1.5*max);
-   TLatex *text67 = new TLatex(0.35,0.05,"n_{jets}= 6-7");
-      text67->SetNDC();
-        text67->SetTextSize(0.045);
-	text67->SetLineWidth(2);
-	text67->Draw();
-	TLatex *text8 = new TLatex(0.7,0.05,"n_{jets}= 8");
-	text8->SetNDC();
-        text8->SetTextSize(0.045);
-	text8->SetLineWidth(2);
-	text8->Draw();
+    TLatex *text67 = new TLatex(0.35,0.05,"n_{jets}= 6-7");
+    text67->SetNDC();
+    text67->SetTextSize(0.045);
+    text67->SetLineWidth(2);
+    text67->Draw();
+    TLatex *text8 = new TLatex(0.7,0.05,"n_{jets}= 8");
+    text8->SetNDC();
+    text8->SetTextSize(0.045);
+    text8->SetLineWidth(2);
+    text8->Draw();
 
   }
 
   
-  TString pname2 = "plots/ratios/kappa_"+format_tag(ratio_cut+samples.at(0).cut+external[0]+baseline)+".pdf";
+  TString pname2 = "plots/ratios/kappa_"+format_tag(ratio_cut+samples.at(0).cut+external[0]+baseline)+".eps";
   can2.SaveAs(pname2);
   h->Delete();
  
