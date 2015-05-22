@@ -18,9 +18,13 @@
 
 namespace ra4 {
   TString luminosity="10";
-  TString MJcut = "400";
+  TString MJcut = "500";
   bool doRmj = false;
   bool doRmt = true;
+  bool do_6j = true;
+  bool do_8j = false;
+  bool do_2b = false;
+  bool do_3b = true;
 }
 
 using namespace ra4;
@@ -59,11 +63,17 @@ int main(){
   // CUTS
   TString cuts_1l("(nmus+nels)==1&&ht>500&&met>200&&nbm>=2&&njets>=6");
   TString cuts_1l1b("(nmus+nels)==1&&ht>500&&met>200&&nbm==1&&njets>=6");
+  TString cuts_1l2b("(nmus+nels)==1&&ht>500&&met>200&&nbm==2&&njets>=6");
+  TString cuts_1l3b("(nmus+nels)==1&&ht>500&&met>200&&nbm>=3&&njets>=6");
+
   TString cuts_2l("(nmus+nels)==2&&ht>500&&met>200&&nbm==1&&njets>=5");
   TString cuts_2lbb("(nmus+nels)==2&&ht>500&&met>200&&nbm==2&&njets>=5");
 
   TString cuts_1ltex("$H_T>500, \\mathrm{MET}>200, n_{\\rm jets}\\geq 6, n_b\\geq 2, n_{\\rm lep}=1$");
   TString cuts_1l1btex("$H_T>500, \\mathrm{MET}>200, n_{\\rm jets}\\geq 6, n_b=1, n_{\\rm lep}=1$");
+  TString cuts_1l2btex("$H_T>500, \\mathrm{MET}>200, n_{\\rm jets}\\geq 6, n_b=2, n_{\\rm lep}=1$");
+  TString cuts_1l3btex("$H_T>500, \\mathrm{MET}>200, n_{\\rm jets}\\geq 6, n_b\\geq 3, n_{\\rm lep}=1$");
+
   TString cuts_2ltex("$H_T>500, \\mathrm{MET}>200, n_{\\rm jets}\\geq 5, n_b=1, n_{\\rm lep}=2$");
   TString cuts_2lbbtex("$H_T>500, \\mathrm{MET}>200, n_{\\rm jets}\\geq 5, n_b=2, n_{\\rm lep}=2$");
 
@@ -80,7 +90,37 @@ int main(){
   TString cuts_R4tex("R4: $m_T  > 140,M_J > "+MJcut+"$");
   TString cuts_highMJtex("$M_J > "+MJcut+"$");
   TString cuts_lowMJtex("$M_J \\leq "+MJcut+"$");
-  // 
+  //
+
+  if(do_6j){
+    name.ReplaceAll("Rfactors","Rfactors_6j");
+    cuts_1l.ReplaceAll("njets>=6","njets>=6&&njets<=7");
+    cuts_1l1b.ReplaceAll("njets>=6","njets>=6&&njets<=7");
+    cuts_1l2b.ReplaceAll("njets>=6","njets>=6&&njets<=7");
+    cuts_1l3b.ReplaceAll("njets>=6","njets>=6&&njets<=7");
+    cuts_1ltex.ReplaceAll("n_{\\rm jets}\\geq 6,","6 \\leq n_{\\rm jets}\\leq 7 ,");
+    cuts_1l1btex.ReplaceAll("n_{\\rm jets}\\geq 6,","6 \\leq n_{\\rm jets}\\leq 7 ,");
+    cuts_1l2btex.ReplaceAll("n_{\\rm jets}\\geq 6,","6 \\leq n_{\\rm jets}\\leq 7 ,");
+    cuts_1l3btex.ReplaceAll("n_{\\rm jets}\\geq 6,","6 \\leq n_{\\rm jets}\\leq 7 ,");
+  }
+  if(do_8j){
+    name.ReplaceAll("Rfactors","Rfactors_8j");
+    cuts_1l.ReplaceAll(">=6",">=8");
+    cuts_1l1b.ReplaceAll(">=6",">=8");
+    cuts_1l2b.ReplaceAll(">=6",">=8");
+    cuts_1l3b.ReplaceAll(">=6",">=8");
+    cuts_1ltex.ReplaceAll("n_{\\rm jets}\\geq 6,","n_{\\rm jets}\\geq 8,");
+  }
+  if(do_2b){
+    name.ReplaceAll("Rfactors","Rfactors_2b");
+    cuts_1l.ReplaceAll("nbm>=2","nbm==2");
+    cuts_1ltex.ReplaceAll("n_b\\geq 2","n_b=2");
+  }
+  if(do_3b){
+    name.ReplaceAll("Rfactors","Rfactors_3b");
+    cuts_1l.ReplaceAll("nbm>=2","nbm>=3");
+    cuts_1ltex.ReplaceAll("n_b\\geq 2","n_b\\geq 3");
+  }
 
   ifstream header("txt/header.tex");
   ifstream footer("txt/footer.tex");
@@ -95,7 +135,7 @@ int main(){
   file << " \\multicolumn{1}{c|}{${\\cal L} = "<<luminosity<<"$ fb$^{-1}$} ";
   for(unsigned sam(0); sam < Samples.size(); sam++)
     file << " & "<<Samples[sam].label;
-  if(doRmj) file << "& $R_{m_T}^{1\\ell}$ & $\\kappa_{m_T}^{1\\ell}$ & $R_{m_T}^{2\\ell}$ & $\\kappa_{m_T}^{2\\ell}$";
+  if(doRmj) file << "& $R_{MJ}^{1\\ell}$ & $\\kappa_{MJ}^{1\\ell}$ & $R_{MJ}^{2\\ell}$ & $\\kappa_{MJ}^{2\\ell}$";
   if(doRmt) file << "& $R_{m_T}^{1\\ell}$ & $\\kappa_{m_T}^{1\\ell}$ & $R_{m_T}^{2\\ell}$ & $\\kappa_{m_T}^{2\\ell}$";
   file << "\\\\ \\hline \n ";
 
@@ -177,7 +217,7 @@ TString GetRatio(TString baseline,TString region_cut,TString ratio_cut, sfeats S
   error = ratio*sqrt(pow(numerator_err/numerator,2)+pow(denominator_err/denominator,2));
   
   TString out;
-  out = "$"+RoundNumber(ratio,2)+" \\pm "+RoundNumber(error,2)+"$";
+  out = "$"+RoundNumber(ratio,3)+" \\pm "+RoundNumber(error,3)+"$";
 
   return out;
 }
@@ -216,7 +256,7 @@ TString GetKappa(TString baseline,TString region_cut1,TString region_cut2, TStri
   kappaerr = kappa*sqrt(pow(error2/ratio2,2)+pow(error1/ratio1,2));
   
   TString out;
-  out = "$"+RoundNumber(kappa,2)+" \\pm "+RoundNumber(kappaerr,2)+"$";
+  out = "$"+RoundNumber(kappa,3)+" \\pm "+RoundNumber(kappaerr,3)+"$";
 
   return out;
 }
