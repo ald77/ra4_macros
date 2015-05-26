@@ -14,11 +14,20 @@
 #include "utilities.hpp"
 #include "timer.hpp"
 
+namespace ra4 {
+  std::string ntuple_date("2015_05_25");
+  int minjets(7);
+  double midjets(8);
+  double mjthresh(400.);
+  TString luminosity="10";
+}
+
+using namespace ra4;
 using namespace std;
 
 int main(int argc, char *argv[]){
   bool include_signal = false; //Include signal when mocking up data from MC?
-  string folder = "/cms5r0/ald77/archive/2015_05_21/skim/";
+  string folder="/cms5r0/ald77/archive/"+ntuple_date+"/skim/";
 
   double lumi = 10.;
   string lumi_string = "10";
@@ -100,10 +109,10 @@ void GetCounts(double lumi,
     timer.Iterate();
 
     if(tree.nbm()<2
-       || tree.njets()<6
+       || tree.njets()<minjets
        || (tree.nmus()+tree.nels())!=1
        || tree.met()<=200.
-       || tree.ntks_chg_mini()>0
+       //       || tree.ntks_chg_mini()>0
        || tree.ht()<=500.) continue;
 
     size_t bin = LookUpBin(tree);
@@ -136,8 +145,8 @@ void GetCounts(double lumi,
 
 size_t LookUpBin(small_tree_quick &tree){
   double mt_thresh = 140.;
-  double mj_thresh = 400.;
-  double njets_thresh = 7.5;
+  double mj_thresh = mjthresh;
+  double njets_thresh = midjets;
   double met_thresh = 400.;
   double nbm_thresh = 2.5;
   if(tree.mt()<=mt_thresh){
@@ -257,9 +266,12 @@ void WriteFile(const vector<double> &ttbar_raw, const vector<double> &ttbar_wght
   bins.push_back(8); ikappas.push_back(1);
   size_t nbins = bins.size();
 
-  string file_name = string("txt/data_card_")+(compressed?"c_":"nc_")+lumi_string+".txt";
+  TString file_name = "txt/data_card_"; file_name += (compressed?"c_":"nc_");
+  file_name += "mj";
+  file_name += mjthresh; file_name += "_njets"; file_name += minjets; file_name += midjets;
+  file_name += ("_lumi"+ lumi_string + "_" + ntuple_date + ".txt");
 
-  ofstream file(file_name.c_str());
+  ofstream file(file_name);
   file << "imax " << nbins << "   number of channels\n";
   file << "jmax 2   number of backgrounds\n";
   file << "kmax " << 2+3*nbins << "  number of nuisance parameters\n";
@@ -363,6 +375,9 @@ void WriteFile(const vector<double> &ttbar_raw, const vector<double> &ttbar_wght
              sig_raw, sig_wght,
              kappas, kappa_uncerts,
              data_counts);
+
+  cout<<endl<<"Created data card at "<<file_name<<endl<<endl;
+
 }
 
 void  WriteDebug(const vector<size_t> &bins, const vector<size_t> &ikappas,
