@@ -67,7 +67,7 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
   for(unsigned var(0); var<vars.size(); var++){
     const unsigned Nsam(vars[var].samples.size());
     legH = (Nsam<=3?legSingle*Nsam:legSingle*(Nsam+1)/2);
-    fracLeg = legH/(1-style.PadTopMargin-style.PadBottomMargin)*1.2;
+    fracLeg = legH/(1-style.PadTopMargin-style.PadBottomMargin)*1.25;
     for(int ileg(0); ileg<nLegs; ileg++) leg[ileg].SetY1NDC(legY-legH); 
     cout<<endl;
     // Generating vector of histograms
@@ -91,6 +91,7 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
       bool isSig = Samples[isam].isSig;
       totCut = Samples[isam].factor+"*"+luminosity+"*weight*("+vars[var].cuts+"&&"+Samples[isam].cut+")"; 
       //cout<<totCut<<endl;
+      histo[0][var][sam]->Sumw2();
       chain[isam]->Project(histo[0][var][sam]->GetName(), variable, totCut);
       histo[0][var][sam]->SetBinContent(vars[var].nbins,
 					  histo[0][var][sam]->GetBinContent(vars[var].nbins)+
@@ -127,7 +128,7 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
 	histo[0][var][sam]->SetLineWidth(1);
       } else {
 	histo[0][var][sam]->SetLineColor(Samples[isam].color);
-	histo[0][var][sam]->SetLineStyle(Samples[isam].style);
+	histo[0][var][sam]->SetLineStyle(abs(Samples[isam].style));
 	histo[0][var][sam]->SetLineWidth(4);
       }
       if(maxhisto < histo[0][var][sam]->GetMaximum()) maxhisto = histo[0][var][sam]->GetMaximum();
@@ -145,10 +146,10 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
 	leg[ileg].AddEntry(histo[0][var][sam], leghisto,"f");
 	legcount++;
 	if(firstplotted < 0) {
-	  histo[0][var][sam]->Draw();
+	  histo[0][var][sam]->Draw("hist");
 	  firstplotted = sam;
 	  style.setTitles(histo[0][var][sam],vars[var].title, ytitle, cmslabel, lumilabel);
- 	} else histo[0][var][sam]->Draw("same");
+ 	} else histo[0][var][sam]->Draw("hist same");
       } else {
 	leg[ileg].AddEntry(histo[0][var][sam], leghisto,"l");
 	legcount++;
@@ -157,7 +158,7 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
     for(int sam(Nsam-1); sam >= 0; sam--){
       int isam = vars[var].samples[sam];
       bool isSig = Samples[isam].isSig;
-      if(isSig) histo[0][var][sam]->Draw("same");
+      if(isSig) histo[0][var][sam]->Draw("hist same");
     }
     for(int ileg(0); ileg<nLegs; ileg++) leg[ileg].Draw(); 
     if(histo[0][var][firstplotted]->GetMinimum() > minLog) histo[0][var][firstplotted]->SetMinimum(minLog);
@@ -186,15 +187,21 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
     for(unsigned sam(0); sam < Nsam; sam++){
       int isam = vars[var].samples[sam];
       histo[1][var][sam]->SetLineColor(Samples[isam].color);
-      histo[1][var][sam]->SetLineStyle(Samples[isam].style);
+      histo[1][var][sam]->SetMarkerColor(Samples[isam].color);
+      histo[1][var][sam]->SetMarkerStyle(20);
+      histo[1][var][sam]->SetLineStyle(abs(Samples[isam].style));
       histo[1][var][sam]->SetLineWidth(3);
       if(nentries[sam]) histo[1][var][sam]->Scale(100./nentries[sam]);
       if(maxhisto < histo[1][var][sam]->GetMaximum()) maxhisto = histo[1][var][sam]->GetMaximum();
       if(sam==0){
 	histo[1][var][sam]->SetXTitle(vars[var].title);
 	histo[1][var][sam]->SetYTitle("Entries (%)");
-	histo[1][var][sam]->Draw();
-      } else histo[1][var][sam]->Draw("same");
+	if(Samples[isam].style>0) histo[1][var][sam]->Draw("hist");
+	else histo[1][var][sam]->Draw("e1 x0");
+      } else {
+	if(Samples[isam].style>0) histo[1][var][sam]->Draw("hist same");
+	else histo[1][var][sam]->Draw("e1 x0 same");
+      }
       leghisto = Samples[isam].label;
       if(namestyle!="CMSPaper") {
 	leghisto += " [#mu=";
@@ -203,7 +210,8 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
 	leghisto += RoundNumber(histo[1][var][sam]->GetMean(),digits) + "]";
       }
       unsigned ileg = (Nsam<=3?0:legcount>=(Nsam+1)/2);
-      leg[ileg].AddEntry(histo[1][var][sam], leghisto);
+      if(Samples[isam].style>0) leg[ileg].AddEntry(histo[1][var][sam], leghisto, "l");
+      else leg[ileg].AddEntry(histo[1][var][sam], leghisto, "p");
       legcount++;
     } // Loop over samples
     for(int ileg(0); ileg<nLegs; ileg++) leg[ileg].Draw(); 
@@ -237,6 +245,7 @@ TString cuts2title(TString title){
   title.ReplaceAll("Sum$(abs(mc_id)==13)","n^{true}_{#mu}");
   title.ReplaceAll("Sum$(genels_pt>0)", "n^{true}_{e}");
   title.ReplaceAll("Sum$(genmus_pt>0)", "n^{true}_{#mu}");
+  title.ReplaceAll("ntruleps", "n^{true}_{l}");
   title.ReplaceAll("onmet", "MET"); title.ReplaceAll("onht", "H_{T}");  
   title.ReplaceAll("nvmus==1&&nmus==1&&nvels==0","1 #mu");
   title.ReplaceAll("nvmus10==0&&nvels10==0", "0 leptons");  
