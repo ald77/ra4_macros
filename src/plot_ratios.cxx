@@ -232,9 +232,9 @@ void MakeGraph(TString baseline,vector<TString> external,TString ratio_cut, vect
   //make hist to define pad with labels on x-axis
   TH1F *h = new TH1F("for_axis_label",cuts2title(baseline),nR,-0.5,nR-0.5);
   for (int ih=1;ih<=nR;ih++){ h->GetXaxis()->SetBinLabel(ih,cuts2title(external[ih-1]));
-  if(external[0].Contains("nbm")) h->GetXaxis()->SetBinLabel(ih,cosmetic2[ih-1]);
-  if(external[0].Contains("const")) h->GetXaxis()->SetBinLabel(ih,cosmetic3[ih-1]);
-}
+    if(external[0].Contains("nbm")) h->GetXaxis()->SetBinLabel(ih,cosmetic2[ih-1]);
+    if(external[0].Contains("const")) h->GetXaxis()->SetBinLabel(ih,cosmetic3[ih-1]);
+  }
   //h->SetMaximum(1.5*max);
   h->SetMaximum(1.5*max);
   h->SetMinimum(0.0);
@@ -315,12 +315,12 @@ void MakeGraph(TString baseline,vector<TString> external,TString ratio_cut, vect
       leg.SetTextFont(132);
   
       for(int ig = 0;ig<nsamples;ig++){
-  graphs.at(ig)->SetMarkerStyle(20);
-  graphs.at(ig)->SetMarkerColor(samples.at(ig).color);
-  graphs.at(ig)->SetLineColor(samples.at(ig).color);
-  graphs.at(ig)->Draw("PZ");
-  leg.AddEntry(graphs.at(ig), samples.at(ig).label,"p");
-}*/
+      graphs.at(ig)->SetMarkerStyle(20);
+      graphs.at(ig)->SetMarkerColor(samples.at(ig).color);
+      graphs.at(ig)->SetLineColor(samples.at(ig).color);
+      graphs.at(ig)->Draw("PZ");
+      leg.AddEntry(graphs.at(ig), samples.at(ig).label,"p");
+      }*/
   /*TF1 linfit("linfit","[0]+[1]*x",0, nR);
     linfit.SetParameter(0, 200);  linfit.SetParameter(1, 0);
 
@@ -380,6 +380,7 @@ void GetRatio(double &ratio,double &error, TString baseline,TString external,TSt
   
   
 }
+
 
 
 
