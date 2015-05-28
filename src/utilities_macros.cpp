@@ -254,7 +254,9 @@ TString cuts2title(TString title){
   title.ReplaceAll("mus_reliso","RelIso"); title.ReplaceAll("els_reliso","RelIso");
   title.ReplaceAll("mus_miniso_tr15","MiniIso"); title.ReplaceAll("els_miniso_tr15","MiniIso");
   title.ReplaceAll("njets","n_{jets}");title.ReplaceAll("abs(lep_id)==13&&","");
-  title.ReplaceAll(">=", " #geq "); title.ReplaceAll(">", " > "); title.ReplaceAll("&&", ", "); 
+  title.ReplaceAll(">=", " #geq "); title.ReplaceAll(">", " > "); 
+  title.ReplaceAll("<=", " #leq "); title.ReplaceAll("<", " < "); 
+  title.ReplaceAll("&&", ", "); 
   title.ReplaceAll("met", "MET"); title.ReplaceAll("ht", "H_{T}");  title.ReplaceAll("mt", "m_{T}"); 
   title.ReplaceAll("nleps==1", "1 lepton");  title.ReplaceAll("nbm","n_{b}"); title.ReplaceAll("==", " = "); 
   title.ReplaceAll("nbl[1]","n_{b,l}");
@@ -263,6 +265,18 @@ TString cuts2title(TString title){
   return title;
 }
 
+TString invertcut(TString cut){ //For only one cut
+  if (cut.Contains("<"))
+    cut.ReplaceAll("<",">="); 
+  else if (cut.Contains(">"))
+    cut.ReplaceAll(">","<=");
+  else if (cut.Contains("<="))
+    cut.ReplaceAll("<=",">");
+  else if (cut.Contains(">="))
+    cut.ReplaceAll(">=","<");
+
+  return cut;
+}
 
 pfeats::pfeats(const vector<int> &isamples, const TString &icut, const TString &itagname):
   samples(isamples),
