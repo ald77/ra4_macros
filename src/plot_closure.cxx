@@ -80,7 +80,7 @@ int main(){
   ra4_tt_t1.push_back(1);
   ra4_tt_t1.push_back(2);
 
-  TString baseline = "ht>500&&met>200&&nbm>=2&&(nmus+nels)==1";
+  TString baseline = "ht>500&&met>200&&nbm>=2&&(nmus+nels)==1&&njets>=7";
   //  TString baseline = "ht>500&&met>200&&nbm>=2&&(nmus+nels)==1&&ntks_chg==0";  //With IsoTrkVeto
   
 
