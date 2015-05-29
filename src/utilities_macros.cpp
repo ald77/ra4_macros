@@ -261,6 +261,7 @@ TString cuts2title(TString title){
   title.ReplaceAll("nleps==1", "1 lepton");  title.ReplaceAll("nbm","n_{b}"); title.ReplaceAll("==", " = "); 
   title.ReplaceAll("nbl[1]","n_{b,l}");
   title.ReplaceAll("mj", " M_{J}");
+  title.ReplaceAll("ntks_chg==0", "ITV");
 
   return title;
 }
