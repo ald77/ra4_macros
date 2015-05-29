@@ -258,10 +258,10 @@ TString cuts2title(TString title){
   title.ReplaceAll("<=", " #leq "); title.ReplaceAll("<", " < "); 
   title.ReplaceAll("&&", ", "); 
   title.ReplaceAll("met", "MET"); title.ReplaceAll("ht", "H_{T}");  title.ReplaceAll("mt", "m_{T}"); 
+  title.ReplaceAll("ntks_chg==0", " ITV");
   title.ReplaceAll("nleps==1", "1 lepton");  title.ReplaceAll("nbm","n_{b}"); title.ReplaceAll("==", " = "); 
   title.ReplaceAll("nbl[1]","n_{b,l}");
   title.ReplaceAll("mj", " M_{J}");
-  title.ReplaceAll("ntks_chg==0", "ITV");
 
   return title;
 }
@@ -334,6 +334,7 @@ void hfeats::format_tag(){
   tag.ReplaceAll(">","g"); tag.ReplaceAll("<","s"); tag.ReplaceAll("=","");
   tag.ReplaceAll("+",""); tag.ReplaceAll("&","");
   tag.ReplaceAll("!","not");
+  tag.ReplaceAll("#",""); tag.ReplaceAll("{",""); tag.ReplaceAll("}","");
 }
 
 TString format_tag(TString tag){
@@ -346,6 +347,7 @@ TString format_tag(TString tag){
   tag.ReplaceAll(">","g"); tag.ReplaceAll("<","s"); tag.ReplaceAll("=","");
   tag.ReplaceAll("+",""); tag.ReplaceAll("&","");
   tag.ReplaceAll("!","not");
+  tag.ReplaceAll("#",""); tag.ReplaceAll("{",""); tag.ReplaceAll("}","");
 
   return tag;
 }

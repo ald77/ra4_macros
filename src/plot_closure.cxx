@@ -80,8 +80,8 @@ int main(){
   ra4_tt_t1.push_back(1);
   ra4_tt_t1.push_back(2);
 
-  TString baseline = "ht>500&&met>200&&nbm>=2&&(nmus+nels)==1&&njets>=7";
-  //  TString baseline = "ht>500&&met>200&&nbm>=2&&(nmus+nels)==1&&ntks_chg==0";  //With IsoTrkVeto
+  //TString baseline = "ht>500&&met>200&&nbm>=2&&(nmus+nels)==1&&njets>=7";
+  TString baseline = "ht>500&&met>200&&nbm>=2&&(nmus+nels)==1&&njets>=7&&ntks_chg==0";  //With IsoTrkVeto
   
 
   vector<sfeats> samples_MJ;
@@ -196,10 +196,10 @@ int main(){
   externalA_meth3.push_back("met>400");
   vector<TString> externalB_meth3;
   externalB_meth3.push_back("njets>=7&&njets<=8&&met>200&&met<=400&&nbm==2");
-  externalB_meth3.push_back("njets>=7&&njets<=8&&met>200&&met<=400&&nbm>=2");
+  externalB_meth3.push_back("njets>=7&&njets<=8&&met>200&&met<=400&&nbm>=3");
   externalB_meth3.push_back("njets>=7&&njets<=8&&met>400");
   externalB_meth3.push_back("njets>=9&&met>200&&met<=400&&nbm==2");
-  externalB_meth3.push_back("njets>=9&&met>200&&met<=400&&nbm>=2");
+  externalB_meth3.push_back("njets>=9&&met>200&&met<=400&&nbm>=3");
   externalB_meth3.push_back("njets>=9&&met>400");
 
   double N1_meth3[nExt_3],N2_meth3[nExt_3],N3_meth3[nExt_3],N4_meth3[nExt_3];
@@ -226,8 +226,8 @@ int main(){
   }  
 
   vector<TString> binlabels_3; //push back twice for each njets bin
-  binlabels_3.push_back("low MET, nb=2");binlabels_3.push_back("low MET, nb#geq2");binlabels_3.push_back("high MET");
-  binlabels_3.push_back("low MET, nb=2");binlabels_3.push_back("low MET, nb#geq2");binlabels_3.push_back("high MET");
+  binlabels_3.push_back("low MET, nb=2");binlabels_3.push_back("low MET, nb#geq3");binlabels_3.push_back("high MET");
+  binlabels_3.push_back("low MET, nb=2");binlabels_3.push_back("low MET, nb#geq3");binlabels_3.push_back("high MET");
   binlabels_3.push_back("method3"); // Last bin is for method name.
 
   MakeGraphs(rmj43_3, rmj21_3, rmj43_err_3, rmj21_err_3, rmt42_3, rmt31_3, rmt42_err_3, rmt31_err_3, kappa_3, kappa_err_3, binlabels_3, samples_MJ.at(0).label, baseline, mj_cut, mt_cut);
@@ -282,22 +282,27 @@ int main(){
 }
 
 void MakeGraphs(double rmj1[],double rmj2[],double rmj1_err[],double rmj2_err[],double rmt1[],double rmt2[],double rmt1_err[],double rmt2_err[],double kappa[],double kappa_err[], const vector<TString> binlabels,TString sampleName, TString baseline, TString mj_cut, TString mt_cut){
+
+  TString sampleNameText = sampleName;
+  if(sampleName.Contains("t#bar{t}")) sampleNameText = sampleName.ReplaceAll("t#bar{t}","ttbar");
   
   vector<TGraphErrors*> graphsMJ;
   vector<TGraphErrors*> graphsMT;
   TGraphErrors* kappas;
   const int nExt = binlabels.size()-1;
 
-  vector<double> x, x_err;
+  vector<double> x, x1, x2, x_err;
   for(int i=0; i<nExt; i++){
     x.push_back(i);
+    x1.push_back(i-0.075);
+    x2.push_back(i+0.075);
     x_err.push_back(0);
   }
 
-  TGraphErrors *mj1 = new TGraphErrors(nExt,&x[0],rmj1,&x_err[0],rmj1_err);  // &foo[0] convert vector "foo" to an array because TGraphErrors only accepts arrays
+  TGraphErrors *mj1 = new TGraphErrors(nExt,&x1[0],rmj1,&x_err[0],rmj1_err);  // &foo[0] convert vector "foo" to an array because TGraphErrors only accepts arrays
   graphsMJ.push_back(mj1);
     
-  TGraphErrors *mj2 = new TGraphErrors(nExt,&x[0],rmj2,&x_err[0],rmj2_err); // &foo[0] converts vector "foo" to an array because TGraphErrors only accepts arrays
+  TGraphErrors *mj2 = new TGraphErrors(nExt,&x2[0],rmj2,&x_err[0],rmj2_err); // &foo[0] converts vector "foo" to an array because TGraphErrors only accepts arrays
   graphsMJ.push_back(mj2);
 
   float maxMJ = 0.01;  
@@ -306,10 +311,10 @@ void MakeGraphs(double rmj1[],double rmj2[],double rmj1_err[],double rmj2_err[],
     if(rmj2[imax]>maxMJ) maxMJ=rmj2[imax];
   }
 
-  TGraphErrors *mt1 = new TGraphErrors(nExt,&x[0],rmt1,&x_err[0],rmt1_err);  // &foo[0] convert vector "foo" to an array because TGraphErrors only accepts arrays
+  TGraphErrors *mt1 = new TGraphErrors(nExt,&x1[0],rmt1,&x_err[0],rmt1_err);  // &foo[0] convert vector "foo" to an array because TGraphErrors only accepts arrays
   graphsMT.push_back(mt1);
     
-  TGraphErrors *mt2 = new TGraphErrors(nExt,&x[0],rmt2,&x_err[0],rmt2_err); // &foo[0] converts vector "foo" to an array because TGraphErrors only accepts arrays
+  TGraphErrors *mt2 = new TGraphErrors(nExt,&x2[0],rmt2,&x_err[0],rmt2_err); // &foo[0] converts vector "foo" to an array because TGraphErrors only accepts arrays
   graphsMT.push_back(mt2);
 
   float maxMT = 0.01;  
@@ -333,7 +338,7 @@ void MakeGraphs(double rmj1[],double rmj2[],double rmj1_err[],double rmj2_err[],
   h->SetMinimum(0.0);
 
   h->GetYaxis()->SetTitle("R_{MJ}");
-  h->GetXaxis()->SetLabelSize(0.03);
+  h->GetXaxis()->SetLabelSize(0.045);
   h->Draw();
 
   double legX = 0.65, legY = 0.89, legSingle = 0.14;
@@ -343,15 +348,17 @@ void MakeGraphs(double rmj1[],double rmj2[],double rmj1_err[],double rmj2_err[],
   leg.SetTextFont(132);
   
   graphsMJ.at(0)->SetMarkerStyle(20);
+  graphsMJ.at(0)->SetMarkerSize(1.2);
   graphsMJ.at(0)->SetMarkerColor(31);
   graphsMJ.at(0)->SetLineColor(31);
-  graphsMJ.at(0)->Draw("PZ");
+  graphsMJ.at(0)->Draw("P");
   leg.AddEntry(graphsMJ.at(0), sampleName+" "+cuts2title(mt_cut),"p");
 
-  graphsMJ.at(1)->SetMarkerStyle(20);
+  graphsMJ.at(1)->SetMarkerStyle(22);
+  graphsMJ.at(1)->SetMarkerSize(1.2);
   graphsMJ.at(1)->SetMarkerColor(46);
   graphsMJ.at(1)->SetLineColor(46);
-  graphsMJ.at(1)->Draw("PZ"); 
+  graphsMJ.at(1)->Draw("P"); 
   leg.AddEntry(graphsMJ.at(1), sampleName+" "+cuts2title(invertcut(mt_cut)),"p");
 
   leg.Draw("p");
@@ -360,17 +367,18 @@ void MakeGraphs(double rmj1[],double rmj2[],double rmj1_err[],double rmj2_err[],
   line.DrawLine((nExt-1)/2., 0, (nExt-1)/2., 1.5*maxMJ);
   TLatex *text78 = new TLatex(0.35,0.03,"n_{jets}= 7-8");
   text78->SetNDC();
-  text78->SetTextSize(0.03);
+  text78->SetTextSize(0.04);
   text78->SetLineWidth(2);
   text78->Draw();
   TLatex *text9 = new TLatex(0.7,0.03,"n_{jets}#geq 9");
   text9->SetNDC();
-  text9->SetTextSize(0.03);
+  text9->SetTextSize(0.04);
   text9->SetLineWidth(2);
   text9->Draw();    
   
-  TString pname1 = "plots/closure/"+binlabels.at(nExt)+"_rmj.eps";
-  TString pname1root = "plots/closure/"+binlabels.at(nExt)+"_rmj.root";
+  TString pname1 = "plots/closure/"+binlabels.at(nExt)+"_"+sampleNameText+"_rmj.pdf";
+  TString pname1root = "plots/closure/"+binlabels.at(nExt)+"_"+sampleNameText+"_rmj.root";
+  if(baseline.Contains("ntks_chg==0")) { pname1.ReplaceAll("_rmj","_rmj_ITV"); pname1root.ReplaceAll("_rmj","_rmj_ITV"); }
   can.SaveAs(pname1);
   can.SaveAs(pname1root);
 
@@ -384,7 +392,7 @@ void MakeGraphs(double rmj1[],double rmj2[],double rmj1_err[],double rmj2_err[],
   h->SetMinimum(0.0);
 
   h->GetYaxis()->SetTitle("R_{mT}");
-  h->GetXaxis()->SetLabelSize(0.03);
+  h->GetXaxis()->SetLabelSize(0.045);
   h->Draw();
 
   TLegend leg2(legX, legY-legH, legX+legW, legY);
@@ -392,15 +400,17 @@ void MakeGraphs(double rmj1[],double rmj2[],double rmj1_err[],double rmj2_err[],
   leg2.SetTextFont(132);
 
   graphsMT.at(0)->SetMarkerStyle(20);
+  graphsMT.at(0)->SetMarkerSize(1.2);
   graphsMT.at(0)->SetMarkerColor(31);
   graphsMT.at(0)->SetLineColor(31);
-  graphsMT.at(0)->Draw("PZ");
+  graphsMT.at(0)->Draw("P");
   leg2.AddEntry(graphsMT.at(0), sampleName+" "+cuts2title(mj_cut),"p");
 
-  graphsMT.at(1)->SetMarkerStyle(20);
+  graphsMT.at(1)->SetMarkerStyle(22);
+  graphsMT.at(1)->SetMarkerSize(1.2);
   graphsMT.at(1)->SetMarkerColor(46);
   graphsMT.at(1)->SetLineColor(46);
-  graphsMT.at(1)->Draw("PZ");
+  graphsMT.at(1)->Draw("P");
   leg2.AddEntry(graphsMT.at(1), sampleName+" "+cuts2title(invertcut(mj_cut)),"p");
 
   leg2.Draw();
@@ -409,8 +419,9 @@ void MakeGraphs(double rmj1[],double rmj2[],double rmj1_err[],double rmj2_err[],
   text9->Draw();
   line.DrawLine((nExt-1)/2., 0, (nExt-1)/2., 1.5*maxMT);
 
-  TString pname2 = "plots/closure/"+binlabels.at(nExt)+"_rmt.eps";
-  TString pname2root = "plots/closure/"+binlabels.at(nExt)+"_rmt.root";
+  TString pname2 = "plots/closure/"+binlabels.at(nExt)+"_"+sampleNameText+"_rmt.pdf";
+  TString pname2root = "plots/closure/"+binlabels.at(nExt)+"_"+sampleNameText+"_rmt.root";
+  if(baseline.Contains("ntks_chg==0")) { pname2.ReplaceAll("_rmt","_rmt_ITV"); pname2root.ReplaceAll("_rmt","_rmt_ITV");}
   can2.SaveAs(pname2);
   can2.SaveAs(pname2root);
 
@@ -426,17 +437,19 @@ void MakeGraphs(double rmj1[],double rmj2[],double rmj1_err[],double rmj2_err[],
   h->Draw();
 
   kappas->SetMarkerStyle(20);
+  kappas->SetMarkerSize(1.2);
   kappas->SetMarkerColor(kBlack);
   kappas->SetLineColor(kBlack);
-  kappas->Draw("PZ");
+  kappas->Draw("P");
   line.DrawLine(h->GetBinLowEdge(1), 1, h->GetBinLowEdge(h->GetNbinsX()+1), 1);
 
   line.DrawLine((nExt-1)/2., 0, (nExt-1)/2., 1.5*maxMT);
   text78->Draw();
   text9->Draw();    
   
-  TString pname3 = "plots/closure/"+binlabels.at(nExt)+"_kappa.eps";
-  TString pname3root = "plots/closure/"+binlabels.at(nExt)+"_kappa.root";
+  TString pname3 = "plots/closure/"+binlabels.at(nExt)+"_"+sampleNameText+"_kappa.pdf";
+  TString pname3root = "plots/closure/"+binlabels.at(nExt)+"_"+sampleNameText+"_kappa.root";
+  if(baseline.Contains("ntks_chg==0")) { pname3.ReplaceAll("_kappa","_kappa_ITV"); pname3root.ReplaceAll("_kappa","_kappa_ITV");}
   can3.SaveAs(pname3);
   can3.SaveAs(pname3root);
 
