@@ -11,8 +11,8 @@ using namespace std;
 
 int main(){ 
 
-  TString folder="/cms5r0/ald77/archive/2015_05_10/skim/";
-  TString folder_noskim="/cms5r0/ald77/archive/2015_05_10/";
+  TString folder="/cms5r0/ald77/archive/2015_05_21/skim/";
+  TString folder_noskim="/cms5r0/ald77/archive/2015_05_21/";
   vector<TString> s_t1t;
   s_t1t.push_back(folder+"*T1tttt*1500_*PU20*");
   vector<TString> s_t1tc;
@@ -39,9 +39,9 @@ int main(){
   Samples.push_back(sfeats(s_t1t, "T1tttt(1500,100)", ra4::c_t1tttt));//0
   Samples.push_back(sfeats(s_t1tc, "T1tttt(1200,800)", ra4::c_t1tttt,2));//1
   Samples.push_back(sfeats(s_tt, "semileptonic t#bar{t}", 38, 1,
-			   "(nmus+nels)==1&&njets>=6&&(((mc_type&0x0F00)/0x100+(mc_type&0x000F)-(mc_type&0x00F0)/0x10)<=1)"));//2
+			   "(nmus+nels)==1&&njets>=6&&(ntruleps<=1)"));//2
   Samples.push_back(sfeats(s_tt, "fully-leptonic t#bar{t}", kRed-9,1,
-			   "(nmus+nels)==1&&njets>=6&&(((mc_type&0x0F00)/0x100+(mc_type&0x000F)-(mc_type&0x00F0)/0x10)>=2)"));//3
+			   "(nmus+nels)==1&&njets>=6&&(ntruleps>=2)"));//3
   Samples.push_back(sfeats(s_wjets, "W+jets", ra4::c_wjets));//4
   Samples.push_back(sfeats(s_singlet, "Single t", ra4::c_singlet));//5
   Samples.push_back(sfeats(s_ttv, "ttV", ra4::c_ttv));//6
@@ -69,29 +69,29 @@ int main(){
 
 
   Samples.push_back(sfeats(s_tt, "t#bar{t} 1 l, M_{J} > 500", 4, 1,
-			   "mj>500&&(((mc_type&0x0F00)/0x100+(mc_type&0x000F)-(mc_type&0x00F0)/0x10)<=1)"));//17
+			   "mj>500&&(ntruleps<=1)"));//17
   Samples.push_back(sfeats(s_tt, "t#bar{t} 2 l, M_{J} > 500", kRed,1,
-			   "mj>500&&(((mc_type&0x0F00)/0x100+(mc_type&0x000F)-(mc_type&0x00F0)/0x10)>=2)"));//18
+			   "mj>500&&(ntruleps>=2)"));//18
   
   Samples.push_back(sfeats(s_tt, "t#bar{t} 1 l, M_{J} < 500", 38, 1,
-			   "mj<=500&&(((mc_type&0x0F00)/0x100+(mc_type&0x000F)-(mc_type&0x00F0)/0x10)<=1)"));//19
+			   "mj<=500&&(ntruleps<=1)"));//19
   Samples.push_back(sfeats(s_tt, "t#bar{t} 2 l, M_{J} < 500", kRed-9,1,
-			   "mj<=500&&(((mc_type&0x0F00)/0x100+(mc_type&0x000F)-(mc_type&0x00F0)/0x10)>=2)"));//20
+			   "mj<=500&&(ntruleps>=2)"));//20
 
 
   Samples.push_back(sfeats(s_tt, "t#bar{t} 1 l, 1 B", 4, 1,
-			   "nbm==1&&(((mc_type&0x0F00)/0x100+(mc_type&0x000F)-(mc_type&0x00F0)/0x10)<=1)"));//21
+			   "nbm==1&&(ntruleps<=1)"));//21
   Samples.push_back(sfeats(s_tt, "t#bar{t} 1 l, 2 B", 38, 1,
-			   "nbm==2&&(((mc_type&0x0F00)/0x100+(mc_type&0x000F)-(mc_type&0x00F0)/0x10)<=1)"));//22
+			   "nbm==2&&(ntruleps<=1)"));//22
   Samples.push_back(sfeats(s_tt, "t#bar{t} 1 l, 3+ B", 8, 1,
-			   "nbm>=3&&(((mc_type&0x0F00)/0x100+(mc_type&0x000F)-(mc_type&0x00F0)/0x10)<=1)"));//23
+			   "nbm>=3&&(ntruleps<=1)"));//23
     
   Samples.push_back(sfeats(s_tt, "t#bar{t} 2 l, 1 B", kRed,1,
-			   "nbm==1&&(((mc_type&0x0F00)/0x100+(mc_type&0x000F)-(mc_type&0x00F0)/0x10)>=2)"));//24
+			   "nbm==1&&(ntruleps>=2)"));//24
   Samples.push_back(sfeats(s_tt, "t#bar{t} 2 l, 2 B", 46,1,
-			   "nbm==2&&(((mc_type&0x0F00)/0x100+(mc_type&0x000F)-(mc_type&0x00F0)/0x10)>=2)"));//25
+			   "nbm==2&&(ntruleps>=2)"));//25
   Samples.push_back(sfeats(s_tt, "t#bar{t} 2 l, 3+ B", kOrange,1,
-			   "nbm>=3&&(((mc_type&0x0F00)/0x100+(mc_type&0x000F)-(mc_type&0x00F0)/0x10)>=2)"));//26
+			   "nbm>=3&&(ntruleps>=2)"));//26
   
   
 
@@ -126,24 +126,24 @@ int main(){
   ra4_tt_mt_slices.push_back(2);
 
 
-   vector<int> ra4_tt_mt_slices2;
-   //dilep, single lep high MJ low MJ
-   ra4_tt_mt_slices2.push_back(17);
-   ra4_tt_mt_slices2.push_back(18);
-   ra4_tt_mt_slices2.push_back(19);
-   ra4_tt_mt_slices2.push_back(20);
+  vector<int> ra4_tt_mt_slices2;
+  //dilep, single lep high MJ low MJ
+  ra4_tt_mt_slices2.push_back(17);
+  ra4_tt_mt_slices2.push_back(18);
+  ra4_tt_mt_slices2.push_back(19);
+  ra4_tt_mt_slices2.push_back(20);
 
 
-   vector<int> ra4_tt_mt_slices3;
-   //dilep, single lep x 1 2 3+ B
-   ra4_tt_mt_slices3.push_back(21);
-   ra4_tt_mt_slices3.push_back(22);
-   ra4_tt_mt_slices3.push_back(23);
-   ra4_tt_mt_slices3.push_back(24);
-   ra4_tt_mt_slices3.push_back(25);
-   ra4_tt_mt_slices3.push_back(26);
+  vector<int> ra4_tt_mt_slices3;
+  //dilep, single lep x 1 2 3+ B
+  ra4_tt_mt_slices3.push_back(21);
+  ra4_tt_mt_slices3.push_back(22);
+  ra4_tt_mt_slices3.push_back(23);
+  ra4_tt_mt_slices3.push_back(24);
+  ra4_tt_mt_slices3.push_back(25);
+  ra4_tt_mt_slices3.push_back(26);
    
-    vector<hfeats> vars;
+  vector<hfeats> vars;
 
 
   //////////////////// N-1 plots ////////////////////////////////
@@ -156,66 +156,66 @@ int main(){
   vars.push_back(hfeats("mt",20,0,280, ra4_tt_nj_slices, "combined semi and fully leptonic ttbar m_{T} (GeV)",
   			"ht>500&&met>200&&nbm>=2&&(nmus+nels)==1",140));
 
-    vars.push_back(hfeats("mt",20,0,280, ra4_tt_nj_slices, "semileptonic ttbar m_{T} (GeV)",
-			  "ht>500&&met>200&&nbm>=2&&(nmus+nels)==1&&((mc_type&0x0F00)/0x100+(mc_type&0x000F)-(mc_type&0x00F0)/0x10)<=1",140));
+  vars.push_back(hfeats("mt",20,0,280, ra4_tt_nj_slices, "semileptonic ttbar m_{T} (GeV)",
+			"ht>500&&met>200&&nbm>=2&&(nmus+nels)==1&&ntruleps<=1",140));
 
-    vars.push_back(hfeats("mt",20,0,280, ra4_tt_nj_slices, "fully leptonic ttbar m_{T} (GeV)",
-			  "ht>500&&met>200&&nbm>=2&&(nmus+nels)==1&&((mc_type&0x0F00)/0x100+(mc_type&0x000F)-(mc_type&0x00F0)/0x10)>=2",140));
+  vars.push_back(hfeats("mt",20,0,280, ra4_tt_nj_slices, "fully leptonic ttbar m_{T} (GeV)",
+			"ht>500&&met>200&&nbm>=2&&(nmus+nels)==1&&ntruleps>=2",140));
 
 
-    vars.push_back(hfeats("mt",20,0,280, ra4_tt_mt_slices2, "m_{T} (GeV)",
-			  "ht>500&&njets>=6&&met>200&&(nmus+nels)==1&&nbm>=2",140));
+  vars.push_back(hfeats("mt",20,0,280, ra4_tt_mt_slices2, "m_{T} (GeV)",
+			"ht>500&&njets>=6&&met>200&&(nmus+nels)==1&&nbm>=2",140));
 
-     vars.push_back(hfeats("mt",20,0,280, ra4_tt_mt_slices3, "m_{T} (GeV)",
-			  "ht>500&&njets>=6&&met>200&&(nmus+nels)==1&&nbm>=1",140));
+  vars.push_back(hfeats("mt",20,0,280, ra4_tt_mt_slices3, "m_{T} (GeV)",
+			"ht>500&&njets>=6&&met>200&&(nmus+nels)==1&&nbm>=1",140));
     
-     vars.push_back(hfeats("mt",20,0,280, ra4_tt_mt_slices3, "m_{T} (GeV)",
-			  "mj>500&&ht>500&&njets>=6&&met>200&&(nmus+nels)==1&&nbm>=1",140));
+  vars.push_back(hfeats("mt",20,0,280, ra4_tt_mt_slices3, "m_{T} (GeV)",
+			"mj>500&&ht>500&&njets>=6&&met>200&&(nmus+nels)==1&&nbm>=1",140));
      
-      vars.push_back(hfeats("mt",20,0,280, ra4_tt_mt_slices3, "m_{T} (GeV)",
-			  "mj<=500&&ht>500&&njets>=6&&met>200&&(nmus+nels)==1&&nbm>=1",140));
+  vars.push_back(hfeats("mt",20,0,280, ra4_tt_mt_slices3, "m_{T} (GeV)",
+			"mj<=500&&ht>500&&njets>=6&&met>200&&(nmus+nels)==1&&nbm>=1",140));
 
-         vars.push_back(hfeats("mt",20,0,280, ra4_tt_mt_slices3, "m_{T} (GeV)",
-			  "mj>500&&ht>500&&njets>=6&&met>200&&(nmus+nels)==1&&nbm>=1",140));
+  vars.push_back(hfeats("mt",20,0,280, ra4_tt_mt_slices3, "m_{T} (GeV)",
+			"mj>500&&ht>500&&njets>=6&&met>200&&(nmus+nels)==1&&nbm>=1",140));
      
-      vars.push_back(hfeats("mt",20,0,280, ra4_tt_mt_slices3, "m_{T} (GeV)",
-			  "mj<=500&&ht>500&&njets>=6&&met>200&&(nmus+nels)==1&&nbm>=1",140));
+  vars.push_back(hfeats("mt",20,0,280, ra4_tt_mt_slices3, "m_{T} (GeV)",
+			"mj<=500&&ht>500&&njets>=6&&met>200&&(nmus+nels)==1&&nbm>=1",140));
 
 
     
-    vars.push_back(hfeats("mj",15,0,1000, ra4_tt_nj_slices, "M_{J} (GeV)",
+  vars.push_back(hfeats("mj",15,0,1000, ra4_tt_nj_slices, "M_{J} (GeV)",
   			"ht>500&&met>200&&nbm>=2&&mt>140&&(nmus+nels)==1"));
   
   vars.push_back(hfeats("mj",20,0,1000, ra4_tt_nj_slices, "M_{J} (GeV)",
   			"ht>500&&met>200&&nbm>=2&&mt<=140&&(nmus+nels)==1"));
 
   
- vars.push_back(hfeats("mj",20,0,1000, ra4_tt_mt_slices, "M_{J} (GeV)",
+  vars.push_back(hfeats("mj",20,0,1000, ra4_tt_mt_slices, "M_{J} (GeV)",
   			"ht>500&&met>200&&nbm>=2"));
   
 
   
   /* vars.push_back(hfeats("mt",60,0,600, ra4_sam, "m_{T} (GeV)",
-  			"ht>500&&met>400&&nbm>=2&&njets>=6&&(nmus+nels)==1",140));
-  vars.push_back(hfeats("met",20,200,1200, ra4_sam, "MET (GeV)",
-  			"ht>500&&nbm>=2&&njets>=6&&mt>140&&(nmus+nels)==1",400));
-  vars.push_back(hfeats("njets",18,-0.5,17.5, ra4_sam, "Number of 40 GeV jets",
-  			"ht>500&&met>400&&nbm>=2&&mt>140&&(nmus+nels)==1",5.5));
-  vars.push_back(hfeats("nbm",7,-0.5,6.5, ra4_sam, "Number of b-tags (CSVM)",
-  			"ht>500&&met>400&&njets>=6&&mt>140&&(nmus+nels)==1",1.5));
-  vars.push_back(hfeats("mj",32,0,1600, ra4_sam, "M_{J} (GeV)",
-  			"ht>500&&met>400&&nbm>=2&&njets>=6&&mt>140&&(nmus+nels)==1",500));
+     "ht>500&&met>400&&nbm>=2&&njets>=6&&(nmus+nels)==1",140));
+     vars.push_back(hfeats("met",20,200,1200, ra4_sam, "MET (GeV)",
+     "ht>500&&nbm>=2&&njets>=6&&mt>140&&(nmus+nels)==1",400));
+     vars.push_back(hfeats("njets",18,-0.5,17.5, ra4_sam, "Number of 40 GeV jets",
+     "ht>500&&met>400&&nbm>=2&&mt>140&&(nmus+nels)==1",5.5));
+     vars.push_back(hfeats("nbm",7,-0.5,6.5, ra4_sam, "Number of b-tags (CSVM)",
+     "ht>500&&met>400&&njets>=6&&mt>140&&(nmus+nels)==1",1.5));
+     vars.push_back(hfeats("mj",32,0,1600, ra4_sam, "M_{J} (GeV)",
+     "ht>500&&met>400&&nbm>=2&&njets>=6&&mt>140&&(nmus+nels)==1",500));
 
-  vars.push_back(hfeats("mt",60,0,600, ra4_sam, "m_{T} (GeV)",
-  			"ht>500&&met>400&&nbm>=2&&njets>=8&&(nmus+nels)==1",140));
-  vars.push_back(hfeats("met",20,200,1200, ra4_sam, "MET (GeV)",
-  			"ht>500&&nbm>=2&&njets>=8&&mt>140&&(nmus+nels)==1",400));
-  vars.push_back(hfeats("nbm",7,-0.5,6.5, ra4_sam, "Number of b-tags (CSVM)",
-  			"ht>500&&met>400&&njets>=8&&mt>140&&(nmus+nels)==1",1.5));
-  vars.push_back(hfeats("mj",32,0,1600, ra4_sam, "M_{J} (GeV)",
-  "ht>500&&met>400&&nbm>=2&&njets>=8&&mt>140&&(nmus+nels)==1",500));*/
+     vars.push_back(hfeats("mt",60,0,600, ra4_sam, "m_{T} (GeV)",
+     "ht>500&&met>400&&nbm>=2&&njets>=8&&(nmus+nels)==1",140));
+     vars.push_back(hfeats("met",20,200,1200, ra4_sam, "MET (GeV)",
+     "ht>500&&nbm>=2&&njets>=8&&mt>140&&(nmus+nels)==1",400));
+     vars.push_back(hfeats("nbm",7,-0.5,6.5, ra4_sam, "Number of b-tags (CSVM)",
+     "ht>500&&met>400&&njets>=8&&mt>140&&(nmus+nels)==1",1.5));
+     vars.push_back(hfeats("mj",32,0,1600, ra4_sam, "M_{J} (GeV)",
+     "ht>500&&met>400&&nbm>=2&&njets>=8&&mt>140&&(nmus+nels)==1",500));*/
 
-  plot_distributions(Samples, vars, "10", ".pdf", "RA4");
+  plot_distributions(Samples, vars, "10", ".eps", "RA4");
 
 }
 

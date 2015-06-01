@@ -2,6 +2,7 @@ small_tree*.*pp
 plots/*
 run/*.exe
 archive
+txt/data_card*
 
 # Compiled Object files
 *.slo

@@ -11,8 +11,8 @@ using namespace std;
 
 int main(){ 
 
-  TString folder="/cms5r0/ald77/archive/2015_05_10/skim/";
-  TString folder_noskim="/cms5r0/ald77/archive/2015_05_10/";
+  TString folder="/cms5r0/ald77/archive/2015_05_21/skim/";
+  TString folder_noskim="/cms5r0/ald77/archive/2015_05_21/";
   vector<TString> s_t1t;
   s_t1t.push_back(folder+"*T1tttt*1500_*PU20*");
   vector<TString> s_t1tc;
@@ -39,9 +39,9 @@ int main(){
   Samples.push_back(sfeats(s_t1t, "T1tttt(1500,100)", ra4::c_t1tttt));
   Samples.push_back(sfeats(s_t1tc, "T1tttt(1200,800)", ra4::c_t1tttt,2));
   Samples.push_back(sfeats(s_tt, "t#bar{t}, 1 l", ra4::c_tt_1l, 1,
-			   "((mc_type&0x0F00)/0x100+(mc_type&0x000F)-(mc_type&0x00F0)/0x10)<=1"));
+			   "ntruleps<=1"));
   Samples.push_back(sfeats(s_tt, "t#bar{t}, 2 l", ra4::c_tt_2l,1,
-			   "((mc_type&0x0F00)/0x100+(mc_type&0x000F)-(mc_type&0x00F0)/0x10)>=2"));
+			   "ntruleps>=2"));
   Samples.push_back(sfeats(s_wjets, "W+jets", ra4::c_wjets));
   Samples.push_back(sfeats(s_singlet, "Single t", ra4::c_singlet));
   Samples.push_back(sfeats(s_ttv, "ttV", ra4::c_ttv));
