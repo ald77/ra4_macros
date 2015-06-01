@@ -12,10 +12,13 @@
 #include <string>
 #include <vector>
 
+#ifndef INT_ROOT
+#include "fastjet/PseudoJet.hh"
+#endif
+
 #include "TString.h"
 #include "TTree.h"
 #include "TGraph.h"
-#include "TH1D.h"
 
 typedef std::pair<int,double> int_double;
 typedef std::pair<double,double> double_double;
@@ -62,5 +65,9 @@ std::string RemoveTrailingNewlines(std::string str);
 
 std::vector<double> LinearSpacing(size_t npts, double low, double high);
 
+#ifndef INT_ROOT
+bool greater_m(const fastjet::PseudoJet &a, const fastjet::PseudoJet &b);
+std::vector<fastjet::PseudoJet> sorted_by_m(std::vector<fastjet::PseudoJet> pjs);
+#endif
 
 #endif

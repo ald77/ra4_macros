@@ -11,6 +11,7 @@ float ntrupv_mean
 float met
 float met_phi
 float ht
+float ht40
 float ht_reliso
 float mht
 float mt
@@ -35,6 +36,11 @@ int ntrumus
 int ntruels
 int ntrutaush
 int ntrutausl
+float trutop1_pt
+float trutop2_pt
+float trutop1_phi
+float trutop2_phi
+int ntrumeisr
 
 ##################   Leptons   ################
 int nleps
@@ -87,6 +93,10 @@ int njets
 int nbl
 int nbm
 int nbt
+int njets40
+int nbl40
+int nbm40
+int nbt40
 
 std::vector<float> jets_pt
 std::vector<float> jets_eta

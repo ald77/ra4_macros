@@ -217,7 +217,8 @@ void WriteBaseHeader(const set<Variable> &all_vars,
   file << "#include <string>\n\n";
 
   file << "#include \"TTree.h\"\n";
-  file << "#include \"TChain.h\"\n\n";
+  file << "#include \"TChain.h\"\n";
+  file << "#include \"TTreeFormula.h\"\n\n";
 
   file << "class small_tree{\n";
   file << "public:\n";
@@ -227,7 +228,8 @@ void WriteBaseHeader(const set<Variable> &all_vars,
   file << "  int Add(const std::string &filename);\n";
 
   file << "  long GetEntries() const;\n";
-  file << "  virtual void GetEntry(const long entry);\n\n";
+  file << "  virtual void GetEntry(const long entry);\n";
+  file << "  bool PassString(TString cut);\n\n";
 
   file << "  virtual void Fill();\n";
   file << "  void Write();\n\n";
@@ -314,7 +316,8 @@ void WriteBaseSource(const set<Variable> &all_vars,
   file << "#include \"TROOT.h\"\n";
   file << "#include \"TTree.h\"\n";
   file << "#include \"TBranch.h\"\n";
-  file << "#include \"TChain.h\"\n\n";
+  file << "#include \"TChain.h\"\n";
+  file << "#include \"TTreeFormula.h\"\n\n";
 
   file << "using namespace std;\n\n";
 
@@ -435,6 +438,13 @@ void WriteBaseSource(const set<Variable> &all_vars,
   file << "  return chain_.Add(filename.c_str());\n";
   file << "}\n\n";
 
+
+  file << "bool small_tree::PassString(TString cut){\n";
+  file << " TTreeFormula f(\"formula\",cut, &chain_);\n";
+  file << " bool result = f.EvalInstance(0);\n";
+  file << " return result;\n";
+  file << "}\n\n";
+  
   file << "long small_tree::GetEntries() const{\n";
   file << "  if(read_only_){\n";
   file << "    return chain_.GetEntries();\n";
