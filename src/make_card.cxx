@@ -29,6 +29,8 @@ namespace{
   std::string mgluino = "1500";
   std::string mlsp = "100";
 
+  bool do_tk_veto = false;
+
   double mt_min = 0.;
   double mt_div = 140.;
   double mj_min = 0.;
@@ -96,6 +98,7 @@ void GetOptions(int argc, char *argv[]){
       {"include_signal", no_argument, 0, 's'},
       {"mgluino", required_argument, 0, 0},
       {"mlsp", required_argument, 0, 0},
+      {"tk_veto", no_argument, 0, 't'},
       {"mt_min", required_argument, 0, 0},
       {"mt_div", required_argument, 0, 0},
       {"mj_min", required_argument, 0, 0},
@@ -130,6 +133,9 @@ void GetOptions(int argc, char *argv[]){
       break;
     case 's':
       include_signal = true;
+      break;
+    case 't':
+      do_tk_veto = true;
       break;
     case 0:
       optname = long_options[option_index].name;
@@ -221,7 +227,7 @@ void GetCounts(double lumi,
        || tree.njets()<njets_min
        || (tree.nmus()+tree.nels())!=1
        || tree.met()<=met_min
-       //       || tree.ntks_chg_mini()>0
+       || (do_tk_veto && tree.ntks_chg_mini()>0)
        || tree.ht()<=ht_min) continue;
 
     size_t bin = LookUpBin(tree);
@@ -483,24 +489,6 @@ void GetBinMapping(size_t &nr1, vector<size_t> &r1_map,
   }
 }
 
-void GetKappa(vector<double> &kappas, vector<double> &kappa_uncerts,
-              size_t ikappa, size_t ilowlow, size_t ilowhigh, size_t ihighlow,
-              const vector<double> &mc_raw, const vector<double> &mc_wght,
-              const vector<double> &data_counts){
-  kappas.at(ikappa) = (mc_raw.at(ilowlow)*mc_wght.at(ilowlow))/data_counts.at(ilowlow);
-  kappas.at(ikappa) *= data_counts.at(ilowhigh)/(mc_raw.at(ilowhigh)*mc_wght.at(ilowhigh));
-  kappas.at(ikappa) *= data_counts.at(ihighlow)/(mc_raw.at(ihighlow)*mc_wght.at(ihighlow));
-
-  kappa_uncerts.at(ikappa) = 1./data_counts.at(ilowlow);
-  kappa_uncerts.at(ikappa) += 1./data_counts.at(ilowhigh);
-  kappa_uncerts.at(ikappa) += 1./data_counts.at(ihighlow);
-  kappa_uncerts.at(ikappa) += 1./mc_raw.at(ilowlow);
-  kappa_uncerts.at(ikappa) += 1./mc_raw.at(ilowhigh);
-  kappa_uncerts.at(ikappa) += 1./mc_raw.at(ihighlow);
-
-  kappa_uncerts.at(ikappa) = sqrt(kappa_uncerts.at(ikappa));
-}
-
 double sqr(double x){
   return x*x;
 }
@@ -520,11 +508,13 @@ void WriteFile(const vector<double> &ttbar_raw, const vector<double> &ttbar_wght
             << (no_mc_kappa?"_no":"_with") << "_mc_kappa"
             << "_T1tttt_" << mgluino << '_' << mlsp
             << "_lumi_" << lumi
+            << (do_tk_veto?"_with":"_no") << "_tk_veto"
             << "_ht_" << ht_min
             << "_mt_" << mt_min << '_' << mt_div
             << "_mj_" << mj_min << '_' << mj_div
             << "_njets_" << njets_min << '_' << njets_div
             << "_met_" << met_min << '_' << met_div
+            << "_nb_" << nb_min << '_' << nb_div
             << ".txt" << flush;
 
   ofstream file(file_name.str().c_str());
@@ -599,42 +589,28 @@ void WriteFile(const vector<double> &ttbar_raw, const vector<double> &ttbar_wght
     PrintGamma(file, r4_map, "ttbr_r4", 4, nr1, nr2, nr3, nr4, ttbar_raw, ttbar_wght, ttbar_pred, 1);
     PrintGamma(file, r4_map, "othr_r4", 4, nr1, nr2, nr3, nr4, other_raw, other_wght, other_pred, 2);
   }
+  file << "#kappa                    ";
+  for(size_t ir4 = 0; ir4 < nr4; ++ir4){
+    size_t ir1 = r1_map.at(ir4);
+    size_t ir2 = r2_map.at(ir4)+nr1;
+    size_t ir3 = r3_map.at(ir4)+nr1+nr2;
+    size_t iir4 = r4_map.at(ir4)+nr1+nr2+nr3;
 
-  file << flush;
+    double kappa = mc_raw.at(ir1)*mc_wght.at(ir1);
+    kappa /= mc_raw.at(ir2)*mc_wght.at(ir2);
+    kappa /= mc_raw.at(ir3)*mc_wght.at(ir3);
+    kappa *= mc_raw.at(iir4)*mc_wght.at(iir4);
+
+    file
+      << ' ' << setw(12) << '-'
+      << ' ' << setw(12) << kappa
+      << ' ' << setw(12) << kappa;
+  }
+
+  file << endl;
   file.close();
 
   cout << endl << "Created data card at " << file_name.str() << endl << endl;
-}
-
-string GetBinName(size_t bin){
-  switch(method){
-  case 0:
-  case 1:
-  case 2:
-    switch(bin){
-    case 0: return "low met, low njets";
-    case 1: return "low met, high njets";
-    case 2: return "high met, low njets";
-    case 3: return "high met, high njets";
-    default: break;
-    }
-  case 3:
-    switch(bin){
-    case 0: return "low met, low njets, low nb";
-    case 1: return "low met, low njets, high nb";
-    case 2: return "low met, high njets, low nb";
-    case 3: return "low met, high njets, high nb";
-    case 4: return "high met, low njets";
-    case 5: return "high met, high njets";
-    default: break;
-    }
-  default: break;
-  }
-  TString msg = "Bad method/bin: ";
-  msg += method;
-  msg += '/';
-  msg == bin;
-  return msg.Data();
 }
 
 void GetGammaParameters(int &raw_out, double &weight_out,
@@ -703,40 +679,8 @@ void PrintLogN(ofstream &file, const vector<size_t> map,
     file << name << '_' << (iri+1) << " lnN             ";
     for(size_t ir4 = 0; ir4 < nr4; ++ir4){
       if(map.at(ir4) == iri){
-        double val = 1.+1./sqrt(raw_counts.at(iri+offset));
+        double val = 1.+1./sqrt(raw_counts.at(iri+offset)+1.);
         file << "            - " << setw(12) << val << ' ' << setw(12) << val;
-      }else{
-        file << "            -            -            -";
-      }
-    }
-    file << '\n';
-  }
-}
-
-void PrintLogN(ofstream &file, const vector<size_t> map,
-               const string &name, size_t ibin,
-               size_t nr1, size_t nr2, size_t nr3, size_t nr4,
-               const vector<double> &raw_counts, size_t iproc){
-  size_t nri = -1; size_t offset = 0;
-  switch(ibin){
-  case 1: nri = nr1; offset = 0; break;
-  case 2: nri = nr2; offset = nr1; break;
-  case 3: nri = nr3; offset = nr1+nr2; break;
-  case 4: nri = nr4; offset = nr1+nr2+nr3; break;
-  default: break;
-  }
-  for(size_t iri = 0; iri < nri; ++iri){
-    file << name << '_' << (iri+1) << " lnN             ";
-    for(size_t ir4 = 0; ir4 < nr4; ++ir4){
-      if(map.at(ir4) == iri){
-        double val = 1.+1./sqrt(raw_counts.at(iri+offset));
-        for(size_t i = 0; i < 3; ++i){
-          if(i == iproc){
-            file << ' ' << setw(12) << val;
-          }else{
-            file << ' ' << setw(12) << '-';
-          }
-        }
       }else{
         file << "            -            -            -";
       }

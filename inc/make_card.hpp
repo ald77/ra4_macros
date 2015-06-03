@@ -22,15 +22,6 @@ void MockUpData(std::vector<double> &data,
                 const std::vector<double> &other_raw, const std::vector<double> & other_wght,
                 const std::vector<double> &sig_raw, const std::vector<double> &sig_wght);
 
-void GetKappas(const std::vector<double> &mc_raw, const std::vector<double> &mc_wght,
-               const std::vector<double> &data_counts,
-               std::vector<double> &kappas, std::vector<double> &kappa_uncerts);
-
-void GetKappa(std::vector<double> &kappas, std::vector<double> &kappa_uncerts,
-              size_t ikappa, size_t ilowlow, size_t ilowhigh, size_t ihighlow,
-              const std::vector<double> &mc_raw, const std::vector<double> &mc_wght,
-              const std::vector<double> &data_counts);
-
 double sqr(double x);
 
 void WriteFile(const std::vector<double> &ttbar_raw, const std::vector<double> &ttbar_wght,
@@ -38,8 +29,6 @@ void WriteFile(const std::vector<double> &ttbar_raw, const std::vector<double> &
                const std::vector<double> &sig_raw, const std::vector<double> &sig_wght,
                const std::vector<double> &mc_raw, const std::vector<double> &mc_wght,
                const std::vector<double> &data_counts);
-
-std::string GetBinName(size_t i);
 
 void GetGammaParameters(int &raw, double &weight,
                         double sumw, double sumw2);
@@ -65,11 +54,6 @@ void PrintLogN(std::ofstream &file, const std::vector<size_t> map,
                const std::string &name, size_t ibin,
                size_t nr1, size_t nr2, size_t nr3, size_t nr4,
                const std::vector<double> &raw_counts);
-
-void PrintLogN(std::ofstream &file, const std::vector<size_t> map,
-               const std::string &name, size_t ibin,
-               size_t nr1, size_t nr2, size_t nr3, size_t nr4,
-               const std::vector<double> &raw_counts, size_t iproc);
 
 void PrintGamma(std::ofstream &file, const std::vector<size_t> map,
                 const std::string &name, size_t ibin,
