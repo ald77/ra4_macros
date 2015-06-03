@@ -22,18 +22,7 @@ int main(){
   styles style("Standard");
   style.setDefaultStyle();
 
-  TColor ucsb_blue(1000, 1/255.,57/255.,166/255.);
-  TColor ucsb_gold(1001, 255/255.,200/255.,47/255);
-  TColor penn_red(1002, 149/255.,0/255.,26/255.);
-  TColor uf_orange(1003, 255/255.,74/255.,0/255.);
-  TColor uo_green(1004, 0/255.,79/255.,39/255.);
-  TColor tcu_purple(1005, 52/255.,42/255.,123/255.);
-  TColor tar_heel_blue(1006, 86/255.,160/255.,211/255.);
-  TColor sig_teal(1007, 96/255.,159/255.,128/255.);
-  TColor sig_gold(1008, 215/255.,162/255.,50/255.);
-  TColor seal_brown(1010, 89/255.,38/255.,11/255.);
-
-  TString folder="archive/current/skim/";
+  TString folder="/cms5r0/rohan/2015_05_25/skim_met100/";
   //TString folder="archive/current/";
   vector<TString> s_tt;
   s_tt.push_back(folder+"*_TTJet*");
@@ -57,8 +46,8 @@ int main(){
   // Reading ntuples
   vector<TChain*> chains;
   vector<sfeats> samples;
-  samples.push_back(sfeats(s_tt, "t#bar{t}, 2 l", 1006,1,"((mc_type&0x0F00)/0x100+(mc_type&0x000F)-(mc_type&0x00F0)/0x10)>=2"));//0
-  samples.push_back(sfeats(s_tt, "t#bar{t}, 1 l", 1000,1,"((mc_type&0x0F00)/0x100+(mc_type&0x000F)-(mc_type&0x00F0)/0x10)<=1"));//1
+  samples.push_back(sfeats(s_tt, "t#bar{t}, 2 l", 1006,1,"ntruleps>=2"));//0
+  samples.push_back(sfeats(s_tt, "t#bar{t}, 1 l", 1000,1,"ntruleps<=1"));//1
   samples.push_back(sfeats(s_ttv, "ttV", 1002));//2
   samples.push_back(sfeats(s_single, "Single top", 1005));//3
   samples.push_back(sfeats(s_wjets, "W+jets", 1004));//4
@@ -66,13 +55,13 @@ int main(){
   samples.push_back(sfeats(s_t1t, "T1tttt(1500,100)", 2));//6
   samples.push_back(sfeats(s_t1tc, "T1tttt(1200,800)", 2,2));//7
 
-  samples.push_back(sfeats(s_tt, "0 leps", kGreen-4, 1, "((mc_type&0x0F00)/0x100)==0 && ((mc_type&0x000F)-((mc_type&0x00F0)/0x10))==0"));//8
-  samples.push_back(sfeats(s_tt, "1 #tau_{had}", kRed-4, 1, "((mc_type&0x0F00)/0x100)==0 && ((mc_type&0x000F)-((mc_type&0x00F0)/0x10))==1"));//9
-  samples.push_back(sfeats(s_tt, "1 e/#mu", kBlue-4, 1, "((mc_type&0x0F00)/0x100)==1 && ((mc_type&0x000F)-((mc_type&0x00F0)/0x10))==0"));//10
-  samples.push_back(sfeats(s_tt, "2 #tau_{had}", kRed+2, 1, "((mc_type&0x0F00)/0x100)==0 && ((mc_type&0x000F)-((mc_type&0x00F0)/0x10))==2"));//11
-  samples.push_back(sfeats(s_tt, "1 e/#mu, 1 #tau_{had}", kMagenta+2, 1, "((mc_type&0x0F00)/0x100)==1 && ((mc_type&0x000F)-((mc_type&0x00F0)/0x10))==1"));//12
-  samples.push_back(sfeats(s_tt, "2 e/#mu", kBlue+2, 1, "((mc_type&0x0F00)/0x100)==2 && ((mc_type&0x000F)-((mc_type&0x00F0)/0x10))==0"));//13
-  samples.push_back(sfeats(s_tt, "3+ leps", kGreen+2, 1, "(((mc_type&0x0F00)/0x100)+((mc_type&0x000F)-((mc_type&0x00F0)/0x10)))>2"));//14
+  samples.push_back(sfeats(s_tt, "0 leps", kGreen-4, 1, "ntruleps==0"));//8
+  samples.push_back(sfeats(s_tt, "1 #tau_{had}", kRed-4, 1, "ntruleps==1 && ntrutaush==1"));//9
+  samples.push_back(sfeats(s_tt, "1 e/#mu", kBlue-4, 1, "ntruleps==1 && (ntruels+ntrumus)==1"));//10
+  samples.push_back(sfeats(s_tt, "2 #tau_{had}", kRed+2, 1, "ntruleps==2 && ntrutaush==2"));//11
+  samples.push_back(sfeats(s_tt, "1 e/#mu, 1 #tau_{had}", kMagenta+2, 1, "ntruleps==2 && (ntruels+ntrumus)==1 && ntrutaush==1"));//12
+  samples.push_back(sfeats(s_tt, "2 e/#mu", kBlue+2, 1, "ntruleps==2 && (ntruels+ntrumus)==2"));//13
+  samples.push_back(sfeats(s_tt, "3+ leps", kGreen+2, 1, "ntruleps>=3"));//14
 
   for(unsigned sam(0); sam < samples.size(); sam++){
     chains.push_back(new TChain("tree"));

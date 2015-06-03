@@ -28,16 +28,18 @@ void MakeGraphs(double rmj1[],double rmj2[],double rmj1_err[],double rmj2_err[],
 
 int main(){
   TString luminosity = "10";
-  TString folder="/cms5r0/ald77/archive/2015_05_25/skim/";
-  TString folder_noskim="/cms5r0/ald77/archive/2015_05_25/";
+  //  TString folder="/cms5r0/ald77/archive/2015_05_25/skim/";
+  //  TString folder_noskim="/cms5r0/ald77/archive/2015_05_25/";
+  TString folder="/cms5r0/rohan/2015_05_25/skim_met100/";
+
   vector<TString> s_t1t;
   s_t1t.push_back(folder+"*T1tttt*1500_*PU20*");
   vector<TString> s_t1tc;
   s_t1tc.push_back(folder+"*T1tttt*1200_*PU20*");
   vector<TString> s_tt;
   s_tt.push_back(folder+"*_TTJet*");
-  vector<TString> s_tt_noskim;
-  s_tt_noskim.push_back(folder_noskim+"*_TTJet*12.root");
+  //  vector<TString> s_tt_noskim;
+  //  s_tt_noskim.push_back(folder_noskim+"*_TTJet*12.root");
   vector<TString> s_wjets;
   s_wjets.push_back(folder+"*WJets*");
   vector<TString> s_singlet;
@@ -51,41 +53,20 @@ int main(){
   s_other.push_back(folder+"*DY*");
   s_other.push_back(folder+"*WH_HToBB*");
 
-  // Reading ntuples
-  vector<sfeats> Samples; 
-  Samples.push_back(sfeats(s_t1t, "T1tttt(1500,100)", ra4::c_t1tttt));//0
-  Samples.push_back(sfeats(s_t1tc, "T1tttt(1200,800)", ra4::c_t1tttt,2));//1
-  Samples.push_back(sfeats(s_tt, "t#bar{t}, 1 l", ra4::c_tt_1l, 1,"ntruleps<=1"));//2
-  Samples.push_back(sfeats(s_tt, "t#bar{t}, 2 l", ra4::c_tt_2l,1,"ntruleps>=2"));//3
-  Samples.push_back(sfeats(s_wjets, "W+jets", ra4::c_wjets));//4
-  Samples.push_back(sfeats(s_singlet, "Single t", ra4::c_singlet));//5
-  Samples.push_back(sfeats(s_ttv, "ttV", ra4::c_ttv));//6
-  Samples.push_back(sfeats(s_other, "Other", ra4::c_other));//7
-  Samples.push_back(sfeats(s_tt_noskim, "t#bar{t}", ra4::c_tt_1l,1));//8
-
-  Samples.push_back(sfeats(s_tt, "t#bar{t}", 15, 1));//9
+  //TString baseline = "ht>500&&met>100&&nbm==1&&(nmus+nels)==1&&njets>=7";                // MET 100, Nb=1 
+  //  TString baseline = "ht>500&&met>100&&nbm==1&&(nmus+nels)==1&&njets>=7&&ntks_chg==0";     // ITV, MET 100, Nb=1
   
-  vector<int> ra4_sam;
-  ra4_sam.push_back(0);
-  ra4_sam.push_back(1);
-  ra4_sam.push_back(2);
-  ra4_sam.push_back(3);
-  ra4_sam.push_back(4);
-  ra4_sam.push_back(5);
-  ra4_sam.push_back(6);
-  ra4_sam.push_back(7);
+  TString baseline = "ht>500&&met>100&&nbm>=2&&(nmus+nels)==1&&njets>=7";                // MET 100, Nb>=2
+  //TString baseline = "ht>500&&met>100&&nbm>=2&&(nmus+nels)==1&&njets>=7&&ntks_chg==0";   // ITV, MET 100, Nb>=2
 
-  vector<int> ra4_tt_t1;
-  ra4_tt_t1.push_back(0);
-  ra4_tt_t1.push_back(1);
-  ra4_tt_t1.push_back(2);
-
-  //TString baseline = "ht>500&&met>200&&nbm>=2&&(nmus+nels)==1&&njets>=7";
-  TString baseline = "ht>500&&met>200&&nbm>=2&&(nmus+nels)==1&&njets>=7&&ntks_chg==0";  //With IsoTrkVeto
+  //TString baseline = "ht>500&&met>200&&nbm>=2&&(nmus+nels)==1&&njets>=7";                // MET 200, Nb>=2
+  //TString baseline = "ht>500&&met>200&&nbm>=2&&(nmus+nels)==1&&njets>=7&&ntks_chg==0";   // ITV, MET 200, Nb>=2
   
 
   vector<sfeats> samples_MJ;
-  samples_MJ.push_back(sfeats(s_tt, "t#bar{t}", 31, 1));
+  //samples_MJ.push_back(sfeats(s_tt, "t#bar{t}", 31, 1));
+  //samples_MJ.push_back(sfeats(s_tt, "2#it{l} t#bar{t}", 31,1,"ntruleps>=2"));
+  samples_MJ.push_back(sfeats(s_tt, "1#it{l} t#bar{t}", 31,1,"ntruleps<=1"));
 
   // METHOD 1
   TString mj_cut = "mj>600";   
@@ -93,10 +74,12 @@ int main(){
   TString not_mt_cut = invertcut(mt_cut);
   TString not_mj_cut = invertcut(mj_cut);
 
-  const int nExt = 4; // Must match size of external vector
+  const int nExt = 6; // Must match size of external vector
   vector<TString> external_meth1;
+  external_meth1.push_back("njets>=7&&njets<=8&&met>100&&met<=200");
   external_meth1.push_back("njets>=7&&njets<=8&&met>200&&met<=400");
   external_meth1.push_back("njets>=7&&njets<=8&&met>400");
+  external_meth1.push_back("njets>=9&&met>100&&met<=200");
   external_meth1.push_back("njets>=9&&met>200&&met<=400");
   external_meth1.push_back("njets>=9&&met>400");
 
@@ -126,9 +109,12 @@ int main(){
   }  
 
   vector<TString> binlabels; //push back twice for each njets bin
-  binlabels.push_back("low MET");binlabels.push_back("high MET");
-  binlabels.push_back("low MET");binlabels.push_back("high MET");
-  binlabels.push_back("method1"); // Last bin is for method name.
+  binlabels.push_back("low MET");binlabels.push_back("med MET");binlabels.push_back("high MET");
+  binlabels.push_back("low MET");binlabels.push_back("med MET");binlabels.push_back("high MET");
+  TString binName = "method1";
+  if (baseline.Contains("met>100")) binName.Append("_met100");
+  if (baseline.Contains("nbm==1")) binName.Append("_nb1");
+  binlabels.push_back(binName); // Last bin is for method name.
 
   MakeGraphs(rmj43, rmj21, rmj43_err, rmj21_err, rmt42, rmt31, rmt42_err, rmt31_err, kappa, kappa_err, binlabels, samples_MJ.at(0).label, baseline, mj_cut, mt_cut);
 
@@ -138,15 +124,19 @@ int main(){
   not_mt_cut = invertcut(mt_cut);
   not_mj_cut = invertcut(mj_cut);
 
-  const int nExt_2 = 4; // Must match size of largest external vector
+  const int nExt_2 = 6; // Must match size of external vector
   vector<TString> externalA_meth2;
+  externalA_meth2.push_back("met>100&&met<=200");
   externalA_meth2.push_back("met>200&&met<=400");
   externalA_meth2.push_back("met>400");
+  externalA_meth2.push_back("met>100&&met<=200");
   externalA_meth2.push_back("met>200&&met<=400");
   externalA_meth2.push_back("met>400");
   vector<TString> externalB_meth2;
+  externalB_meth2.push_back("njets>=7&&njets<=8&&met>100&&met<=200");
   externalB_meth2.push_back("njets>=7&&njets<=8&&met>200&&met<=400");
   externalB_meth2.push_back("njets>=7&&njets<=8&&met>400");
+  externalB_meth2.push_back("njets>=9&&met>100&&met<=200");
   externalB_meth2.push_back("njets>=9&&met>200&&met<=400");
   externalB_meth2.push_back("njets>=9&&met>400");
 
@@ -174,13 +164,17 @@ int main(){
   }  
 
   vector<TString> binlabels_2; //push back twice for each njets bin
-  binlabels_2.push_back("low MET");binlabels_2.push_back("high MET");
-  binlabels_2.push_back("low MET");binlabels_2.push_back("high MET");
-  binlabels_2.push_back("method2"); // Last bin is for method name.
+  binlabels_2.push_back("low MET");binlabels_2.push_back("med MET");binlabels_2.push_back("high MET");
+  binlabels_2.push_back("low MET");binlabels_2.push_back("med MET");binlabels_2.push_back("high MET");
+
+  TString binName_2 = "method2";
+  if (baseline.Contains("met>100")) binName_2.Append("_met100");
+  if (baseline.Contains("nbm==1")) binName_2.Append("_nb1");
+  binlabels_2.push_back(binName_2); // Last bin is for method name.
 
   MakeGraphs(rmj43_2, rmj21_2, rmj43_err_2, rmj21_err_2, rmt42_2, rmt31_2, rmt42_err_2, rmt31_err_2, kappa_2, kappa_err_2, binlabels_2, samples_MJ.at(0).label, baseline, mj_cut, mt_cut);
 
-  // METHOD 3
+  /*  // METHOD 3
   mj_cut = "mj>400";   
   mt_cut = "mt>140";
   not_mt_cut = invertcut(mt_cut);
@@ -228,9 +222,14 @@ int main(){
   vector<TString> binlabels_3; //push back twice for each njets bin
   binlabels_3.push_back("low MET, nb=2");binlabels_3.push_back("low MET, nb#geq3");binlabels_3.push_back("high MET");
   binlabels_3.push_back("low MET, nb=2");binlabels_3.push_back("low MET, nb#geq3");binlabels_3.push_back("high MET");
-  binlabels_3.push_back("method3"); // Last bin is for method name.
+
+  TString binName_3 = "method3";
+  if (baseline.Contains("met>100")) binName_3.Append("_met100");
+  if (baseline.Contains("nbm==1")) binName_3.Append("_nb1");
+  binlabels_3.push_back(binName_3); // Last bin is for method name.
 
   MakeGraphs(rmj43_3, rmj21_3, rmj43_err_3, rmj21_err_3, rmt42_3, rmt31_3, rmt42_err_3, rmt31_err_3, kappa_3, kappa_err_3, binlabels_3, samples_MJ.at(0).label, baseline, mj_cut, mt_cut);
+  */ //METHOD 3
 
   // METHOD 0
   mj_cut = "mj>400";   
@@ -238,15 +237,19 @@ int main(){
   not_mt_cut = invertcut(mt_cut);
   not_mj_cut = invertcut(mj_cut);
 
-  const int nExt_0 = 4; // Must match size of largest external vector
+  const int nExt_0 = 6; // Must match size of external vector
   vector<TString> externalA_meth0;
-  externalA_meth0.push_back("met>200");
-  externalA_meth0.push_back("met>200");
-  externalA_meth0.push_back("met>200");
-  externalA_meth0.push_back("met>200");
+  externalA_meth0.push_back("met>100");
+  externalA_meth0.push_back("met>100");
+  externalA_meth0.push_back("met>100");
+  externalA_meth0.push_back("met>100");
+  externalA_meth0.push_back("met>100");
+  externalA_meth0.push_back("met>100");
   vector<TString> externalB_meth0;
+  externalB_meth0.push_back("njets>=7&&njets<=8&&met>100&&met<=200");
   externalB_meth0.push_back("njets>=7&&njets<=8&&met>200&&met<=400");
   externalB_meth0.push_back("njets>=7&&njets<=8&&met>400");
+  externalB_meth0.push_back("njets>=9&&met>100&&met<=200");
   externalB_meth0.push_back("njets>=9&&met>200&&met<=400");
   externalB_meth0.push_back("njets>=9&&met>400");
 
@@ -274,9 +277,13 @@ int main(){
   }  
 
   vector<TString> binlabels_0; //push back twice for each njets bin
-  binlabels_0.push_back("low MET");binlabels_0.push_back("high MET");
-  binlabels_0.push_back("low MET");binlabels_0.push_back("high MET");
-  binlabels_0.push_back("method0"); // Last bin is for method name.
+  binlabels_0.push_back("low MET");binlabels_0.push_back("med MET");binlabels_0.push_back("high MET");
+  binlabels_0.push_back("low MET");binlabels_0.push_back("med MET");binlabels_0.push_back("high MET");
+
+  TString binName_0 = "method0";
+  if (baseline.Contains("met>100")) binName_0.Append("_met100");
+  if (baseline.Contains("nbm==1")) binName_0.Append("_nb1");
+  binlabels_0.push_back(binName_0); // Last bin is for method name.
 
   MakeGraphs(rmj43_0, rmj21_0, rmj43_err_0, rmj21_err_0, rmt42_0, rmt31_0, rmt42_err_0, rmt31_err_0, kappa_0, kappa_err_0, binlabels_0, samples_MJ.at(0).label, baseline, mj_cut, mt_cut);
 }
@@ -284,8 +291,11 @@ int main(){
 void MakeGraphs(double rmj1[],double rmj2[],double rmj1_err[],double rmj2_err[],double rmt1[],double rmt2[],double rmt1_err[],double rmt2_err[],double kappa[],double kappa_err[], const vector<TString> binlabels,TString sampleName, TString baseline, TString mj_cut, TString mt_cut){
 
   TString sampleNameText = sampleName;
-  if(sampleName.Contains("t#bar{t}")) sampleNameText = sampleName.ReplaceAll("t#bar{t}","ttbar");
+  if(sampleName.Contains("2#it{l} t#bar{t}")) { sampleNameText = sampleName; sampleNameText.ReplaceAll("2#it{l} t#bar{t}","ttbar_2l"); }
+  else if(sampleName.Contains("1#it{l} t#bar{t}")) { sampleNameText = sampleName; sampleNameText.ReplaceAll("1#it{l} t#bar{t}","ttbar_1l"); }
+  else if(sampleName.Contains("t#bar{t}")) { sampleNameText = sampleName; sampleNameText.ReplaceAll("t#bar{t}","ttbar"); }
   
+
   vector<TGraphErrors*> graphsMJ;
   vector<TGraphErrors*> graphsMT;
   TGraphErrors* kappas;
@@ -443,7 +453,7 @@ void MakeGraphs(double rmj1[],double rmj2[],double rmj1_err[],double rmj2_err[],
   kappas->Draw("P");
   line.DrawLine(h->GetBinLowEdge(1), 1, h->GetBinLowEdge(h->GetNbinsX()+1), 1);
 
-  line.DrawLine((nExt-1)/2., 0, (nExt-1)/2., 1.5*maxMT);
+  //  line.DrawLine((nExt-1)/2., 0, (nExt-1)/2., 1.5*maxMT); //vertical line
   text78->Draw();
   text9->Draw();    
   
