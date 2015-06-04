@@ -63,6 +63,40 @@ int main(){
   samples.push_back(sfeats(s_tt, "2 e/#mu", kBlue+2, 1, "ntruleps==2 && (ntruels+ntrumus)==2"));//13
   samples.push_back(sfeats(s_tt, "3+ leps", kGreen+2, 1, "ntruleps>=3"));//14
 
+  samples.push_back(sfeats(s_tt, "0 leps", kGreen-4, 1, "ntruleps==0&&met>100&&met<=200"));//15
+  samples.push_back(sfeats(s_tt, "1 #tau_{had}", kRed-4, 1, "ntruleps==1 && ntrutaush==1&&met>100&&met<=200"));//16
+  samples.push_back(sfeats(s_tt, "1 e/#mu", kBlue-4, 1, "ntruleps==1 && (ntruels+ntrumus)==1&&met>100&&met<=200"));//17
+  samples.push_back(sfeats(s_tt, "2 #tau_{had}", kRed+2, 1, "ntruleps==2 && ntrutaush==2&&met>100&&met<=200"));//18
+  samples.push_back(sfeats(s_tt, "1 e/#mu, 1 #tau_{had}", kMagenta+2, 1, "ntruleps==2 && (ntruels+ntrumus)==1 && ntrutaush==1&&met>100&&met<=200"));//19
+  samples.push_back(sfeats(s_tt, "2 e/#mu", kBlue+2, 1, "ntruleps==2 && (ntruels+ntrumus)==2&&met>100&&met<=200"));//20
+  samples.push_back(sfeats(s_tt, "2 #tau_{lep}", kOrange+3, 1, "ntruleps==2 && ntrutaush==1"));//21
+  samples.push_back(sfeats(s_tt, "1 e/#mu, 1 #tau_{lep}", kBlack, 1, "ntruleps==2 && (ntruels+ntrumus)==1 && ntrutausl==1"));//22
+  samples.push_back(sfeats(s_tt, "1 #tau_{had}, 1 #tau_{lep}", kYellow, 1, "ntruleps==2 && ntrutaush==1 && ntrutausl==1"));//23
+  samples.push_back(sfeats(s_tt, "3+ leps", kGreen+2, 1, "ntruleps>=3"));//24
+
+  samples.push_back(sfeats(s_tt, "0 leps", kGreen-4, 1, "ntruleps==0&&met>200&&met<=400"));//25
+  samples.push_back(sfeats(s_tt, "1 #tau_{had}", kRed-4, 1, "ntruleps==1 && ntrutaush==1&&met>200&&met<=400"));//26
+  samples.push_back(sfeats(s_tt, "1 e/#mu", kBlue-4, 1, "ntruleps==1 && (ntruels+ntrumus)==1&&met>200&&met<=400"));//27
+  samples.push_back(sfeats(s_tt, "2 #tau_{had}", kRed+2, 1, "ntruleps==2 && ntrutaush==2&&met>200&&met<=400"));//28
+  samples.push_back(sfeats(s_tt, "1 e/#mu, 1 #tau_{had}", kMagenta+2, 1, "ntruleps==2 && (ntruels+ntrumus)==1 && ntrutaush==1&&met>200&&met<=400"));//29
+  samples.push_back(sfeats(s_tt, "2 e/#mu", kBlue+2, 1, "ntruleps==2 && (ntruels+ntrumus)==2&&met>200&&met<=400"));//30
+  samples.push_back(sfeats(s_tt, "2 #tau_{lep}", kOrange+3, 1, "ntruleps==2 && ntrutaush==1"));//31
+  samples.push_back(sfeats(s_tt, "1 e/#mu, 1 #tau_{lep}", kBlack, 1, "ntruleps==2 && (ntruels+ntrumus)==1 && ntrutausl==1"));//32
+  samples.push_back(sfeats(s_tt, "1 #tau_{had}, 1 #tau_{lep}", kYellow, 1, "ntruleps==2 && ntrutaush==1 && ntrutausl==1"));//33
+  samples.push_back(sfeats(s_tt, "3+ leps", kGreen+2, 1, "ntruleps>=3&&met>200&&met<=400"));//34
+
+  samples.push_back(sfeats(s_tt, "0 leps", kGreen-4, 1, "ntruleps==0&&met>400"));//35
+  samples.push_back(sfeats(s_tt, "1 #tau_{had}", kRed-4, 1, "ntruleps==1 && ntrutaush==1&&met>400"));//36
+  samples.push_back(sfeats(s_tt, "1 e/#mu", kBlue-4, 1, "ntruleps==1 && (ntruels+ntrumus)==1&&met>400"));//37
+  samples.push_back(sfeats(s_tt, "2 #tau_{had}", kRed+2, 1, "ntruleps==2 && ntrutaush==2&&met>400"));//38
+  samples.push_back(sfeats(s_tt, "1 e/#mu, 1 #tau_{had}", kMagenta+2, 1, "ntruleps==2 && (ntruels+ntrumus)==1 && ntrutaush==1&&met>400"));//39
+  samples.push_back(sfeats(s_tt, "2 e/#mu", kBlue+2, 1, "ntruleps==2 && (ntruels+ntrumus)==2&&met>400"));//40
+  samples.push_back(sfeats(s_tt, "2 #tau_{lep}", kOrange+3, 1, "ntruleps==2 && ntrutaush==1"));//41
+  samples.push_back(sfeats(s_tt, "1 e/#mu, 1 #tau_{lep}", kBlack, 1, "ntruleps==2 && (ntruels+ntrumus)==1 && ntrutausl==1"));//42
+  samples.push_back(sfeats(s_tt, "1 #tau_{had}, 1 #tau_{lep}", kYellow, 1, "ntruleps==2 && ntrutaush==1 && ntrutausl==1"));//43
+  samples.push_back(sfeats(s_tt, "3+ leps", kGreen+2, 1, "ntruleps>=3&&met>400"));//44
+
+
   for(unsigned sam(0); sam < samples.size(); sam++){
     chains.push_back(new TChain("tree"));
     for(unsigned insam(0); insam < samples[sam].file.size(); insam++)
@@ -83,25 +117,50 @@ int main(){
   vector<int> with1200 = bkgs;
   with1200.push_back(7);
 
-  vector<int> leps;
-  leps.push_back(8);
-  leps.push_back(9);
-  leps.push_back(10);
-  leps.push_back(11);
-  leps.push_back(12);
-  leps.push_back(13);
-  leps.push_back(14);
+  vector<int> leps_lmet;
+  //  leps_lmet.push_back(15);
+  //leps_lmet.push_back(16);
+  //  leps_lmet.push_back(17);
+  leps_lmet.push_back(18);
+  leps_lmet.push_back(19);
+  leps_lmet.push_back(20);
+  leps_lmet.push_back(21);
+  leps_lmet.push_back(22);
+  leps_lmet.push_back(23);
+  leps_lmet.push_back(24);
+  vector<int> leps_mmet;
+  //  leps_mmet.push_back(25);
+  //  leps_mmet.push_back(26);
+  //  leps_mmet.push_back(27);
+  leps_mmet.push_back(28);
+  leps_mmet.push_back(29);
+  leps_mmet.push_back(30);
+  leps_mmet.push_back(31);
+  leps_mmet.push_back(32);
+  leps_mmet.push_back(33);
+  leps_mmet.push_back(34);
+  vector<int> leps_hmet;
+  //  leps_hmet.push_back(35);
+  //  leps_hmet.push_back(36);
+  //  leps_hmet.push_back(37);
+  leps_hmet.push_back(38);
+  leps_hmet.push_back(39);
+  leps_hmet.push_back(40);
+  leps_hmet.push_back(41);
+  leps_hmet.push_back(42);
+  leps_hmet.push_back(43);
+  leps_hmet.push_back(44);
+
   vector<pfeats> pies;
   ///////////////////////////////////////////////////////////////
-  pies.push_back(pfeats(bkgs, "ht>500&&met>200&&njets>=6&&nbm>=2&&mt>125&&mj>400", "comp"));
-  pies.push_back(pfeats(bkgs, "ht>500&&met>200&&njets>=6&&nbm>=2&&mt>125&&mj<=400", "comp"));
-  pies.push_back(pfeats(bkgs, "ht>500&&met>200&&njets>=6&&nbm>=2&&mt<=125&&mj>400", "comp"));
-  pies.push_back(pfeats(bkgs, "ht>500&&met>200&&njets>=6&&nbm>=2&&mt<=125&&mj<=400", "comp"));
+  // pies.push_back(pfeats(bkgs, "ht>500&&met>200&&njets>=6&&nbm>=2&&mt>125&&mj>400", "comp"));
+  //  pies.push_back(pfeats(bkgs, "ht>500&&met>200&&njets>=6&&nbm>=2&&mt>125&&mj<=400", "comp"));
+  //  pies.push_back(pfeats(bkgs, "ht>500&&met>200&&njets>=6&&nbm>=2&&mt<=125&&mj>400", "comp"));
+  //  pies.push_back(pfeats(bkgs, "ht>500&&met>200&&njets>=6&&nbm>=2&&mt<=125&&mj<=400", "comp"));
 
-  pies.push_back(pfeats(leps, "ht>500&&met>200&&njets>=6&&nbm>=2&&mt>125&&mj>400", "leps"));
-  pies.push_back(pfeats(leps, "ht>500&&met>200&&njets>=6&&nbm>=2&&mt>125&&mj<=400", "leps"));
-  pies.push_back(pfeats(leps, "ht>500&&met>200&&njets>=6&&nbm>=2&&mt<=125&&mj>400", "leps"));
-  pies.push_back(pfeats(leps, "ht>500&&met>200&&njets>=6&&nbm>=2&&mt<=125&&mj<=400", "leps"));
+  pies.push_back(pfeats(leps_lmet, "ht>500&&met>100&&njets>=7&&nbm>=2&&(nels+nmus)==1", "leps_lmet"));
+  pies.push_back(pfeats(leps_mmet, "ht>500&&met>100&&njets>=7&&nbm>=2&&(nels+nmus)==1", "leps_mmet"));
+  pies.push_back(pfeats(leps_hmet, "ht>500&&met>100&&njets>=7&&nbm>=2&&(nels+nmus)==1", "leps_hmet"));
   ///////////////////////////////////////////////////////////////
 
   for(size_t pie = 0; pie < pies.size(); ++pie){
