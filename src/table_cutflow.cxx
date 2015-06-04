@@ -16,15 +16,14 @@
 #include "utilities.hpp"
 #include "utilities_macros.hpp"
 
-namespace ra4 {
+namespace  {
   TString ntuple_date("2015_05_25");
   TString minjets("7"), midjets("9");
   TString mjthresh("400");
   TString luminosity="10";
   bool do_2l=false;
+  bool do_note=false;
 }
-
-using namespace ra4;
 
 using namespace std;
 using std::cout;
@@ -172,10 +171,12 @@ TString YieldsCut(TString title, TString cuts, vector<TChain*> chain, vector<sfe
   cout<<title<<": B = "<<(RoundNumber(bkg,1)+" +- "+RoundNumber(bkg_err,1));
   out = title;
   for(int sam(0); sam < nsam-nsig; sam++) out += (" \t & " + RoundNumber(yield[sam],1));
-  out += (" \t &  $"+RoundNumber(bkg,1))+" \\pm "+RoundNumber(bkg_err,1)+"$";
+  if(!do_note) out += (" \t &  $"+RoundNumber(bkg,1))+" \\pm "+RoundNumber(bkg_err,1)+"$";
+  else out += (" \t &  $"+RoundNumber(bkg,1))+"$";
   for(int sam(nsam-nsig); sam < nsam; sam++) {
     float fracerr(sqrt(pow(bkg_err/bkg,2)+0.3*0.3+0.24*0.24));
-    out += (" \t& $" + RoundNumber(yield[sam],1)+" \\pm "+RoundNumber(error[sam],1))+"$";// + "$ \t& ");
+    if(!do_note) out += (" \t& $" + RoundNumber(yield[sam],1)+" \\pm "+RoundNumber(error[sam],1))+"$";// + "$ \t& ");
+    else out += (" \t& $" + RoundNumber(yield[sam],1))+"$";// + "$ \t& ");
     // if(do_zbi) out += RoundNumber(RooStats::NumberCountingUtils::BinomialExpZ(yield[sam], bkg, fracerr),2);
     // else out += RoundNumber(yield[sam],2,bkg);
 	    

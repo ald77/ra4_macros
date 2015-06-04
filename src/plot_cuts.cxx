@@ -16,28 +16,25 @@
 #include "utilities.hpp"
 #include "utilities_macros.hpp"
 
+namespace  {
+  TString ntuple_date("2015_05_25");
+  TString minjets("7"), midjets("9");
+  TString mjthresh("400");
+  TString luminosity="10";
+  TString plot_type=".pdf";
+  TString plot_style="RA4";
+}
+
 using namespace std;
 using std::cout;
 using std::endl;
 
 int main(){ 
-  styles style("LargeLabels"); style.setDefaultStyle();
+  styles style(plot_style); style.setDefaultStyle();
   vector<hfeats> vars;
   TCanvas can;
 
-  TColor ucsb_blue(1000, 1/255.,57/255.,166/255.);
-  TColor ucsb_gold(1001, 255/255.,200/255.,47/255);
-  TColor penn_red(1002, 149/255.,0/255.,26/255.);
-  TColor uf_orange(1003, 255/255.,74/255.,0/255.);
-  TColor uo_green(1004, 0/255.,79/255.,39/255.);
-  TColor tcu_purple(1005, 52/255.,42/255.,123/255.);
-  TColor tar_heel_blue(1006, 86/255.,160/255.,211/255.);
-  TColor sig_teal(1007, 96/255.,159/255.,128/255.);
-  TColor sig_gold(1008, 215/255.,162/255.,50/255.);
-  TColor seal_brown(1010, 89/255.,38/255.,11/255.);
-
-  TString folder="archive/15-05-02/skim/";
-  //TString folder="archive/15-03-17/";
+  TString folder="/cms5r0/ald77/archive/"+ntuple_date+"/skim100/";
   vector<TString> s_tt;
   s_tt.push_back(folder+"*_TTJet*");
   vector<TString> s_wjets;
@@ -64,8 +61,8 @@ int main(){
   Samples.push_back(sfeats(s_ttv, "ttV", 1002));
   Samples.push_back(sfeats(s_single, "Single top", 1005));
   Samples.push_back(sfeats(s_wjets, "W + jets", 1004));
-  Samples.push_back(sfeats(s_tt, "t#bar{t}, 2 l", 1006,1,"((mc_type&0x0F00)/0x100+(mc_type&0x000F)-(mc_type&0x00F0)/0x10)>=2"));
-  Samples.push_back(sfeats(s_tt, "t#bar{t}, 1 l", 1000,1,"((mc_type&0x0F00)/0x100+(mc_type&0x000F)-(mc_type&0x00F0)/0x10)<=1"));
+  Samples.push_back(sfeats(s_tt, "t#bar{t}, 2 l", 1006,1,"ntruleps>=2"));
+  Samples.push_back(sfeats(s_tt, "t#bar{t}, 1 l", 1000,1,"ntruleps<=1"));
   Samples.push_back(sfeats(s_t1t, "T1tttt(1500,100)", 2));
   Samples.push_back(sfeats(s_t1tc, "T1tttt(1200,800)", 4));
 
@@ -86,34 +83,23 @@ int main(){
   ra4_sam.push_back(7);
 
   const int scanbins(100);
-  vars.push_back(hfeats("mt",scanbins,0,600, ra4_sam, "Cut on m_{T} (GeV)",
-  			"ht>500&&met>200&&nbm>=2&&njets>=6&&(nmus+nels)==1",150));
-  vars.push_back(hfeats("mt",scanbins,0,600, ra4_sam, "Cut on m_{T} (GeV)",
-  			"ht>500&&met>400&&nbm>=2&&njets>=6&&(nmus+nels)==1",150));
-  vars.push_back(hfeats("met",scanbins,200,1200, ra4_sam, "Cut on MET (GeV)",
-			"ht>500&&nbm>=2&&njets>=6&&mt>150&&(nmus+nels)==1",400));
+  vars.push_back(hfeats("met",scanbins,100,1200, ra4_sam, "Cut on MET (GeV)",
+  			"ht>500&&nbm>=2&&njets>="+minjets+"&&mt>140&&(nmus+nels)==1",200));
   vars.push_back(hfeats("njets",18,-0.5,17.5, ra4_sam, "Cut on n_{jets}",
-			"ht>500&&met>400&&nbm>=2&&mt>150&&(nmus+nels)==1",6));
+  			"ht>500&&met>200&&nbm>=2&&mt>140&&(nmus+nels)==1",minjets.Atof()));
   vars.push_back(hfeats("nbm",7,-0.5,6.5, ra4_sam, "Cut on n_{b}",
-			"ht>500&&met>400&&njets>=6&&mt>150&&(nmus+nels)==1",2));
-  vars.push_back(hfeats("mj",scanbins,0,1600, ra4_sam, "Cut on M_{J} (GeV)",
-  			"ht>500&&met>400&&nbm>=2&&njets>=6&&mt>150&&(nmus+nels)==1",600));
-
-  vars.push_back(hfeats("met",scanbins,200,1200, ra4_sam, "Cut on MET (GeV)",
-			"ht>500&&nbm>=2&&njets>=8&&mt>150&&(nmus+nels)==1",400));
-  vars.push_back(hfeats("nbm",7,-0.5,6.5, ra4_sam, "Cut on n_{b}",
-			"ht>500&&met>400&&njets>=8&&mt>150&&(nmus+nels)==1",2));
-  vars.push_back(hfeats("mt",scanbins,0,600, ra4_sam, "Cut on m_{T} (GeV)",
-  			"ht>500&&met>400&&nbm>=2&&njets>=8&&(nmus+nels)==1",150));
-  vars.push_back(hfeats("mj",scanbins,0,1600, ra4_sam, "Cut on M_{J} (GeV)",
-  			"ht>500&&met>400&&nbm>=2&&njets>=8&&mt>150&&(nmus+nels)==1",600));
+  			"ht>500&&met>200&&njets>="+minjets+"&&mt>140&&(nmus+nels)==1",2));
 
 
+  // vars.push_back(hfeats("mt",scanbins,0,600, ra4_sam, "Cut on m_{T} (GeV)",
+  // 			"ht>500&&met>400&&nbm>=2&&njets>=6&&(nmus+nels)==1",140));
+  // vars.push_back(hfeats("mj",scanbins,0,1600, ra4_sam, "Cut on M_{J} (GeV)",
+  // 			"ht>500&&met>400&&nbm>=2&&njets>=6&&mt>140&&(nmus+nels)==1",600));
 
-  TString luminosity="10";
-  TString plot_tag("_lumi"+luminosity+".eps");
+
+  TString plot_tag("_lumi"+luminosity+plot_type);
   double Syserr(pow(0.3,2));
-  double legX = 0.66, legY = 0.86, legSingle = 0.061;
+  double legX = 0.66, legY = 0.9, legSingle = 0.061;
   double legW = 0.12, legH = legSingle*3;
   TLegend leg(legX, legY-legH, legX+legW, legY);
   leg.SetTextSize(0.052); leg.SetFillColor(0); leg.SetFillStyle(0); leg.SetBorderSize(0);
@@ -216,19 +202,26 @@ int main(){
     unsigned isam_nc = vars[var].samples[sam_nc];
     unsigned sam_c(vars[var].samples.size()-1);
     unsigned isam_c = vars[var].samples[sam_c];
+
+    float maxleg = 1.35;
     leg.Clear();
     legH = legSingle*3;
     leg.SetY1NDC(legY-legH);
     leg.SetHeader("#font[22]{   L = "+luminosity+" fb^{-1}}");
     leg.AddEntry(histo[0][var][sam_nc], Samples[isam_nc].label);
     leg.AddEntry(histo[0][var][sam_c], Samples[isam_c].label);
+    float hismax = max(histo[0][var][sam_nc]->GetMaximum(), histo[0][var][sam_c]->GetMaximum())*maxleg;
+    histo[0][var][sam_nc]->SetMaximum(hismax);
     histo[0][var][sam_nc]->SetMinimum(0);
     histo[0][var][sam_nc]->Draw("l hist");
     histo[0][var][sam_c]->Draw("l hist same");
-    if(vars[var].cut>0) line.DrawLine(vars[var].cut, 0, vars[var].cut, histo[0][var][sam_nc]->GetMaximum()*1.05);
+    style.moveYAxisLabel(histo[0][var][sam_nc], hismax, false);
+    if(vars[var].cut>0) line.DrawLine(vars[var].cut, 0, vars[var].cut, hismax);
     leg.Draw();
     pname = "plots/zbi_"+vars[var].tag+plot_tag;
     can.SaveAs(pname);
+    histo[1][var][sam_nc]->SetMaximum(max(histo[1][var][sam_nc]->GetMaximum(),
+      histo[1][var][sam_c]->GetMaximum())*maxleg);
     histo[1][var][sam_nc]->SetMinimum(0);
     histo[1][var][sam_nc]->Draw("l hist");
     histo[1][var][sam_c]->Draw("l hist same");
@@ -236,12 +229,13 @@ int main(){
     pname = "plots/s_sqrtb_"+vars[var].tag+plot_tag;
     leg.Draw();
     can.SaveAs(pname);
-    histo[2][var][sam_nc]->SetMaximum(max(histo[2][var][sam_nc]->GetMaximum(),
-      histo[3][var][sam_nc]->GetMaximum())*1.05);
+    hismax = max(histo[3][var][sam_nc]->GetMaximum(), histo[3][var][sam_c]->GetMaximum())*maxleg;
+    histo[2][var][sam_nc]->SetMaximum(hismax);
     histo[2][var][sam_nc]->Draw("l hist");
     histo[3][var][sam_c]->Draw("l hist same");
     histo[3][var][sam_nc]->Draw("l hist same");
-    if(vars[var].cut>0) line.DrawLine(vars[var].cut, 0, vars[var].cut, histo[2][var][sam_nc]->GetMaximum());
+    if(vars[var].cut>0) line.DrawLine(vars[var].cut, 0, vars[var].cut, hismax);
+    style.moveYAxisLabel(histo[0][var][sam_nc], hismax, false);
     leg.AddEntry(histo[2][var][sam_nc], "Total bkg.");
     legH = legSingle*4;
     leg.SetY1NDC(legY-legH);
