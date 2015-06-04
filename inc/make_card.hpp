@@ -63,4 +63,6 @@ void PrintGamma(std::ofstream &file, const std::vector<size_t> map,
                 const std::vector<double> &preds,
                 size_t iproc);
 
+std::string NoDecimal(double x);
+
 #endif

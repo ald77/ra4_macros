@@ -24,10 +24,11 @@ namespace{
   std::string ntuple_date = "2015_05_25";
   double lumi = 10.;
   bool no_mc_kappa = false;
-  bool include_signal = false;
 
   std::string mgluino = "1500";
   std::string mlsp = "100";
+
+  double inject_signal = 0.;
 
   bool do_tk_veto = false;
 
@@ -42,6 +43,21 @@ namespace{
   double ht_min = 500.;
   int nb_min = 2;
   int nb_div = 3;
+
+  //Track whether option was set in command line for logging purposes
+  bool set_method = false;
+  bool set_ntuple_date = false;
+  bool set_lumi = false;
+
+  bool set_masses = false;
+  bool set_inject_signal = false;
+
+  bool set_mt = false;
+  bool set_mj = false;
+  bool set_njets = false;
+  bool set_met = false;
+  bool set_ht = false;
+  bool set_nb = false;
 }
 
 using namespace std;
@@ -95,7 +111,7 @@ void GetOptions(int argc, char *argv[]){
       {"ntuple_date", required_argument, 0, 'd'},
       {"lumi", required_argument, 0, 'l'},
       {"no_mc_kappa", no_argument, 0, 'k'},
-      {"include_signal", no_argument, 0, 's'},
+      {"inject_signal", required_argument, 0, 's'},
       {"mgluino", required_argument, 0, 0},
       {"mlsp", required_argument, 0, 0},
       {"tk_veto", no_argument, 0, 't'},
@@ -114,25 +130,29 @@ void GetOptions(int argc, char *argv[]){
 
     char opt = -1;
     int option_index;
-    opt = getopt_long(argc, argv, "m:d:l:ks", long_options, &option_index);
+    opt = getopt_long(argc, argv, "m:d:l:ks:t", long_options, &option_index);
     if( opt == -1) break;
 
     string optname;
     switch(opt){
     case 'm':
       method = atoi(optarg);
+      set_method = true;
       break;
     case 'd':
       ntuple_date = optarg;
+      set_ntuple_date = true;
       break;
     case 'l':
       lumi = atof(optarg);
+      set_lumi = true;
       break;
     case 'k':
       no_mc_kappa = true;
       break;
     case 's':
-      include_signal = true;
+      inject_signal = atof(optarg);
+      set_inject_signal = true;
       break;
     case 't':
       do_tk_veto = true;
@@ -142,32 +162,45 @@ void GetOptions(int argc, char *argv[]){
       if(optarg == "mgluino"){
         mgluino = optarg;
         set_gluino = true;
+        set_masses = true;
       }else if(optname == "mlsp"){
         mlsp = optarg;
         set_lsp = true;
+        set_masses = true;
       }else if(optname == "mt_min"){
         mt_min = atof(optarg);
+        set_mt = true;
       }else if(optname == "mt_div"){
         mt_div = atof(optarg);
+        set_mt = true;
       }else if(optname == "mj_min"){
         mj_min = atof(optarg);
+        set_mj = true;
       }else if(optname == "mj_div"){
         mj_div = atof(optarg);
+        set_mj = true;
         set_mj_div = true;
       }else if(optname == "njets_min"){
         njets_min = atoi(optarg);
+        set_njets = true;
       }else if(optname == "njets_div"){
         njets_div = atoi(optarg);
+        set_njets = true;
       }else if(optname == "met_min"){
         met_min = atof(optarg);
+        set_met = true;
       }else if(optname == "met_div"){
         met_div = atof(optarg);
+        set_met = true;
       }else if(optname == "nb_min"){
         nb_min = atoi(optarg);
+        set_nb = true;
       }else if(optname == "nb_div"){
         nb_div = atoi(optarg);
+        set_nb = true;
       }else if(optname == "ht_min"){
         ht_min = atof(optarg);
+        set_ht = true;
       }else{
         printf("Bad option! Found option name %s\n", optname.c_str());
       }
@@ -442,8 +475,8 @@ void MockUpData(vector<double> &data,
   data = vector<double>(ttbar_raw.size(), 0);
   for(size_t i = 0; i < ttbar_raw.size(); ++i){
     data.at(i) = ttbar_raw.at(i)*ttbar_wght.at(i)
-      + other_raw.at(i)*other_wght.at(i);
-    if(include_signal) data.at(i) += sig_raw.at(i)*sig_wght.at(i);
+      + other_raw.at(i)*other_wght.at(i)
+      + inject_signal*sig_raw.at(i)*sig_wght.at(i);
   }
 }
 
@@ -503,19 +536,21 @@ void WriteFile(const vector<double> &ttbar_raw, const vector<double> &ttbar_wght
   GetBinMapping(nr1, r1_map, nr2, r2_map, nr3, r3_map, nr4, r4_map);
 
   ostringstream file_name;
-  file_name << "txt/data_card_" << ntuple_date
-            << "_method_" << method
-            << (no_mc_kappa?"_no":"_with") << "_mc_kappa"
-            << "_T1tttt_" << mgluino << '_' << mlsp
-            << "_lumi_" << lumi
-            << (do_tk_veto?"_with":"_no") << "_tk_veto"
-            << "_ht_" << ht_min
-            << "_mt_" << mt_min << '_' << mt_div
-            << "_mj_" << mj_min << '_' << mj_div
-            << "_njets_" << njets_min << '_' << njets_div
-            << "_met_" << met_min << '_' << met_div
-            << "_nb_" << nb_min << '_' << nb_div
-            << ".txt" << flush;
+  file_name << "txt/data_card";
+  if(set_ntuple_date) file_name << '_' << ntuple_date;
+  if(set_method) file_name << "_method_" << method;
+  if(no_mc_kappa) file_name << "_no_mc_kappa";
+  if(set_masses) file_name << "_T1tttt_" << mgluino << '_' << mlsp;
+  if(set_lumi) file_name << "_lumi_" << lumi;
+  if(set_inject_signal) file_name << "_inject_" << NoDecimal(inject_signal);
+  if(do_tk_veto) file_name << "_tk_veto";
+  if(set_ht) file_name << "_ht_" << ht_min;
+  if(set_mt) file_name << "_mt_" << mt_min << '_' << mt_div;
+  if(set_mj) file_name << "_mj_" << mj_min << '_' << mj_div;
+  if(set_njets) file_name << "_njets_" << njets_min << '_' << njets_div;
+  if(set_met) file_name << "_met_" << met_min << '_' << met_div;
+  if(set_nb) file_name << "_nb_" << nb_min << '_' << nb_div;
+  file_name << ".txt" << flush;
 
   ofstream file(file_name.str().c_str());
   file << "imax " << nr4 << "   number of channels\n";
@@ -724,4 +759,17 @@ void PrintGamma(ofstream &file, const vector<size_t> map,
     }
     file << '\n';
   }
+}
+
+string NoDecimal(double x){
+  ostringstream oss;
+  oss.precision(2);
+  oss << fixed << x;
+  string s = oss.str();
+  size_t l = s.find('.');
+  while(l<s.size()){
+    s.at(l)='_';
+    l = s.find('.');
+  }
+  return s;
 }

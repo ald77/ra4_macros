@@ -19,7 +19,7 @@
 using namespace std;
 
 int main(){
-  styles style("Standard");
+  styles style("RA4");
   style.setDefaultStyle();
 
   TString folder="/cms5r0/rohan/2015_05_25/skim_met100/";
@@ -95,7 +95,6 @@ int main(){
   samples.push_back(sfeats(s_tt, "1 e/#mu, 1 #tau_{lep}", kBlack, 1, "ntruleps==2 && (ntruels+ntrumus)==1 && ntrutausl==1"));//42
   samples.push_back(sfeats(s_tt, "1 #tau_{had}, 1 #tau_{lep}", kYellow, 1, "ntruleps==2 && ntrutaush==1 && ntrutausl==1"));//43
   samples.push_back(sfeats(s_tt, "3+ leps", kGreen+2, 1, "ntruleps>=3&&met>400"));//44
-
 
   for(unsigned sam(0); sam < samples.size(); sam++){
     chains.push_back(new TChain("tree"));
