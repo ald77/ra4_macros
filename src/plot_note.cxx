@@ -15,7 +15,7 @@
 #include "utilities.hpp"
 #include "utilities_macros.hpp"
 
-namespace ra4 {
+namespace {
   TString ntuple_date("2015_05_25");
   TString minjets("7"), midjets("9");
   TString mjthresh("400");
@@ -23,8 +23,6 @@ namespace ra4 {
   TString plot_type=".pdf";
   TString plot_style="RA4";
 }
-
-using namespace ra4;
 
 using namespace std;
 using std::cout;
@@ -90,13 +88,17 @@ int main(){
   vector<hfeats> vars;
 
   TString cuts("(nmus+nels)==1");
-  vars.push_back(hfeats("ht",35,0,3500, ra4_sam, "H_{T} (GeV)","(nmus+nels)==1&&met>200&&njets>="+minjets+"&&nbm>=2",500));
+  vars.push_back(hfeats("ht",35,0,3500, ra4_sam_ns, "H_{T} (GeV)",
+			"(nmus+nels)==1&&met>200&&njets>="+minjets+"&&nbm>=2",500));
   cuts += "&&ht>500";
-  vars.push_back(hfeats("met",40,0,800, ra4_sam, "MET (GeV)","(nmus+nels)==1&&ht>500&&njets>="+minjets+"&&nbm>=2",200));
+  vars.push_back(hfeats("met",40,0,800, ra4_sam_ns, "MET (GeV)",
+			"(nmus+nels)==1&&ht>500&&njets>="+minjets+"&&nbm>=2",200));
   cuts += "&&met>200";
-  vars.push_back(hfeats("njets",18,-0.5,17.5, ra4_sam, "Number of 30 GeV jets","(nmus+nels)==1&&ht>500&&met>200&&nbm>=2",6.5));
+  vars.push_back(hfeats("njets",18,-0.5,17.5, ra4_sam, "Number of 30 GeV jets",
+			"(nmus+nels)==1&&ht>500&&met>200&&nbm>=2",6.5));
   cuts += "&&njets>="+minjets;
-  vars.push_back(hfeats("nbm",7,-0.5,6.5, ra4_sam, "Number of b-tags (CSVM)","(nmus+nels)==1&&ht>500&&met>200&&njets>="+minjets,1.5));
+  vars.push_back(hfeats("nbm",7,-0.5,6.5, ra4_sam, "Number of b-tags (CSVM)",
+			"(nmus+nels)==1&&ht>500&&met>200&&njets>="+minjets,1.5));
   cuts += "&&nbm>=2";
   vars.push_back(hfeats("mt",25,0,500, ra4_sam, "m_{T} (GeV)",cuts,140));
   cuts += "&&mt>140";

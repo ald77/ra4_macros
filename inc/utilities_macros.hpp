@@ -9,6 +9,7 @@
 
 #include "TString.h"
 #include "TH1D.h"
+#include "TChain.h"
 
 namespace ra4{
   // Had to define the TColor objects in the cpp
@@ -57,10 +58,13 @@ public:
 
 void calc_chi2_diff(TH1D *histo1, TH1D *histo2, float &chi2, int &ndof, float &pvalue, float *average);
 void calc_chi2(TH1D *histo, float &chi2, int &ndof, float &pvalue, float &average);
+long getYieldErr(TChain& tree, TString cut, double& yield, double& uncertainty);
 
 void plot_distributions(std::vector<sfeats> Samples, std::vector<hfeats> vars, TString luminosity="10", 
 			TString filetype=".eps", TString namestyle="LargeLabels");
 TString cuts2title(TString title);
 TString invertcut(TString cut);
 TString format_tag(TString tag);
+double gsl_ran_gamma (const double a, const double b);
+double intGaus(double mean, double sigma, double minX, double maxX);
 #endif

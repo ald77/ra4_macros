@@ -21,6 +21,7 @@
 #include "TString.h"
 #include "TColor.h"
 #include "TMath.h"
+#include "TRandom3.h"
 
 #include "styles.hpp"
 #include "utilities.hpp"
@@ -420,6 +421,15 @@ void calc_chi2_diff(TH1D *histo1, TH1D *histo2, float &chi2, int &ndof, float &p
   pvalue = TMath::Prob(chi2,ndof);
 }
 
+long getYieldErr(TChain& tree, TString cut, double& yield, double& uncertainty){
+  const TString hist_name("temp");
+  TH1D temp(hist_name, "", 1, -1.0, 1.0);
+  long entries = tree.Project(hist_name, "0.0", cut);
+  yield = temp.IntegralAndError(0,2,uncertainty);
+  return entries;
+}
+
+
 namespace  ra4 {
   TColor ucsb_blue(1000, 1/255.,57/255.,166/255.);
   TColor ucsb_gold(1001, 255/255.,200/255.,47/255);
@@ -433,3 +443,41 @@ namespace  ra4 {
   TColor seal_brown(1010, 89/255.,38/255.,11/255.);
 }
 
+double intGaus(double mean, double sigma, double minX, double maxX){
+  return (TMath::Erf((maxX-mean)/sigma/sqrt(2.))-TMath::Erf((minX-mean)/sigma/sqrt(2.)))/2.;
+}
+
+
+// Code from http://www.hongliangjie.com/2012/12/19/how-to-generate-gamma-random-variables/
+// Parameter b could be theta...
+double gsl_ran_gamma(const double a, const double b){
+  TRandom3 rand(0); 
+
+  if (a < 1){
+    double u = rand.Uniform(1);
+    return gsl_ran_gamma(1.0 + a, b) * pow (u, 1.0 / a);
+  }
+
+  double x, v, u;
+  double d = a - 1.0 / 3.0;
+  double c = (1.0 / 3.0) / sqrt (d);
+  
+  while (1) {
+    do {
+      x = rand.Gaus(0, 1.0);
+      v = 1.0 + c * x;
+    }
+    while (v <= 0);
+      
+    v = v * v * v;
+    u = rand.Uniform(1);
+
+    if (u < 1 - 0.0331 * x * x * x * x) 
+      break;
+
+    if (log (u) < 0.5 * x * x + d * (1 - v + log (v)))
+      break;
+  }
+    
+  return b * d * v;
+}
