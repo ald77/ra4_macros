@@ -41,7 +41,7 @@ int main(){
   //  vector<TString> s_tt_noskim;
   //  s_tt_noskim.push_back(folder_noskim+"*_TTJet*12.root");
   vector<TString> s_wjets;
-  s_wjets.push_back(folder+"*WJets*");
+  s_wjets.push_back(folder+"*WJetsToLNu_HT*");
   vector<TString> s_singlet;
   s_singlet.push_back(folder+"*_T*channel*");
   vector<TString> s_ttv;

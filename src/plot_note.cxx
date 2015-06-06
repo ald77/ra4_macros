@@ -40,7 +40,7 @@ int main(){
   vector<TString> s_tt;
   s_tt.push_back(folder+"*_TTJet*");
   vector<TString> s_wjets;
-  s_wjets.push_back(folder+"*WJets*");
+  s_wjets.push_back(folder+"*_WJets*");
   vector<TString> s_singlet;
   s_singlet.push_back(folder+"*_T*channel*");
   vector<TString> s_ttv;

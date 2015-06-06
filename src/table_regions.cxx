@@ -22,7 +22,7 @@ namespace  {
   TString mjthresh("400");
   TString luminosity="10";
   bool do_2l=false;
-  bool do_nb_binning=false;
+  bool do_nb_binning=true;
   bool do_note=false;
 }
 
@@ -264,20 +264,18 @@ int main(){
 TString YieldsCut(TString title, TString cuts, vector<TChain*> chain, vector<sfeats> Samples, int nsig){
   TString totCut, Hname = "histo", out;
   vector<double> yield, error;
-  double bkg(0), bkg_err(0), err;
-  int nsam(chain.size());
-  TH1D histo(Hname, "",100, 0, 10000);
-  histo.Sumw2();
+  double bkg(0), bkg_err(0), err, yield_sam;
+  int nsam(chain.size()), entries(0);
   for(int sam(0); sam < nsam; sam++){
     totCut = luminosity+"*weight*("+cuts+"&&"+Samples[sam].cut+")";
-    chain[sam]->Project(Hname, "met", totCut);
-    yield.push_back(histo.IntegralAndError(0,101,err));
+    entries = getYieldErr(*chain[sam], totCut, yield_sam, err);
+    yield.push_back(yield_sam);
     error.push_back(err);
     if(sam<nsam-nsig) {
       if(yield[sam]>0) bkg += yield[sam];
       bkg_err = sqrt(pow(bkg_err,2)+pow(err,2));
     }
-    //cout<<sam<<": yield "<<Samples[sam].label<<" "<<yield[sam]<<" \t "<<totCut<<endl;
+    //cout<<sam<<": yield "<<Samples[sam].label<<" "<<yield[sam]<<", n "<<entries<<" \t "<<totCut<<endl;
   }
   
   cout<<title<<": B = "<<(RoundNumber(bkg,1)+" +- "+RoundNumber(bkg_err,1));

@@ -22,7 +22,7 @@
 namespace  {
   TString ntuple_date("2015_05_25");
   TString lumi("10");
-  int method(2);
+  int method(1);
   int nrep = 10000;    // Fluctuations of Gamma distribution
   bool do_1ltt(false); // Kappa just for 1l ttbar
   bool do_2ltt(false); // Kappa just for 2l ttbar
@@ -43,7 +43,7 @@ double calcKappa(vector<vector<int> > &entries, vector<vector<float> > &weights,
 int main(){ 
   styles style("RA4"); style.LabelSize = 0.05;
   style.setDefaultStyle();
-  TString folder="/cms5r0/ald77/archive/"+ntuple_date+"/skim100/";
+  TString folder="/cms5r0/ald77/archive/"+ntuple_date+"/skim/";
   TString folder_ns="/cms5r0/ald77/archive/"+ntuple_date+"/";
 
 
@@ -58,7 +58,7 @@ int main(){
   s_other.push_back(folder+"*WH_HToBB*");
   s_other.push_back(folder+"*TTW*");
   s_other.push_back(folder+"*TTZ*");
-  s_other.push_back(folder+"*WJets*");
+  s_other.push_back(folder+"*_WJets*");
 
   // Reading ntuples
   vector<sfeats> Samples; 
@@ -115,7 +115,7 @@ int main(){
     powers.push_back(1);  cuts.push_back("mt>140&&mj>"+mjthresh);   // R4
   }
 
-  TString baseline("(nmus+nels)==1&&ht>500&&met>100&&njets>=7&&nbm>=1");
+  TString baseline("(nmus+nels)==1&&ht>500&&met>200&&njets>=7&&nbm>=1");
   vector<TString> metcuts, njcuts, nbcuts, metnames;
   // metcuts.push_back("met>100&&met<=200");
   // metcuts.push_back("met>200&&met<=300");
@@ -169,25 +169,34 @@ int main(){
 	  for(unsigned sam(0); sam < ra4_sam.size(); sam++) {
 	    totcut = (lumi+"*weight*("+baseline+"&&"+nbcuts[inb]+"&&"+metcuts[imet]+"&&"+cuts[obs]+
 		      "&&"+Samples[ra4_sam[sam]].cut);
-	    if(method==1 || obs%2==1) totcut += "&&"+njcuts[inj];
+	    if(method==1 || obs%2==1 || powers.size()<3) totcut += "&&"+njcuts[inj];
 	    totcut += ")";
 	    //cout << totcut<<endl;
 	    double yield(0.), sigma(0.), avWeight(1.);
 	    int Nentries(0);
 	    Nentries = getYieldErr(*chain[ra4_sam[sam]], totcut, yield, sigma);
 	    if(do_data) Nentries = static_cast<int>(yield+0.5);
-	    entries[obs].push_back(Nentries);
-	    if(Nentries==0){ // If no entries, find averate weight in signal bin
-	      totcut = (lumi+"*weight*("+baseline+"&&"+cuts[obs]+")");
-	      Nentries = getYieldErr(*chain[ra4_sam[sam]], totcut, yield, sigma);
-	      // If no entries, find averate weight in baseline region
-	      if(Nentries==0){
-		totcut = (lumi+"*weight*("+baseline+")");
+	    if(yield<0) {
+	      entries[obs].push_back(0);
+	      yield = 0;
+	    } else entries[obs].push_back(Nentries);
+	    
+	    if(do_data) avWeight = yield; // Stored for central value
+	    else {
+	      if(Nentries==0){ // If no entries, find averate weight in signal bin
+		totcut = (lumi+"*weight*("+baseline+"&&"+cuts[obs]+")");
 		Nentries = getYieldErr(*chain[ra4_sam[sam]], totcut, yield, sigma);
+		// If no entries, find averate weight in baseline region
+		if(Nentries==0){
+		  totcut = (lumi+"*weight*("+baseline+")");
+		  Nentries = getYieldErr(*chain[ra4_sam[sam]], totcut, yield, sigma);
+		}
 	      }
+	      // cout<<obs<<","<<sam<<": sigma "<<sigma<<", Nentries "<<Nentries<<", yield "<<yield
+	      // 	  <<", sigma*sqrt(N) "<<sigma*sqrt(Nentries)<<endl;
+	      //avWeight = sigma/sqrt(Nentries);
+	      avWeight = fabs(yield/static_cast<double>(Nentries));
 	    }
-	    avWeight = fabs(yield/static_cast<double>(Nentries));
-	    if(do_data) avWeight = 1.;
 	    weights[obs].push_back(avWeight);
 	    //cout<<obs<<","<<sam<<": entries "<<entries[obs][sam]<<", weight "<<avWeight<<", yield "<<yield<<endl;
 	  } // Loop over samples
@@ -216,8 +225,8 @@ int main(){
   TLine line; line.SetLineColor(28); line.SetLineWidth(4); line.SetLineStyle(2);
   TH1D histo("histo",cuts2title(baseline),njcuts.size()*metcuts.size(), minh, maxh);
   histo.Draw();
-  TString ytitle("#kappa for method "); ytitle += method;
-  if(do_pred) ytitle.ReplaceAll("#kappa","Predicted N_{bkg}");
+  TString ytitle("N_{obs}/N_{pred} for method "); ytitle += method;
+  if(do_pred) {ytitle = "Predicted N_{bkg} for method "; ytitle += method;}
   histo.SetYTitle(ytitle);
   histo.SetMaximum(max_axis);
   style.moveYAxisLabel(&histo, max_axis, false);
@@ -286,7 +295,8 @@ double calcKappa(vector<vector<int> > &entries, vector<vector<float> > &weights,
       float observed(0.);
       for(unsigned sam(0); sam < entries[obs].size(); sam++) {
 	// Using a flat prior, the expected average of the Poisson with N observed is Gamma(N+1,1)
-	observed += gsl_ran_gamma(entries[obs][sam]+1,1)*weights[obs][sam];
+	if(do_data) observed += gsl_ran_gamma(entries[obs][sam]+1,1);
+	else observed += gsl_ran_gamma(entries[obs][sam]+1,1)*weights[obs][sam];
       } // Loop over samples
       if(observed <= 0 && powers[obs] < 0) Denom_is0 = true;
       else fKappas[irep] *= pow(observed, powers[obs]);
@@ -316,7 +326,8 @@ double calcKappa(vector<vector<int> > &entries, vector<vector<float> > &weights,
   for(unsigned obs(0); obs < powers.size(); obs++) {
     float stdyield(0.);
     for(unsigned sam(0); sam < entries[obs].size(); sam++) 
-      stdyield += entries[obs][sam]*weights[obs][sam];
+      if(do_data) stdyield += weights[obs][sam]; // In case of data, stored the yields in weights
+      else stdyield += entries[obs][sam]*weights[obs][sam];
     //cout<<obs<<": stdyield "<<stdyield<<endl;
     if(stdyield <= 0 && powers[obs] < 0) infStd = true;
     else stdval *= pow(stdyield, powers[obs]);

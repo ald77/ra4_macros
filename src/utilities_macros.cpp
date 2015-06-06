@@ -424,6 +424,7 @@ void calc_chi2_diff(TH1D *histo1, TH1D *histo2, float &chi2, int &ndof, float &p
 long getYieldErr(TChain& tree, TString cut, double& yield, double& uncertainty){
   const TString hist_name("temp");
   TH1D temp(hist_name, "", 1, -1.0, 1.0);
+  temp.Sumw2();
   long entries = tree.Project(hist_name, "0.0", cut);
   yield = temp.IntegralAndError(0,2,uncertainty);
   return entries;

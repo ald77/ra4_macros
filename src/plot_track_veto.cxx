@@ -23,18 +23,6 @@ int main(){
   styles style("RA4"); style.setDefaultStyle();
   vector<hfeats> vars;
   TCanvas can;
-  /* Now in style file
-    TColor ucsb_blue(1000, 1/255.,57/255.,166/255.);
-    TColor ucsb_gold(1001, 255/255.,200/255.,47/255);
-    TColor penn_red(1002, 149/255.,0/255.,26/255.);
-    TColor uf_orange(1003, 255/255.,74/255.,0/255.);
-    TColor uo_green(1004, 0/255.,79/255.,39/255.);
-    TColor tcu_purple(1005, 52/255.,42/255.,123/255.);
-    TColor tar_heel_blue(1006, 86/255.,160/255.,211/255.);
-    TColor sig_teal(1007, 96/255.,159/255.,128/255.);
-    TColor sig_gold(1008, 215/255.,162/255.,50/255.);
-    TColor seal_brown(1010, 89/255.,38/255.,11/255.);
-  */
   TString folder="archive/2015_05_02/skim/";
   TString folder_noskim="archive/15-05-02//";
   vector<TString> s_tt;
@@ -42,7 +30,7 @@ int main(){
   vector<TString> s_tt_noskim;
   s_tt_noskim.push_back(folder_noskim+"*_TTJet*12.root");
   vector<TString> s_wjets;
-  s_wjets.push_back(folder+"*WJets*");
+  s_wjets.push_back(folder+"*WJetsToLNu_HT*");
   vector<TString> s_single;
   s_single.push_back(folder+"*_T*channel*");
   vector<TString> s_ttv;
