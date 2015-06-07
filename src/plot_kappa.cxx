@@ -1,6 +1,7 @@
 // plot_kappa: Plots kappa for the different fitting methods.
 //             Uncertainties found fluctuating yields with Gamma distributions
 
+#include <fstream>
 #include <iostream>
 #include <vector>
 #include <ctime>
@@ -22,14 +23,12 @@
 namespace  {
   TString ntuple_date("2015_05_25");
   TString lumi("10");
-  int method(1);
+  int method(3);
   int nrep = 10000;    // Fluctuations of Gamma distribution
   bool do_1ltt(false); // Kappa just for 1l ttbar
   bool do_2ltt(false); // Kappa just for 2l ttbar
   bool do_ttbar(true); // Include ttbar in kappa
   bool do_other(true); // Include other in kappa
-  bool do_data(false);  // Plots kappa with data statistics
-  bool do_pred(false);  // Plots bkg prediction
 }
 
 using namespace std;
@@ -37,15 +36,22 @@ using namespace std;
 // yields[Nobs][Nsam] has the entries for each sample for each observable going into kappa
 // weights[Nobs][Nsam] has the average weight of each observable for each sample
 // powers[Nobs] defines kappa = Product_obs{ Sum_sam{yields[sam][obs]*weights[sam][obs]}^powers[obs] }
-double calcKappa(vector<vector<int> > &entries, vector<vector<float> > &weights, vector<float> &powers,
-		 float &mSigma, float &pSigma);
+double calcKappa(vector<vector<int> > &entries, vector<vector<float> > &weights,
+		 vector<float> &powers, bool do_data, float &mSigma, float &pSigma);
 
+void plotKappa(vector<vector<double> > &vx, vector<vector<double> > &vy, vector<vector<double> > &vexl, 
+	       vector<vector<double> > &vexh, vector<vector<double> > &veyl, vector<vector<double> > &veyh,
+	       unsigned idata, TH1D &histo, vector<TString> &nbcuts);
 int main(){ 
-  styles style("RA4"); style.LabelSize = 0.05;
+  float time_ini(0.), time_ntu(0.), time_gen(0.);
+  time_t begtime, endtime;
+  time(&begtime);
+
+  styles style("RA4"); //style.LabelSize = 0.05;
   style.setDefaultStyle();
+
   TString folder="/cms5r0/ald77/archive/"+ntuple_date+"/skim/";
   TString folder_ns="/cms5r0/ald77/archive/"+ntuple_date+"/";
-
 
   vector<TString> s_tt;
   s_tt.push_back(folder+"*_TTJet*");
@@ -95,25 +101,23 @@ int main(){
   }
 
   
-  time_t begtime, endtime;
-  time(&begtime);
 
   TString mjthresh("400");
   if(method==1) mjthresh = "600";
   float mSigma, pSigma;
-  vector<float> powers;
+  vector<float> powersk, powersn;
   vector<TString> cuts;
-  if(do_pred){
-    powers.push_back(-1);  cuts.push_back("mt<=140&&mj<="+mjthresh); // R1
-    powers.push_back(1); cuts.push_back("mt<=140&&mj>"+mjthresh);  // R2
-    powers.push_back(1); cuts.push_back("mt>140&&mj<="+mjthresh);  // R3
-    //powers.push_back(1);  cuts.push_back("mt>140&&mj>"+mjthresh);   // R4
- } else {
-    powers.push_back(1);  cuts.push_back("mt<=140&&mj<="+mjthresh); // R1
-    powers.push_back(-1); cuts.push_back("mt<=140&&mj>"+mjthresh);  // R2
-    powers.push_back(-1); cuts.push_back("mt>140&&mj<="+mjthresh);  // R3
-    powers.push_back(1);  cuts.push_back("mt>140&&mj>"+mjthresh);   // R4
-  }
+  powersk.push_back(1);  cuts.push_back("mt<=140&&mj<="+mjthresh); // R1
+  powersk.push_back(-1); cuts.push_back("mt<=140&&mj>"+mjthresh);  // R2
+  powersk.push_back(-1); cuts.push_back("mt>140&&mj<="+mjthresh);  // R3
+  powersk.push_back(1);  cuts.push_back("mt>140&&mj>"+mjthresh);   // R4
+
+  powersn.push_back(-1);  
+  powersn.push_back(1); 
+  powersn.push_back(1); 
+  //powersn.push_back(1);  
+
+
 
   TString baseline("(nmus+nels)==1&&ht>500&&met>200&&njets>=7&&nbm>=1");
   vector<TString> metcuts, njcuts, nbcuts, metnames;
@@ -129,6 +133,7 @@ int main(){
   else {
     nbcuts.push_back("nbm==2");
     nbcuts.push_back("nbm>=3");
+    nbcuts.push_back("nbm>=2");
   }
   for(unsigned imet(0); imet<metcuts.size(); imet++){
     metnames.push_back(metcuts[imet]);
@@ -139,27 +144,40 @@ int main(){
     metnames[imet] = "#splitline{MET}{"+metnames[imet]+"}";
   }
 
-  float minh(0), maxh(10), wtot(maxh-minh), max_axis(3.2), max_kappa(0.);
+  float minh(0), maxh(10), wtot(maxh-minh);
   float wnj(wtot/static_cast<float>(njcuts.size()));
   float wmet(wnj/static_cast<float>(metcuts.size()));
   float wnb(wmet/static_cast<float>(nbcuts.size()+4));
-  vector<vector<double> > vx, vy, vexl, vexh, veyl, veyh;
-  for(unsigned inb(0); inb<nbcuts.size(); inb++){
-    vx.push_back (vector<double>());
-    vy.push_back (vector<double>());
-    vexl.push_back(vector<double>());
-    vexh.push_back(vector<double>());
-    veyl.push_back(vector<double>());
-    veyh.push_back(vector<double>());
+  if(method==3) wnb = wmet/static_cast<float>(nbcuts.size()+4-1);
+  vector<vector<vector<double> > > vx, vy, vexl, vexh, veyl, veyh;
+  for(unsigned idata(0); idata<4; idata++){
+    vx.push_back (vector<vector<double> >());
+    vy.push_back (vector<vector<double> >());
+    vexl.push_back(vector<vector<double> >());
+    vexh.push_back(vector<vector<double> >());
+    veyl.push_back(vector<vector<double> >());
+    veyh.push_back(vector<vector<double> >());    
+    for(unsigned inb(0); inb<nbcuts.size(); inb++){
+      vx[idata].push_back (vector<double>());
+      vy[idata].push_back (vector<double>());
+      vexl[idata].push_back(vector<double>());
+      vexh[idata].push_back(vector<double>());
+      veyl[idata].push_back(vector<double>());
+      veyh[idata].push_back(vector<double>());
+    }
   }
 
+  time(&endtime); time_ini = difftime(endtime, begtime);
+  time(&begtime);
+  
   TString totcut("");
   for(unsigned inj(0); inj<njcuts.size(); inj++){
     for(unsigned imet(0); imet<metcuts.size(); imet++){
       for(unsigned inb(0); inb<nbcuts.size(); inb++){
+	if(method==3 && (imet==0&&inb==3 || imet==1&&(inb==1||inb==2))) continue;
 	vector<vector<int> > entries;
 	vector<vector<float> > weights;
-	for(unsigned obs(0); obs < powers.size(); obs++) {
+	for(unsigned obs(0); obs < powersk.size(); obs++) {
 	  entries.push_back(vector<int>());
 	  weights.push_back(vector<float>());
 	  // totcut = lumi+"*weight*("+baseline+"&&"+nbcuts[inb]+"&&"+metcuts[imet]+"&&"+cuts[obs];
@@ -169,94 +187,143 @@ int main(){
 	  for(unsigned sam(0); sam < ra4_sam.size(); sam++) {
 	    totcut = (lumi+"*weight*("+baseline+"&&"+nbcuts[inb]+"&&"+metcuts[imet]+"&&"+cuts[obs]+
 		      "&&"+Samples[ra4_sam[sam]].cut);
-	    if(method==1 || obs%2==1 || powers.size()<3) totcut += "&&"+njcuts[inj];
+	    if(method==1 || obs%2==1 || powersk.size()<3) totcut += "&&"+njcuts[inj];
 	    totcut += ")";
 	    //cout << totcut<<endl;
 	    double yield(0.), sigma(0.), avWeight(1.);
 	    int Nentries(0);
 	    Nentries = getYieldErr(*chain[ra4_sam[sam]], totcut, yield, sigma);
-	    if(do_data) Nentries = static_cast<int>(yield+0.5);
-	    if(yield<0) {
-	      entries[obs].push_back(0);
-	      yield = 0;
-	    } else entries[obs].push_back(Nentries);
-	    
-	    if(do_data) avWeight = yield; // Stored for central value
-	    else {
-	      if(Nentries==0){ // If no entries, find averate weight in signal bin
-		totcut = (lumi+"*weight*("+baseline+"&&"+cuts[obs]+")");
+	    if(yield<0) entries[obs].push_back(0);
+	    else entries[obs].push_back(Nentries);	    
+	    if(Nentries==0){ // If no entries, find averate weight in signal bin
+	      totcut = (lumi+"*weight*("+baseline+"&&"+cuts[obs]+")");
+	      Nentries = getYieldErr(*chain[ra4_sam[sam]], totcut, yield, sigma);
+	      // If no entries, find averate weight in baseline region
+	      if(Nentries==0){
+		totcut = (lumi+"*weight*("+baseline+")");
 		Nentries = getYieldErr(*chain[ra4_sam[sam]], totcut, yield, sigma);
-		// If no entries, find averate weight in baseline region
-		if(Nentries==0){
-		  totcut = (lumi+"*weight*("+baseline+")");
-		  Nentries = getYieldErr(*chain[ra4_sam[sam]], totcut, yield, sigma);
-		}
 	      }
 	      // cout<<obs<<","<<sam<<": sigma "<<sigma<<", Nentries "<<Nentries<<", yield "<<yield
 	      // 	  <<", sigma*sqrt(N) "<<sigma*sqrt(Nentries)<<endl;
 	      //avWeight = sigma/sqrt(Nentries);
-	      avWeight = fabs(yield/static_cast<double>(Nentries));
 	    }
+	    avWeight = fabs(yield/static_cast<double>(Nentries));
 	    weights[obs].push_back(avWeight);
 	    //cout<<obs<<","<<sam<<": entries "<<entries[obs][sam]<<", weight "<<avWeight<<", yield "<<yield<<endl;
 	  } // Loop over samples
 	} // Loop over number of observables going into kappa
    
-	double kappa = calcKappa(entries, weights, powers, mSigma, pSigma);  
-	if(kappa > max_kappa) max_kappa = kappa;
-	float xpoint = inj*wnj+imet*wmet+(inb+2)*wnb;
-	if(kappa > max_axis && kappa-mSigma < max_axis && !do_pred) {
-	  mSigma = max_axis-(kappa-mSigma);
-	  kappa = max_axis;
-	}
-	vx[inb].push_back(xpoint);
-	vy[inb].push_back(kappa);
-	vexl[inb].push_back(0);
-	vexh[inb].push_back(0);
-	veyl[inb].push_back(mSigma);
-	veyh[inb].push_back(pSigma);
-
+	time(&endtime); time_ntu += difftime(endtime, begtime);
+	time(&begtime);
+	for(unsigned idata(0); idata<4; idata++){
+	  double kappa(0);
+	  if(idata<2) kappa = calcKappa(entries, weights, powersk, (idata%2)==1, mSigma, pSigma);  
+	  else kappa = calcKappa(entries, weights, powersn, (idata%2)==1, mSigma, pSigma);  
+	  float xpoint = inj*wnj+imet*wmet+(inb+2)*wnb;
+	  if(method==3 && inb==3) xpoint = inj*wnj+imet*wmet+(inb)*wnb;
+	  vx[idata][inb].push_back(xpoint);
+	  vy[idata][inb].push_back(kappa);
+	  vexl[idata][inb].push_back(0);
+	  vexh[idata][inb].push_back(0);
+	  veyl[idata][inb].push_back(mSigma);
+	  veyh[idata][inb].push_back(pSigma);
+	} // Loop over MC and data
+	time(&endtime); time_gen += difftime(endtime, begtime);
+	time(&begtime);	
       } // Loop over nb cuts
     } // Loop over met cuts
   } // Loop over nj cuts
 
+
+  TH1D histo("histo",cuts2title(baseline),njcuts.size()*metcuts.size(), minh, maxh);
+  for(unsigned inj(0); inj<njcuts.size(); inj++)
+    for(unsigned imet(0); imet<metcuts.size(); imet++)
+      histo.GetXaxis()->SetBinLabel(1+imet+inj*metcuts.size(), metnames[imet]);
+  for(unsigned idata(0); idata<4; idata++)
+    plotKappa(vx[idata], vy[idata], vexl[idata], vexh[idata], veyl[idata], veyh[idata], idata, histo, nbcuts);
+
+  TString pname = "txt/kappa_method"; pname += method;
+  if(do_1ltt) pname += "_1ltt";
+  else {
+    if(do_2ltt) pname += "_2ltt";
+    else {
+      if(do_ttbar) pname += "_tt";
+      if(do_other) pname += "_other";
+    }
+  }
+  pname += ".tex";
+  ifstream header("txt/header.tex");
+  ifstream footer("txt/footer.tex");
+  ofstream file(pname);
+  file<<header.rdbuf();
+  file<<footer.rdbuf();
+  file.close();
+  cout<<endl<<"Written "<<pname<<endl;
+
+
+  time(&endtime); time_ini += difftime(endtime, begtime);
+  time(&begtime);	
+  cout<<endl<<"Total time: set up "<<time_ini<<" s, finding yields "<<time_ntu
+      <<" s, toys "<<time_gen<<" s"<<endl<<endl; 
+}
+
+void plotKappa(vector<vector<double> > &vx, vector<vector<double> > &vy, vector<vector<double> > &vexl, 
+	       vector<vector<double> > &vexh, vector<vector<double> > &veyl, vector<vector<double> > &veyh,
+	       unsigned idata, TH1D &histo, vector<TString> &nbcuts){
+
+  bool do_data((idata%2)==1), do_pred(idata>=2);
+  styles style("RA4"); //style.LabelSize = 0.05;
+  style.setDefaultStyle();
+  float max_axis(3.2), max_kappa(0.);
+  unsigned nbsize(vx.size());
+  float minh(histo.GetBinLowEdge(1)), maxh(histo.GetBinLowEdge(histo.GetNbinsX()+1));
+  float wtot(maxh-minh);
+  for(unsigned inb(0); inb<nbsize; inb++){
+    for(unsigned ik(0); ik<vy.size(); ik++){
+      if(vy[inb][ik] > max_kappa) max_kappa = vy[inb][ik];
+      if(vy[inb][ik] > max_axis && vy[inb][ik]-veyl[inb][ik] < max_axis && !do_pred) {
+	veyl[inb][ik] = max_axis-(vy[inb][ik]-veyl[inb][ik]);
+	vy[inb][ik] = max_axis;
+      }
+    }
+  }
   if(do_pred) max_axis = max_kappa*1.3;
   TCanvas can;
   TLine line; line.SetLineColor(28); line.SetLineWidth(4); line.SetLineStyle(2);
-  TH1D histo("histo",cuts2title(baseline),njcuts.size()*metcuts.size(), minh, maxh);
   histo.Draw();
-  TString ytitle("N_{obs}/N_{pred} for method "); ytitle += method;
-  if(do_pred) {ytitle = "Predicted N_{bkg} for method "; ytitle += method;}
+  TString ytitle("#kappa^{MC}"); 
+  if(do_pred) ytitle = "N_{2}#timesN_{3}/N_{1}"; 
+  if(do_data) ytitle += " (data uncert.)";
+  else ytitle += " (MC uncert.)";
   histo.SetYTitle(ytitle);
   histo.SetMaximum(max_axis);
   style.moveYAxisLabel(&histo, max_axis, false);
   if(!do_pred) line.DrawLine(minh, 1, maxh, 1);
   line.SetLineColor(1); line.SetLineWidth(2); 
   line.DrawLine(minh+wtot/2., 0, minh+wtot/2, max_axis);
-  for(unsigned inj(0); inj<njcuts.size(); inj++)
-    for(unsigned imet(0); imet<metcuts.size(); imet++)
-      histo.GetXaxis()->SetBinLabel(1+imet+inj*metcuts.size(), metnames[imet]);
 
   double legX(style.PadLeftMargin+0.03), legY(0.902), legSingle = 0.052;
-  if(do_pred) legX = 0.8;
-  double legW = 0.13, legH = legSingle*nbcuts.size();
+  if(do_pred) legX = 0.62;
+  double legW = 0.29, legH = legSingle*nbsize;
+  if(nbsize>3) legH = legSingle*((nbsize+1)/2);
   TLegend leg(legX, legY-legH, legX+legW, legY);
   leg.SetTextSize(style.LegendSize); leg.SetFillColor(0); 
   leg.SetFillStyle(0); leg.SetBorderSize(0);
   leg.SetTextFont(style.nFont); 
+  if(nbsize>3) leg.SetNColumns(2);
   TGraphAsymmErrors graph[20];
-  int colors[] = {2,4,kMagenta+2}, styles[] = {20, 21, 22};
-  for(unsigned inb(0); inb<nbcuts.size(); inb++){
+  int colors[] = {2,4,kMagenta+2, kGreen+3}, styles[] = {20, 21, 22, 23};
+  for(unsigned inb(0); inb<nbsize; inb++){
     graph[inb] = TGraphAsymmErrors(vx[inb].size(), &(vx[inb][0]), &(vy[inb][0]), 
-				      &(vexl[inb][0]), &(vexh[inb][0]), &(veyl[inb][0]), &(veyh[inb][0]));
+				   &(vexl[inb][0]), &(vexh[inb][0]), &(veyl[inb][0]), &(veyh[inb][0]));
     graph[inb].SetMarkerStyle(styles[inb]); graph[inb].SetMarkerSize(1.4); 
     graph[inb].SetMarkerColor(colors[inb]); graph[inb].SetLineColor(colors[inb]);
-    graph[inb].Draw("p same");
+    graph[inb].Draw("p same");   
     nbcuts[inb].ReplaceAll("nbm","n_{b}");
     nbcuts[inb].ReplaceAll("=="," = ");
     nbcuts[inb].ReplaceAll(">="," #geq ");
     leg.AddEntry(&graph[inb], nbcuts[inb], "p");
-  }
+ }
   leg.Draw();
   TLatex label; label.SetNDC(kTRUE);label.SetTextAlign(22);
   label.DrawLatex(0.37,0.03,"7 #leq n_{j} #leq 8");
@@ -277,12 +344,10 @@ int main(){
   if(do_pred) pname.ReplaceAll("kappa","npred");
   can.SaveAs(pname);
 
-  time(&endtime);
-  cout<<endl<<"Calculation took "<<difftime(endtime, begtime)<<" seconds"<<endl<<endl; 
 }
 
-double calcKappa(vector<vector<int> > &entries, vector<vector<float> > &weights, vector<float> &powers,
-		 float &mSigma, float &pSigma){
+double calcKappa(vector<vector<int> > &entries, vector<vector<float> > &weights,
+		 vector<float> &powers, bool do_data, float &mSigma, float &pSigma){
   int nbadk(0);
   TCanvas can;
   vector<float> fKappas;
@@ -295,7 +360,7 @@ double calcKappa(vector<vector<int> > &entries, vector<vector<float> > &weights,
       float observed(0.);
       for(unsigned sam(0); sam < entries[obs].size(); sam++) {
 	// Using a flat prior, the expected average of the Poisson with N observed is Gamma(N+1,1)
-	if(do_data) observed += gsl_ran_gamma(entries[obs][sam]+1,1);
+	if(do_data) observed += gsl_ran_gamma(static_cast<int>(0.5+entries[obs][sam]*weights[obs][sam])+1,1);
 	else observed += gsl_ran_gamma(entries[obs][sam]+1,1)*weights[obs][sam];
       } // Loop over samples
       if(observed <= 0 && powers[obs] < 0) Denom_is0 = true;
@@ -326,8 +391,7 @@ double calcKappa(vector<vector<int> > &entries, vector<vector<float> > &weights,
   for(unsigned obs(0); obs < powers.size(); obs++) {
     float stdyield(0.);
     for(unsigned sam(0); sam < entries[obs].size(); sam++) 
-      if(do_data) stdyield += weights[obs][sam]; // In case of data, stored the yields in weights
-      else stdyield += entries[obs][sam]*weights[obs][sam];
+      stdyield += entries[obs][sam]*weights[obs][sam];
     //cout<<obs<<": stdyield "<<stdyield<<endl;
     if(stdyield <= 0 && powers[obs] < 0) infStd = true;
     else stdval *= pow(stdyield, powers[obs]);
