@@ -52,6 +52,7 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
   double legY(0.902), legSingle = 0.052;
   double legW = 0.13, legH = legSingle*(vars[0].samples.size()+1)/2;
   double legX1[] = {legLeft, legLeft+(legRight-legLeft)/2.*1.15};
+  if(vars[0].samples.size()<4) legX1[0] = 0.5;
   TLegend leg[2]; int nLegs(2);
   for(int ileg(0); ileg<nLegs; ileg++){
     leg[ileg].SetX1NDC(legX1[ileg]); leg[ileg].SetX2NDC(legX1[ileg]+legW); 

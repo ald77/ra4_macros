@@ -19,11 +19,11 @@
 namespace  {
   TString ntuple_date("2015_05_25");
   TString minjets("7"), midjets("8");
-  TString mjthresh("400");
+  TString mjthresh("600");
   TString luminosity="10";
   bool do_2l=false;
-  bool do_nb_binning=true;
-  bool do_note=false;
+  bool do_nb_binning=false;
+  bool do_note=true;
 }
 
 using namespace std;
@@ -100,7 +100,7 @@ int main(){
   ofstream file(outname);
   file<<header.rdbuf();
   file<<"\\vspace{80 mm}\n";
-  file << "\n\\begin{tabular}[!htb]{ l | ";
+  file << "\n\\begin{tabular}[tbp!]{ l | ";
   for(unsigned sam(0); sam < Samples.size()-nsig; sam++) file << "r";
   file<<" | r ";
   for(int sam(0); sam < nsig; sam++) file<<"| r ";
@@ -123,8 +123,9 @@ int main(){
       TString name("Bin "); name += bin; name += ": ";
       binnames.push_back(name);
     }
-  TString lownj("$"+minjets+"\\leq n_j\\leq "+midjets+"$");
-  TString hignj("$n_j> "+midjets+"$");
+  TString higjets(""); higjets += (midjets.Atoi()+1);
+  TString lownj("$n_j\\leq "+midjets+"$");
+  TString hignj("$n_j\\leq "+higjets+"$");
   TString lownj_2l("$"+minjets_2l+"\\leq n_j\\leq "+midjets_2l+"$");
   TString hignj_2l("$n_j> "+midjets_2l+"$");
   TString lowmet("$\\text{MET}\\leq 400$");
@@ -195,12 +196,12 @@ int main(){
       file << YieldsCut(binnames[2]+hignj+", "+lowmet, mjcut+"&&"+mtcut+"&&njets>"+midjets+"&&met<=400&&" +cuts_1l, chain, Samples, nsig);
       file << YieldsCut(binnames[3]+hignj+", "+higmet, mjcut+"&&"+mtcut+"&&njets>"+midjets+"&&met>400&&"  +cuts_1l, chain, Samples, nsig);
     } else {
-      file << YieldsCut("Bin 1: "+lownj+", "+lowmet+", $n_b=2$", mjcut+"&&"+mtcut+"&&njets<="+midjets+"&&met<=400&&nbm==2&&"+cuts_1l, chain, Samples, nsig);
-      file << YieldsCut("Bin 2: "+lownj+", "+lowmet+", $n_b\\geq 3$", mjcut+"&&"+mtcut+"&&njets<="+midjets+"&&met<=400&&nbm>=3&&"+cuts_1l, chain, Samples, nsig);
-      file << YieldsCut("Bin 3: "+lownj+", "+higmet, mjcut+"&&"+mtcut+"&&njets<="+midjets+"&&met>400&&" +cuts_1l, chain, Samples, nsig);
-      file << YieldsCut("Bin 4: "+hignj+", "+lowmet+", $n_b=2$", mjcut+"&&"+mtcut+"&&njets>"+midjets+"&&met<=400&&nbm==2&&" +cuts_1l, chain, Samples, nsig);
-      file << YieldsCut("Bin 5: "+hignj+", "+lowmet+", $n_b\\geq 3$", mjcut+"&&"+mtcut+"&&njets>"+midjets+"&&met<=400&&nbm>=3&&" +cuts_1l, chain, Samples, nsig);
-      file << YieldsCut("Bin 6: "+hignj+", "+higmet, mjcut+"&&"+mtcut+"&&njets>"+midjets+"&&met>400&&"  +cuts_1l, chain, Samples, nsig);
+      file << YieldsCut(binnames[0]+lownj+", "+lowmet+", $n_b=2$", mjcut+"&&"+mtcut+"&&njets<="+midjets+"&&met<=400&&nbm==2&&"+cuts_1l, chain, Samples, nsig);
+      file << YieldsCut(binnames[1]+lownj+", "+lowmet+", $n_b\\geq 3$", mjcut+"&&"+mtcut+"&&njets<="+midjets+"&&met<=400&&nbm>=3&&"+cuts_1l, chain, Samples, nsig);
+      file << YieldsCut(binnames[2]+lownj+", "+higmet, mjcut+"&&"+mtcut+"&&njets<="+midjets+"&&met>400&&" +cuts_1l, chain, Samples, nsig);
+      file << YieldsCut(binnames[3]+hignj+", "+lowmet+", $n_b=2$", mjcut+"&&"+mtcut+"&&njets>"+midjets+"&&met<=400&&nbm==2&&" +cuts_1l, chain, Samples, nsig);
+      file << YieldsCut(binnames[4]+hignj+", "+lowmet+", $n_b\\geq 3$", mjcut+"&&"+mtcut+"&&njets>"+midjets+"&&met<=400&&nbm>=3&&" +cuts_1l, chain, Samples, nsig);
+      file << YieldsCut(binnames[5]+hignj+", "+higmet, mjcut+"&&"+mtcut+"&&njets>"+midjets+"&&met>400&&"  +cuts_1l, chain, Samples, nsig);
     }
     file <<"\\hline\n";
 
