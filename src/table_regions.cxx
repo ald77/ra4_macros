@@ -21,6 +21,7 @@ namespace  {
   TString minjets("7"), midjets("8");
   TString mjthresh("600");
   TString luminosity="10";
+  bool do_1b=false;
   bool do_2l=false;
   bool do_nb_binning=false;
   bool do_note=true;
@@ -81,6 +82,7 @@ int main(){
   TString fom("$Z_{\\rm bi}$");
   if(!do_zbi) fom = "S/B";
   TString outname = "txt/yields_mj"+mjthresh+"_njets"+minjets+midjets+"_lumi"+luminosity+"_"+ntuple_date+".tex";
+  if(do_1b) outname.ReplaceAll("yields","yields_1b");
   if(do_2l) outname.ReplaceAll("yields","yields_2l");
   if(do_zbi) outname.ReplaceAll("yields","yields_zbi");
 
@@ -91,10 +93,12 @@ int main(){
   TString cuts_2lbb(baseline+"&&(nmus+nels)==2&&nbm==2&&njets>="+minjets_2l+"");
   TString cuts_1ltex("$H_T>500, \\mathrm{MET}>200, n_{\\rm jets}\\geq "+minjets+", n_b\\geq 2, n_{\\rm lep}=1$");
   TString cuts_1l1btex("$H_T>500, \\mathrm{MET}>200, n_{\\rm jets}\\geq "+minjets+", n_b=1, n_{\\rm lep}=1$");
-  TString cuts_2ltex("$H_T>500, \\mathrm{MET}>200, n_{\\rm jets}\\geq "+minjets+", n_b=1, n_{\\rm lep}=2$");
-  TString cuts_2lbbtex("$H_T>500, \\mathrm{MET}>200, n_{\\rm jets}\\geq "+minjets+", n_b=2, n_{\\rm lep}=2$");
-  
-
+  TString cuts_2ltex("$H_T>500, \\mathrm{MET}>200, n_{\\rm jets}\\geq "+minjets_2l+", n_b=1, n_{\\rm lep}=2$");
+  TString cuts_2lbbtex("$H_T>500, \\mathrm{MET}>200, n_{\\rm jets}\\geq "+minjets_2l+", n_b=2, n_{\\rm lep}=2$");
+  if(do_1b) {
+    cuts_1l.ReplaceAll("nbm>=2","nbm==1");
+    cuts_1ltex.ReplaceAll("n_b\\geq 2", "n_b=1");
+  }
   ifstream header("txt/header.tex");
   ifstream footer("txt/footer.tex");
   ofstream file(outname);
@@ -125,17 +129,23 @@ int main(){
     }
   TString higjets(""); higjets += (midjets.Atoi()+1);
   TString lownj("$n_j\\leq "+midjets+"$");
-  TString hignj("$n_j\\leq "+higjets+"$");
-  TString lownj_2l("$"+minjets_2l+"\\leq n_j\\leq "+midjets_2l+"$");
-  TString hignj_2l("$n_j> "+midjets_2l+"$");
+  TString hignj("$n_j\\geq "+higjets+"$");
+  TString lownj_2l("$n_j\\leq "+midjets_2l+"$");
+  TString higjets_2l(""); higjets_2l += (midjets_2l.Atoi()+1);
+  TString hignj_2l("$n_j\\geq "+higjets_2l+"$");
   TString lowmet("$\\text{MET}\\leq 400$");
   TString higmet("$\\text{MET}> 400$");
+  TString letter("R"); 
+  if(do_1b) letter = "B"; 
+  if(do_2l) letter = "D";
+  TString regions[4];
+  for(int ind(0); ind<4; ind++) {regions[ind] = letter; regions[ind] += (ind+1);}
   //////////////////////////////////// RA4 regions //////////////////////////////////
   if(!do_2l){
     file << " \\multicolumn{"<< Samples.size()+1<<"}{c}{"<< cuts_1ltex  <<"} \\\\ \\hline \\hline\n";
 
     mjcut="mj<="+mjthresh; mtcut="mt<=140"; 
-    file << YieldsCut("R1: $m_T  \\leq 140,M_J\\leq "+mjthresh+"$", mjcut+"&&"+mtcut+"&&"+cuts_1l, chain, Samples, nsig);
+    file << YieldsCut(regions[0]+": $m_T  \\leq 140,M_J\\leq "+mjthresh+"$", mjcut+"&&"+mtcut+"&&"+cuts_1l, chain, Samples, nsig);
     file <<"\\hline\n";
     if(!do_nb_binning){
       file << YieldsCut(indent+lownj+", "+lowmet, mjcut+"&&"+mtcut+"&&njets<="+midjets+"&&met<=400&&"+cuts_1l, chain, Samples, nsig);
@@ -150,7 +160,7 @@ int main(){
     file <<"\\hline\n";
 
     mjcut="mj>"+mjthresh; mtcut="mt<=140"; 
-    file << YieldsCut("R2: $m_T  \\leq 140,M_J> "+mjthresh+"$", mjcut+"&&"+mtcut+"&&"+cuts_1l, chain, Samples, nsig);
+    file << YieldsCut(regions[1]+": $m_T  \\leq 140,M_J> "+mjthresh+"$", mjcut+"&&"+mtcut+"&&"+cuts_1l, chain, Samples, nsig);
     file <<"\\hline\n";
 
     if(!do_nb_binning){
@@ -169,7 +179,7 @@ int main(){
     file <<"\\hline\n";
 
     mjcut="mj<="+mjthresh; mtcut="mt>140"; 
-    file << YieldsCut("R3: $m_T  > 140,M_J \\leq "+mjthresh+"$", mjcut+"&&"+mtcut+"&&"+cuts_1l, chain, Samples, nsig);
+    file << YieldsCut(regions[2]+": $m_T  > 140,M_J \\leq "+mjthresh+"$", mjcut+"&&"+mtcut+"&&"+cuts_1l, chain, Samples, nsig);
     file <<"\\hline\n";
 
     if(!do_nb_binning){
@@ -187,7 +197,7 @@ int main(){
 
 
     mjcut="mj>"+mjthresh; mtcut="mt>140"; 
-    file << YieldsCut("R4: $m_T  > 140,M_J > "+mjthresh+"$", mjcut+"&&"+mtcut+"&&"+cuts_1l, chain, Samples, nsig);
+    file << YieldsCut(regions[3]+": $m_T  > 140,M_J > "+mjthresh+"$", mjcut+"&&"+mtcut+"&&"+cuts_1l, chain, Samples, nsig);
     file <<"\\hline\n";
 
     if(!do_nb_binning){
@@ -210,7 +220,7 @@ int main(){
 	 <<cuts_2ltex <<"} \\\\ \\hline \\hline\n";
 
     mjcut="mj<="+mjthresh; 
-    file << YieldsCut("$M_J \\leq "+mjthresh+"$", "mj <= "+mjthresh+"&&"+cuts_2l, chain, Samples, nsig);
+    file << YieldsCut(regions[2]+": $M_J \\leq "+mjthresh+"$", "mj <= "+mjthresh+"&&"+cuts_2l, chain, Samples, nsig);
     file <<"\\hline\n";
     file << YieldsCut(indent+lownj_2l+", "+lowmet, mjcut+"&&njets<="+midjets_2l+"&&met<=400&&"+cuts_2l, chain, Samples, nsig);
     file << YieldsCut(indent+lownj_2l+", "+higmet, mjcut+"&&njets<="+midjets_2l+"&&met>400&&" +cuts_2l, chain, Samples, nsig);
@@ -220,7 +230,7 @@ int main(){
 
 
     mjcut="mj>"+mjthresh; 
-    file << YieldsCut("$M_J > "+mjthresh+"$", "mj>"+mjthresh+"&&"+cuts_2l, chain, Samples, nsig);
+    file << YieldsCut(regions[3]+": $M_J > "+mjthresh+"$", "mj>"+mjthresh+"&&"+cuts_2l, chain, Samples, nsig);
     file <<"\\hline\n";
     file << YieldsCut(indent+lownj_2l+", "+lowmet, mjcut+"&&njets<="+midjets_2l+"&&met<=400&&"+cuts_2l, chain, Samples, nsig);
     file << YieldsCut(indent+lownj_2l+", "+higmet, mjcut+"&&njets<="+midjets_2l+"&&met>400&&" +cuts_2l, chain, Samples, nsig);
@@ -231,7 +241,7 @@ int main(){
 	 << cuts_2lbbtex<<"} \\\\ \\hline \\hline\n";
 
     mjcut="mj<="+mjthresh; 
-    file << YieldsCut("$M_J \\leq "+mjthresh+"$", "mj<="+mjthresh+"&&"+cuts_2lbb, chain, Samples, nsig);
+    file << YieldsCut(regions[2]+": $M_J \\leq "+mjthresh+"$", "mj<="+mjthresh+"&&"+cuts_2lbb, chain, Samples, nsig);
     file <<"\\hline\n";
     file << YieldsCut(indent+lownj_2l+", "+lowmet, mjcut+"&&njets<="+midjets_2l+"&&met<=400&&"+cuts_2lbb, chain, Samples, nsig);
     file << YieldsCut(indent+lownj_2l+", "+higmet, mjcut+"&&njets<="+midjets_2l+"&&met>400&&" +cuts_2lbb, chain, Samples, nsig);
@@ -240,7 +250,7 @@ int main(){
     file <<"\\hline\n";
 
     mjcut="mj>"+mjthresh; 
-    file << YieldsCut("$M_J > "+mjthresh+"$", "mj>"+mjthresh+"&&"+cuts_2lbb, chain, Samples, nsig);
+    file << YieldsCut(regions[3]+": $M_J > "+mjthresh+"$", "mj>"+mjthresh+"&&"+cuts_2lbb, chain, Samples, nsig);
     file <<"\\hline\n";
     file << YieldsCut(indent+lownj_2l+", "+lowmet, mjcut+"&&njets<="+midjets_2l+"&&met<=400&&"+cuts_2lbb, chain, Samples, nsig);
     file << YieldsCut(indent+lownj_2l+", "+higmet, mjcut+"&&njets<="+midjets_2l+"&&met>400&&" +cuts_2lbb, chain, Samples, nsig);

@@ -29,6 +29,7 @@ namespace  {
   bool do_2ltt(false); // Kappa just for 2l ttbar
   bool do_ttbar(true); // Include ttbar in kappa
   bool do_other(true); // Include other in kappa
+  TString plot_type=".pdf";
 }
 
 using namespace std;
@@ -43,7 +44,7 @@ void plotKappa(vector<vector<double> > &vx, vector<vector<double> > &vy, vector<
 	       vector<vector<double> > &vexh, vector<vector<double> > &veyl, vector<vector<double> > &veyh,
 	       unsigned idata, TH1D &histo, vector<TString> &nbcuts);
 int main(){ 
-  float time_ini(0.), time_ntu(0.), time_gen(0.);
+  float time_setup(0.), time_ntu(0.), time_gen(0.);
   time_t begtime, endtime;
   time(&begtime);
 
@@ -124,7 +125,7 @@ int main(){
   // metcuts.push_back("met>100&&met<=200");
   // metcuts.push_back("met>200&&met<=300");
   // metcuts.push_back("met>300&&met<=400");
-  metcuts.push_back("met>200&&met<=400");
+  metcuts.push_back("met<=400");
   metcuts.push_back("met>400");
   njcuts.push_back("njets<=8");
   njcuts.push_back("njets>=9");
@@ -149,6 +150,8 @@ int main(){
   float wmet(wnj/static_cast<float>(metcuts.size()));
   float wnb(wmet/static_cast<float>(nbcuts.size()+4));
   if(method==3) wnb = wmet/static_cast<float>(nbcuts.size()+4-1);
+  // These vectors have indices vx[4][nbsize][njsize*metsize]
+  // The first index is: 0 -> k MC, 1 -> k data, 2 -> N4 MC, 3 -> N4 data
   vector<vector<vector<double> > > vx, vy, vexl, vexh, veyl, veyh;
   for(unsigned idata(0); idata<4; idata++){
     vx.push_back (vector<vector<double> >());
@@ -167,7 +170,7 @@ int main(){
     }
   }
 
-  time(&endtime); time_ini = difftime(endtime, begtime);
+  time(&endtime); time_setup = difftime(endtime, begtime);
   time(&begtime);
   
   TString totcut("");
@@ -235,14 +238,9 @@ int main(){
   } // Loop over nj cuts
 
 
-  TH1D histo("histo",cuts2title(baseline),njcuts.size()*metcuts.size(), minh, maxh);
-  for(unsigned inj(0); inj<njcuts.size(); inj++)
-    for(unsigned imet(0); imet<metcuts.size(); imet++)
-      histo.GetXaxis()->SetBinLabel(1+imet+inj*metcuts.size(), metnames[imet]);
-  for(unsigned idata(0); idata<4; idata++)
-    plotKappa(vx[idata], vy[idata], vexl[idata], vexh[idata], veyl[idata], veyh[idata], idata, histo, nbcuts);
-
-  TString pname = "txt/kappa_method"; pname += method;
+  int digits(1), digper(0);
+  vector<unsigned> ind(nbcuts.size(),0);
+  TString pname = "txt/kappa_method", cutname; pname += method;
   if(do_1ltt) pname += "_1ltt";
   else {
     if(do_2ltt) pname += "_2ltt";
@@ -256,14 +254,60 @@ int main(){
   ifstream footer("txt/footer.tex");
   ofstream file(pname);
   file<<header.rdbuf();
+  /////////////////////// TABLE  ///////////////////////////
+  file << "{\\renewcommand{\\arraystretch}{1.4}"<<endl;
+  file << "\n\\begin{tabular}[tbp!]{ l | rc | rc | r}\\hline\\hline\n";
+  file << " \\multicolumn{1}{c|}{${\\cal L} = "<<lumi<<"$ fb$^{-1}$} ";
+  file << " & $N_{\\rm R2}\\frac{N_{\\rm R3}}{N_{\\rm R1}}$ & Data stat. [\\%] \n";
+  file << "& $\\kappa^{\\rm MC}$ & MC stat. [\\%] & \\multicolumn{1}{c}{$\\hat{N}_{\\rm R4}$} \\\\ \\hline\n";
+  for(unsigned inj(0); inj<njcuts.size(); inj++){
+    for(unsigned imet(0); imet<metcuts.size(); imet++){
+      for(unsigned inb(1); inb<nbcuts.size(); inb++){
+	if(method==3 && (imet==0&&inb==3 || imet==1&&(inb==1||inb==2))) continue;
+	cutname = "$"+njcuts[inj]+", "+metcuts[imet];
+	if(method==3) cutname += ", "+nbcuts[inb];
+	cutname += "$";
+	cutname.ReplaceAll("njets","n_{\\rm j}");
+	cutname.ReplaceAll("<=","\\leq "); cutname.ReplaceAll(">=","\\geq "); 
+	cutname.ReplaceAll("met","{\\rm MET}"); cutname.ReplaceAll("nbm","n_b");
+	cutname.ReplaceAll("==","="); 
+	float Kappa(vy[0][inb][ind[inb]]), N4(vy[2][inb][ind[inb]]);
+	float epKappa(veyh[0][inb][ind[inb]]), emKappa(veyl[0][inb][ind[inb]]);
+	float epN4(veyh[2][inb][ind[inb]]), emN4(veyl[2][inb][ind[inb]]);
+	file << cutname << " \t& $" <<RoundNumber(N4,digits)<<"^{+"<<RoundNumber(epN4,digits)
+	     <<"}_{-"<<RoundNumber(emN4,digits)<<"}$ & ${}^{+"<<RoundNumber(epN4*100,digper,N4)
+	     <<"}_{-"<<RoundNumber(emN4*100,digper,N4)<<"}$ & $"
+	     <<RoundNumber(Kappa,digits+1)<<"^{+"<<RoundNumber(epKappa,digits+1)
+	     <<"}_{-"<<RoundNumber(emKappa,digits+1)<<"}$ & ${}^{+"<<RoundNumber(epKappa*100,digper,Kappa)
+	     <<"}_{-"<<RoundNumber(emKappa*100,digper,Kappa)<<"}$  & $"
+	     <<RoundNumber(N4*Kappa,digits)<<"^{+"<<RoundNumber(epN4*Kappa,digits)
+	     <<"+"<<RoundNumber(N4*epKappa,digits)<<"}_{-"<<RoundNumber(emN4*Kappa,digits)
+	     <<"-"<<RoundNumber(N4*emKappa,digits)<<"}$ \\\\"<<endl;
+	ind[inb]++;
+      } // Loop over nb cuts
+    } // Loop over met cuts
+    if(inj==0) file<<"\\hline"<<endl;
+  } // Loop over nj cuts
+
+
+  file<< "\\hline\\hline\n\\end{tabular}"<<endl<<endl;
+  /////////////////////// TABLE  ///////////////////////////
   file<<footer.rdbuf();
   file.close();
   cout<<endl<<"Written "<<pname<<endl;
 
 
-  time(&endtime); time_ini += difftime(endtime, begtime);
+  TH1D histo("histo",cuts2title(baseline),njcuts.size()*metcuts.size(), minh, maxh);
+  for(unsigned inj(0); inj<njcuts.size(); inj++)
+    for(unsigned imet(0); imet<metcuts.size(); imet++)
+      histo.GetXaxis()->SetBinLabel(1+imet+inj*metcuts.size(), metnames[imet]);
+  for(unsigned idata(0); idata<4; idata++)
+    plotKappa(vx[idata], vy[idata], vexl[idata], vexh[idata], veyl[idata], veyh[idata], idata, histo, nbcuts);
+
+
+  time(&endtime); time_setup += difftime(endtime, begtime);
   time(&begtime);	
-  cout<<endl<<"Total time: set up "<<time_ini<<" s, finding yields "<<time_ntu
+  cout<<endl<<"Total time: set up "<<time_setup<<" s, finding yields "<<time_ntu
       <<" s, toys "<<time_gen<<" s"<<endl<<endl; 
 }
 
@@ -340,7 +384,7 @@ void plotKappa(vector<vector<double> > &vx, vector<vector<double> > &vy, vector<
   }
   if(do_data) pname += "_data";
   else  pname += "_mc";
-  pname += ".eps";
+  pname += plot_type;
   if(do_pred) pname.ReplaceAll("kappa","npred");
   can.SaveAs(pname);
 
