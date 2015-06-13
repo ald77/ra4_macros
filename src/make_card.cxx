@@ -24,6 +24,8 @@ namespace{
   std::string ntuple_date = "2015_05_25";
   double lumi = 10.;
   bool no_mc_kappa = false;
+  bool no_dilep = false;
+  bool no_systematics = false;
 
   std::string mgluino = "1500";
   std::string mlsp = "100";
@@ -75,15 +77,31 @@ int main(int argc, char *argv[]){
   other.Add(folder+"*ZJetsToLNu_HT*");
   other.Add(folder+"*DYJets*");
   other.Add(folder+"*H_HToBB*");
+  small_tree_quick full(folder+"*TTJets*");
+  full.Add(folder+"*QCD_Pt*");
+  full.Add(folder+"*TTWJets*");
+  full.Add(folder+"*TTZJets*");
+  full.Add(folder+"*_T*-channel*");
+  full.Add(folder+"*WJetsToLNu_HT*");
+  full.Add(folder+"*ZJetsToLNu_HT*");
+  full.Add(folder+"*DYJets*");
+  full.Add(folder+"*H_HToBB*");
   small_tree_quick sig(folder+"*T1tttt*"+mgluino+"*"+mlsp+"*");
 
+  //Single lepton region
   vector<double> ttbar_raw, ttbar_wght;
   vector<double> other_raw, other_wght;
   vector<double> sig_raw, sig_wght;
+  vector<double> dilep_raw, dilep_wght;
+  GetCounts(ttbar, ttbar_raw, ttbar_wght);
+  GetCounts(other, other_raw, other_wght);
+  GetCounts(sig, sig_raw, sig_wght);
+  GetCounts(full, dilep_raw, dilep_wght, true);
 
-  GetCounts(lumi, ttbar, ttbar_raw, ttbar_wght);
-  GetCounts(lumi, other, other_raw, other_wght);
-  GetCounts(lumi, sig, sig_raw, sig_wght);
+  vector<double> dilep_count = dilep_raw;
+  for(size_t i = 0; i < dilep_count.size(); ++i){
+    dilep_count.at(i) *= dilep_wght.at(i);
+  }
 
   vector<double> mc_raw, mc_wght;
   GetMCTotals(mc_raw, mc_wght,
@@ -100,7 +118,7 @@ int main(int argc, char *argv[]){
             other_raw, other_wght,
             sig_raw, sig_wght,
             mc_raw, mc_wght,
-            data_counts);
+            data_counts, dilep_count);
 }
 
 void GetOptions(int argc, char *argv[]){
@@ -110,7 +128,9 @@ void GetOptions(int argc, char *argv[]){
       {"method", required_argument, 0, 'm'},
       {"ntuple_date", required_argument, 0, 'd'},
       {"lumi", required_argument, 0, 'l'},
-      {"no_mc_kappa", no_argument, 0, 'k'},
+      {"no_mc_kappa", no_argument, 0, 0},
+      {"no_dilep", no_argument, 0, 0},
+      {"no_systematics", no_argument, 0, 0},
       {"inject_signal", required_argument, 0, 's'},
       {"mgluino", required_argument, 0, 0},
       {"mlsp", required_argument, 0, 0},
@@ -130,7 +150,7 @@ void GetOptions(int argc, char *argv[]){
 
     char opt = -1;
     int option_index;
-    opt = getopt_long(argc, argv, "m:d:l:ks:t", long_options, &option_index);
+    opt = getopt_long(argc, argv, "m:d:l:s:t", long_options, &option_index);
     if( opt == -1) break;
 
     string optname;
@@ -147,9 +167,6 @@ void GetOptions(int argc, char *argv[]){
       lumi = atof(optarg);
       set_lumi = true;
       break;
-    case 'k':
-      no_mc_kappa = true;
-      break;
     case 's':
       inject_signal = atof(optarg);
       set_inject_signal = true;
@@ -159,7 +176,13 @@ void GetOptions(int argc, char *argv[]){
       break;
     case 0:
       optname = long_options[option_index].name;
-      if(optarg == "mgluino"){
+      if(optname == "no_mc_kappa"){
+        no_mc_kappa = true;
+      }else if(optname == "no_dilep"){
+        no_dilep = true;
+      }else if(optname == "no_systematics"){
+        no_systematics = true;
+      }else if(optname == "mgluino"){
         mgluino = optarg;
         set_gluino = true;
         set_masses = true;
@@ -230,20 +253,24 @@ void GetOptions(int argc, char *argv[]){
   if(method == 1 && !set_mj_div) mj_div = 600.;
 }
 
-void GetCounts(double lumi,
-               small_tree_quick &tree,
+void GetCounts(small_tree_quick &tree,
                vector<double> &raw,
-               vector<double> &wght){
+               vector<double> &wght,
+               bool dilepton_mode){
   size_t nbins = 0;
-  switch(method){
-  case 0: nbins = 8; break;
-  case 1: nbins = 16; break;
-  case 2: nbins = 12; break;
-  case 3: nbins = 18; break;
-  default: break;
+  if(dilepton_mode){
+    nbins = 2;
+  }else{
+    switch(method){
+    case 0: nbins = 8; break;
+    case 1: nbins = 16; break;
+    case 2: nbins = 12; break;
+    case 3: nbins = 18; break;
+    default: break;
+    }
   }
-  vector<double> counts = vector<double>(nbins, 0.);
-  vector<double> squares = counts;
+  vector<double> counts(nbins, 0.);
+  vector<double> squares(nbins, 0.);
   raw = counts;
   wght = counts;
 
@@ -256,15 +283,36 @@ void GetCounts(double lumi,
     tree.GetEntry(entry);
     timer.Iterate();
 
-    if(tree.nbm()<nb_min
-       || tree.njets()<njets_min
-       || (tree.nmus()+tree.nels())!=1
-       || tree.met()<=met_min
-       || (do_tk_veto && tree.ntks_chg_mini()>0)
-       || tree.ht()<=ht_min) continue;
-
-    size_t bin = LookUpBin(tree);
     double weight = lumi*tree.weight();
+
+    bool fail = false;
+    if(dilepton_mode){
+      fail = (tree.nbm()<1
+              || tree.njets()<njets_min
+              || (tree.nmus()+tree.nels())!=2
+              || tree.met()<=met_min
+              || tree.ht()<=ht_min);
+    }else{
+      fail = (tree.nbm()<nb_min
+              || tree.njets()<njets_min
+              || (tree.nmus()+tree.nels())!=1
+              || tree.met()<=met_min
+              || (do_tk_veto && tree.ntks_chg_mini()>0)
+              || tree.ht()<=ht_min);
+    }
+
+    if(fail) continue;
+
+    size_t bin;
+    if(dilepton_mode){
+      if(tree.njets()>=njets_div){
+        bin = 1;
+      }else{
+        bin = 0;
+      }
+    }else{
+      bin = LookUpBin(tree);
+    }
 
     counts.at(bin) += weight;
     squares.at(bin) += weight*weight;
@@ -274,19 +322,27 @@ void GetCounts(double lumi,
   }
 
   for(size_t bin = 0; bin < counts.size(); ++bin){
-    if(squares.at(bin) == 0.){
-      //Never filled
-      raw.at(bin) = 0;
-      wght.at(bin) = sumw2/sumw;
-    }else if(counts.at(bin) <= 0.){
-      //Negative estimate
-      raw.at(bin) = 0;
-      wght.at(bin) = sqrt(squares.at(bin)+sqr(counts.at(bin)));
-    }else{
-      //Normal case
-      raw.at(bin) = sqr(counts.at(bin))/squares.at(bin);
-      wght.at(bin) = squares.at(bin)/counts.at(bin);
-    }
+    CountsToGammas(counts.at(bin), squares.at(bin),
+                   sumw, sumw2,
+                   raw.at(bin), wght.at(bin));
+  }
+}
+
+void CountsToGammas(double sumw, double sumw2,
+                    double sumw_backup, double sumw2_backup,
+                    double &nraw, double &weight){
+  if(sumw2 == 0.){
+    //Never filled
+    nraw = 0.;
+    weight = sumw2_backup/sumw_backup;
+  }else if(sumw <= 0.){
+    //Negative estimate
+    nraw = 0;
+    weight = sqrt(sumw2+sumw*sumw);
+  }else{
+    //Normal case
+    nraw = sumw*sumw/sumw2;
+    weight = sumw2/sumw;
   }
 }
 
@@ -480,6 +536,31 @@ void MockUpData(vector<double> &data,
   }
 }
 
+void GetDileptonBinMapping(size_t &nr4, vector<size_t> &r4_map){
+  switch(method){
+  case 0:
+  case 1:
+  case 2:
+    nr4 = 4;
+    r4_map.push_back(0);
+    r4_map.push_back(1);
+    r4_map.push_back(0);
+    r4_map.push_back(1);
+    break;
+  case 3:
+    nr4 = 6;
+    r4_map.push_back(0);
+    r4_map.push_back(0);
+    r4_map.push_back(1);
+    r4_map.push_back(1);
+    r4_map.push_back(0);
+    r4_map.push_back(1);
+    break;
+  default:
+    break;
+  }
+}
+
 void GetBinMapping(size_t &nr1, vector<size_t> &r1_map,
                    size_t &nr2, vector<size_t> &r2_map,
                    size_t &nr3, vector<size_t> &r3_map,
@@ -530,7 +611,7 @@ void WriteFile(const vector<double> &ttbar_raw, const vector<double> &ttbar_wght
                const vector<double> &other_raw, const vector<double> &other_wght,
                const vector<double> &sig_raw, const vector<double> &sig_wght,
                const vector<double> &mc_raw, const vector<double> &mc_wght,
-               const vector<double> &data_counts){
+               const vector<double> &data_counts, const vector<double> &dilep_count){
   size_t nr1, nr2, nr3, nr4;
   vector<size_t> r1_map, r2_map, r3_map, r4_map;
   GetBinMapping(nr1, r1_map, nr2, r2_map, nr3, r3_map, nr4, r4_map);
@@ -540,6 +621,8 @@ void WriteFile(const vector<double> &ttbar_raw, const vector<double> &ttbar_wght
   if(set_ntuple_date) file_name << '_' << ntuple_date;
   if(set_method) file_name << "_method_" << method;
   if(no_mc_kappa) file_name << "_no_mc_kappa";
+  if(no_dilep) file_name << "_no_dilep";
+  if(no_systematics) file_name << "_no_systematics";
   if(set_masses) file_name << "_T1tttt_" << mgluino << '_' << mlsp;
   if(set_lumi) file_name << "_lumi_" << lumi;
   if(set_inject_signal) file_name << "_inject_" << NoDecimal(inject_signal);
@@ -555,7 +638,7 @@ void WriteFile(const vector<double> &ttbar_raw, const vector<double> &ttbar_wght
   ofstream file(file_name.str().c_str());
   file << "imax " << nr4 << "   number of channels\n";
   file << "jmax 2   number of backgrounds\n";
-  file << "kmax " << ((no_mc_kappa?1:2)*(nr1+nr2+nr3)+3*nr4) << "  number of nuisance parameters\n";
+  file << "kmax *   number of nuisance parameters\n";
   file << "------------\n";
   file << "bin        ";
   for(size_t ir4 = 0; ir4 < nr4; ++ir4){
@@ -624,6 +707,14 @@ void WriteFile(const vector<double> &ttbar_raw, const vector<double> &ttbar_wght
     PrintGamma(file, r4_map, "ttbr_r4", 4, nr1, nr2, nr3, nr4, ttbar_raw, ttbar_wght, ttbar_pred, 1);
     PrintGamma(file, r4_map, "othr_r4", 4, nr1, nr2, nr3, nr4, other_raw, other_wght, other_pred, 2);
   }
+
+  if(!no_dilep){
+    PrintDilepton(file, dilep_count);
+  }
+  if(!no_systematics){
+    PrintSystematics(file);
+  }
+
   file << "#kappa                    ";
   for(size_t ir4 = 0; ir4 < nr4; ++ir4){
     size_t ir1 = r1_map.at(ir4);
@@ -772,4 +863,225 @@ string NoDecimal(double x){
     l = s.find('.');
   }
   return s;
+}
+
+void PrintDilepton(ofstream &file, const vector<double> &dilep_count){
+  size_t nr4;
+  vector<size_t> bin_map;
+  GetDileptonBinMapping(nr4, bin_map);
+  file << "dilepton  lnN             ";
+  for(size_t ir4 = 0; ir4 < nr4; ++ir4){
+    cout << dilep_count.at(bin_map.at(ir4)) << endl;
+    double val = 1.+1./sqrt(dilep_count.at(bin_map.at(ir4))+1);
+    file << "            - "
+         << setw(12) << val
+         << ' ' << setw(12) << val;
+  }
+  file << endl;
+}
+
+void PrintSystematics(ofstream &file){
+  switch(method){
+  case 0:
+  case 1:
+    file << "n_isr     lnN             ";
+    file << ' ' << setw(12) << '-';
+    file << ' ' << setw(12) << 1.02;
+    file << ' ' << setw(12) << 1.02;
+    file << ' ' << setw(12) << '-';
+    file << ' ' << setw(12) << 1.02;
+    file << ' ' << setw(12) << 1.02;
+    file << ' ' << setw(12) << '-';
+    file << ' ' << setw(12) << 1.00;
+    file << ' ' << setw(12) << 1.00;
+    file << ' ' << setw(12) << '-';
+    file << ' ' << setw(12) << 1.00;
+    file << ' ' << setw(12) << 1.00;
+    file << endl;
+    file << "isr_pt    lnN             ";
+    file << ' ' << setw(12) << '-';
+    file << ' ' << setw(12) << 1.04;
+    file << ' ' << setw(12) << '-';
+    file << ' ' << setw(12) << '-';
+    file << ' ' << setw(12) << 1.06;
+    file << ' ' << setw(12) << '-';
+    file << ' ' << setw(12) << '-';
+    file << ' ' << setw(12) << 2.21;
+    file << ' ' << setw(12) << '-';
+    file << ' ' << setw(12) << '-';
+    file << ' ' << setw(12) << 1.00;
+    file << ' ' << setw(12) << '-';
+    file << endl;
+    file << "top_pt    lnN             ";
+    file << ' ' << setw(12) << '-';
+    file << ' ' << setw(12) << 1.03;
+    file << ' ' << setw(12) << '-';
+    file << ' ' << setw(12) << '-';
+    file << ' ' << setw(12) << 1.10;
+    file << ' ' << setw(12) << '-';
+    file << ' ' << setw(12) << '-';
+    file << ' ' << setw(12) << 1.10;
+    file << ' ' << setw(12) << '-';
+    file << ' ' << setw(12) << '-';
+    file << ' ' << setw(12) << 1.00;
+    file << ' ' << setw(12) << '-';
+    file << endl;
+    file << "high_mt   lnN             ";
+    file << ' ' << setw(12) << '-';
+    file << ' ' << setw(12) << 1.17;
+    file << ' ' << setw(12) << '-';
+    file << ' ' << setw(12) << '-';
+    file << ' ' << setw(12) << 1.19;
+    file << ' ' << setw(12) << '-';
+    file << ' ' << setw(12) << '-';
+    file << ' ' << setw(12) << 1.07;
+    file << ' ' << setw(12) << '-';
+    file << ' ' << setw(12) << '-';
+    file << ' ' << setw(12) << 1.00;
+    file << ' ' << setw(12) << '-';
+    file << endl;
+    break;
+  case 2:
+    file << "n_isr     lnN             ";
+    file << ' ' << setw(12) << '-';
+    file << ' ' << setw(12) << 1.00;
+    file << ' ' << setw(12) << 1.00;
+    file << ' ' << setw(12) << '-';
+    file << ' ' << setw(12) << 1.03;
+    file << ' ' << setw(12) << 1.03;
+    file << ' ' << setw(12) << '-';
+    file << ' ' << setw(12) << 1.04;
+    file << ' ' << setw(12) << 1.04;
+    file << ' ' << setw(12) << '-';
+    file << ' ' << setw(12) << 1.06;
+    file << ' ' << setw(12) << 1.06;
+    file << endl;
+    file << "isr_pt    lnN             ";
+    file << ' ' << setw(12) << '-';
+    file << ' ' << setw(12) << 1.04;
+    file << ' ' << setw(12) << '-';
+    file << ' ' << setw(12) << '-';
+    file << ' ' << setw(12) << 1.02;
+    file << ' ' << setw(12) << '-';
+    file << ' ' << setw(12) << '-';
+    file << ' ' << setw(12) << 1.42;
+    file << ' ' << setw(12) << '-';
+    file << ' ' << setw(12) << '-';
+    file << ' ' << setw(12) << 1.83;
+    file << ' ' << setw(12) << '-';
+    file << endl;
+    file << "top_pt    lnN             ";
+    file << ' ' << setw(12) << '-';
+    file << ' ' << setw(12) << 1.04;
+    file << ' ' << setw(12) << '-';
+    file << ' ' << setw(12) << '-';
+    file << ' ' << setw(12) << 1.03;
+    file << ' ' << setw(12) << '-';
+    file << ' ' << setw(12) << '-';
+    file << ' ' << setw(12) << 1.09;
+    file << ' ' << setw(12) << '-';
+    file << ' ' << setw(12) << '-';
+    file << ' ' << setw(12) << 1.18;
+    file << ' ' << setw(12) << '-';
+    file << endl;
+    file << "high_mt   lnN             ";
+    file << ' ' << setw(12) << '-';
+    file << ' ' << setw(12) << 1.07;
+    file << ' ' << setw(12) << '-';
+    file << ' ' << setw(12) << '-';
+    file << ' ' << setw(12) << 1.24;
+    file << ' ' << setw(12) << '-';
+    file << ' ' << setw(12) << '-';
+    file << ' ' << setw(12) << 1.14;
+    file << ' ' << setw(12) << '-';
+    file << ' ' << setw(12) << '-';
+    file << ' ' << setw(12) << 2.00;
+    file << ' ' << setw(12) << '-';
+    file << endl;
+    break;
+  case 3:
+    file << "n_isr     lnN             ";
+    file << ' ' << setw(12) << '-';
+    file << ' ' << setw(12) << 1.00;
+    file << ' ' << setw(12) << 1.00;
+    file << ' ' << setw(12) << '-';
+    file << ' ' << setw(12) << 1.00;
+    file << ' ' << setw(12) << 1.00;
+    file << ' ' << setw(12) << '-';
+    file << ' ' << setw(12) << 1.03;
+    file << ' ' << setw(12) << 1.03;
+    file << ' ' << setw(12) << '-';
+    file << ' ' << setw(12) << 1.03;
+    file << ' ' << setw(12) << 1.03;
+    file << ' ' << setw(12) << '-';
+    file << ' ' << setw(12) << 1.04;
+    file << ' ' << setw(12) << 1.04;
+    file << ' ' << setw(12) << '-';
+    file << ' ' << setw(12) << 1.06;
+    file << ' ' << setw(12) << 1.06;
+    file << endl;
+    file << "isr_pt    lnN             ";
+    file << ' ' << setw(12) << '-';
+    file << ' ' << setw(12) << 1.04;
+    file << ' ' << setw(12) << '-';
+    file << ' ' << setw(12) << '-';
+    file << ' ' << setw(12) << 1.04;
+    file << ' ' << setw(12) << '-';
+    file << ' ' << setw(12) << '-';
+    file << ' ' << setw(12) << 1.02;
+    file << ' ' << setw(12) << '-';
+    file << ' ' << setw(12) << '-';
+    file << ' ' << setw(12) << 1.02;
+    file << ' ' << setw(12) << '-';
+    file << ' ' << setw(12) << '-';
+    file << ' ' << setw(12) << 1.42;
+    file << ' ' << setw(12) << '-';
+    file << ' ' << setw(12) << '-';
+    file << ' ' << setw(12) << 1.83;
+    file << ' ' << setw(12) << '-';
+    file << endl;
+    file << "top_pt    lnN             ";
+    file << ' ' << setw(12) << '-';
+    file << ' ' << setw(12) << 1.04;
+    file << ' ' << setw(12) << '-';
+    file << ' ' << setw(12) << '-';
+    file << ' ' << setw(12) << 1.04;
+    file << ' ' << setw(12) << '-';
+    file << ' ' << setw(12) << '-';
+    file << ' ' << setw(12) << 1.03;
+    file << ' ' << setw(12) << '-';
+    file << ' ' << setw(12) << '-';
+    file << ' ' << setw(12) << 1.03;
+    file << ' ' << setw(12) << '-';
+    file << ' ' << setw(12) << '-';
+    file << ' ' << setw(12) << 1.09;
+    file << ' ' << setw(12) << '-';
+    file << ' ' << setw(12) << '-';
+    file << ' ' << setw(12) << 1.18;
+    file << ' ' << setw(12) << '-';
+    file << endl;
+    file << "high_mt   lnN             ";
+    file << ' ' << setw(12) << '-';
+    file << ' ' << setw(12) << 1.07;
+    file << ' ' << setw(12) << '-';
+    file << ' ' << setw(12) << '-';
+    file << ' ' << setw(12) << 1.07;
+    file << ' ' << setw(12) << '-';
+    file << ' ' << setw(12) << '-';
+    file << ' ' << setw(12) << 1.24;
+    file << ' ' << setw(12) << '-';
+    file << ' ' << setw(12) << '-';
+    file << ' ' << setw(12) << 1.24;
+    file << ' ' << setw(12) << '-';
+    file << ' ' << setw(12) << '-';
+    file << ' ' << setw(12) << 1.14;
+    file << ' ' << setw(12) << '-';
+    file << ' ' << setw(12) << '-';
+    file << ' ' << setw(12) << 2.00;
+    file << ' ' << setw(12) << '-';
+    file << endl;
+    break;
+  default:
+    break;
+  }
 }
