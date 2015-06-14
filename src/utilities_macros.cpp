@@ -30,7 +30,7 @@
 using namespace std;
 
 void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString luminosity, 
-		       TString filetype, TString namestyle){
+			TString filetype, TString namestyle){
   styles style(namestyle); style.setDefaultStyle();
   TCanvas can;
   TPad *pad = static_cast<TPad *>(can.cd());
@@ -65,7 +65,7 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
   vector< vector<TH1D*> > histo[2];
   vector<TH1D*> varhisto;
   vector<float> nentries;
-  TString hname, pname, variable, leghisto, totCut, title, ytitle, lumilabel, cmslabel;
+  TString hname, pname, variable, samVariable, leghisto, totCut, title, ytitle, lumilabel, cmslabel;
   for(unsigned var(0); var<vars.size(); var++){
     const unsigned Nsam(vars[var].samples.size());
     legH = (Nsam<=3?legSingle*Nsam:legSingle*(Nsam+1)/2);
@@ -83,21 +83,22 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
       }
       histo[his].push_back(varhisto);
     }
-
-    //// Plotting lumi-weighted distributions in histo[0], and then area-normalized in histo[1] ///
     nentries.resize(Nsam);
     variable = vars[var].varname;
     float maxhisto(-999);
+    int nbkg(0);
     for(unsigned sam(Nsam-1); sam < Nsam; sam--){
       int isam = vars[var].samples[sam];
-      bool isSig = Samples[isam].isSig;
+      if(!Samples[isam].isSig) nbkg++;
+      samVariable = Samples[isam].samVariable;
       totCut = Samples[isam].factor+"*"+luminosity+"*weight*("+vars[var].cuts+"&&"+Samples[isam].cut+")"; 
       //cout<<totCut<<endl;
       histo[0][var][sam]->Sumw2();
-      chain[isam]->Project(histo[0][var][sam]->GetName(), variable, totCut);
+      if(samVariable=="noPlot") chain[isam]->Project(histo[0][var][sam]->GetName(), variable, totCut);
+      else chain[isam]->Project(histo[0][var][sam]->GetName(), samVariable, totCut);
       histo[0][var][sam]->SetBinContent(vars[var].nbins,
-					  histo[0][var][sam]->GetBinContent(vars[var].nbins)+
-					  histo[0][var][sam]->GetBinContent(vars[var].nbins+1));
+					histo[0][var][sam]->GetBinContent(vars[var].nbins)+
+					histo[0][var][sam]->GetBinContent(vars[var].nbins+1));
       nentries[sam] = histo[0][var][sam]->Integral(1,vars[var].nbins);
       if(namestyle!="CMSPaper") {
 	ytitle = "Entries for "+luminosity+" fb^{-1}";
@@ -118,81 +119,86 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
       // Cloning histos for later
       for(int bin(0); bin<=histo[0][var][sam]->GetNbinsX()+1; bin++)
 	histo[1][var][sam]->SetBinContent(bin, histo[0][var][sam]->GetBinContent(bin));
-
-      if(!isSig){ // Adding previous bkg histos
-	for(unsigned bsam(sam+1); bsam < Nsam; bsam++){
-	  histo[0][var][sam]->Add(histo[0][var][bsam]);
-	  break;
-	}
-	histo[0][var][sam]->SetFillColor(Samples[isam].color);
-	histo[0][var][sam]->SetFillStyle(1001);
-	histo[0][var][sam]->SetLineColor(1);
-	histo[0][var][sam]->SetLineWidth(1);
-      } else {
-	histo[0][var][sam]->SetLineColor(Samples[isam].color);
-	histo[0][var][sam]->SetLineStyle(abs(Samples[isam].style));
-	histo[0][var][sam]->SetLineWidth(4);
-      }
-      if(maxhisto < histo[0][var][sam]->GetMaximum()) maxhisto = histo[0][var][sam]->GetMaximum();
-    } // First loop over samples
-    int firstplotted(-1);
-    for(int ileg(0); ileg<nLegs; ileg++) leg[ileg].Clear();
-    unsigned legcount(0);
-    for(unsigned sam(0); sam < Nsam; sam++){
-      int isam = vars[var].samples[sam];
-      leghisto = Samples[isam].label;
-          if(namestyle!="CMSPaper") leghisto += " [N=" + RoundNumber(nentries[sam],0) + "]";
-      bool isSig = Samples[isam].isSig;
-      unsigned ileg = (Nsam<=3?0:legcount>=(Nsam+1)/2);
-       if(!isSig){
-	leg[ileg].AddEntry(histo[0][var][sam], leghisto,"f");
-	legcount++;
-	if(firstplotted < 0) {
-	  histo[0][var][sam]->Draw("hist");
-	  firstplotted = sam;
-	  style.setTitles(histo[0][var][sam],vars[var].title, ytitle, cmslabel, lumilabel);
- 	} else histo[0][var][sam]->Draw("hist same");
-      } else {
-	leg[ileg].AddEntry(histo[0][var][sam], leghisto,"l");
-	legcount++;
-      }
-    }    
-    for(int sam(Nsam-1); sam >= 0; sam--){
-      int isam = vars[var].samples[sam];
-      bool isSig = Samples[isam].isSig;
-      if(isSig) histo[0][var][sam]->Draw("hist same");
     }
-    for(int ileg(0); ileg<nLegs; ileg++) leg[ileg].Draw(); 
-    if(histo[0][var][firstplotted]->GetMinimum() > minLog) histo[0][var][firstplotted]->SetMinimum(minLog);
-    float maxpadLog(maxhisto*exp(fracLeg*log(maxhisto/minLog)/(1-fracLeg)));
-    histo[0][var][firstplotted]->SetMinimum(minLog);
-    histo[0][var][firstplotted]->SetMaximum(maxpadLog);
-    style.moveYAxisLabel(histo[0][var][firstplotted], maxpadLog, true);
-    histo[0][var][firstplotted]->Draw("axis same");
-    if(vars[var].cut>0) line.DrawLine(vars[var].cut, 0, vars[var].cut, maxhisto);
-    can.SetLogy(1);
-    pname = "plots/1d/log_lumi_"+vars[var].tag+plot_tag;
-    can.SaveAs(pname);
-    can.SetLogy(0);
-    float maxpad(maxhisto + fracLeg*(maxhisto-minLog)/(1-fracLeg));
-    histo[0][var][firstplotted]->SetMinimum(0);
-    histo[0][var][firstplotted]->SetMaximum(maxpad);
-    pad = static_cast<TPad *>(can.cd(1));
-    style.moveYAxisLabel(histo[0][var][firstplotted], maxpad, false);
-    pname = "plots/1d/lumi_"+vars[var].tag+plot_tag;
-    can.SaveAs(pname);
-
+    if(nbkg>0){
+      //// Plotting lumi-weighted distributions in histo[0], and then area-normalized in histo[1] ///
+      for(unsigned sam(Nsam-1); sam < Nsam; sam--){
+	int isam = vars[var].samples[sam];
+	bool isSig = Samples[isam].isSig;
+	if(!isSig){ // Adding previous bkg histos
+	  for(unsigned bsam(sam+1); bsam < Nsam; bsam++){
+	    histo[0][var][sam]->Add(histo[0][var][bsam]);
+	    break;
+	  }
+	  histo[0][var][sam]->SetFillColor(Samples[isam].color);
+	  histo[0][var][sam]->SetFillStyle(1001);
+	  histo[0][var][sam]->SetLineColor(1);
+	  histo[0][var][sam]->SetLineWidth(1);
+	} else {
+	  histo[0][var][sam]->SetLineColor(Samples[isam].color);
+	  histo[0][var][sam]->SetLineStyle(abs(Samples[isam].style));
+	  histo[0][var][sam]->SetLineWidth(6);
+	}
+	if(maxhisto < histo[0][var][sam]->GetMaximum()) maxhisto = histo[0][var][sam]->GetMaximum();
+      } // First loop over samples
+      int firstplotted(-1);
+      for(int ileg(0); ileg<nLegs; ileg++) leg[ileg].Clear();
+      unsigned legcount(0);
+      for(unsigned sam(0); sam < Nsam; sam++){
+	int isam = vars[var].samples[sam];
+	leghisto = Samples[isam].label;
+	if(namestyle!="CMSPaper") leghisto += " [N=" + RoundNumber(nentries[sam],0) + "]";
+	bool isSig = Samples[isam].isSig;
+	unsigned ileg = (Nsam<=3?0:legcount>=(Nsam+1)/2);
+	if(!isSig){
+	  leg[ileg].AddEntry(histo[0][var][sam], leghisto,"f");
+	  legcount++;
+	  if(firstplotted < 0) {
+	    histo[0][var][sam]->Draw("hist");
+	    firstplotted = sam;
+	    style.setTitles(histo[0][var][sam],vars[var].title, ytitle, cmslabel, lumilabel);
+	  } else histo[0][var][sam]->Draw("hist same");
+	} else {
+	  leg[ileg].AddEntry(histo[0][var][sam], leghisto,"l");
+	  legcount++;
+	}
+      }    
+      for(int sam(Nsam-1); sam >= 0; sam--){
+	int isam = vars[var].samples[sam];
+	bool isSig = Samples[isam].isSig;
+	if(isSig) histo[0][var][sam]->Draw("hist same");
+      }
+      for(int ileg(0); ileg<nLegs; ileg++) leg[ileg].Draw(); 
+      if(histo[0][var][firstplotted]->GetMinimum() > minLog) histo[0][var][firstplotted]->SetMinimum(minLog);
+      float maxpadLog(maxhisto*exp(fracLeg*log(maxhisto/minLog)/(1-fracLeg)));
+      histo[0][var][firstplotted]->SetMinimum(minLog);
+      histo[0][var][firstplotted]->SetMaximum(maxpadLog);
+      style.moveYAxisLabel(histo[0][var][firstplotted], maxpadLog, true);
+      histo[0][var][firstplotted]->Draw("axis same");
+      if(vars[var].cut>0) line.DrawLine(vars[var].cut, 0, vars[var].cut, maxhisto);
+      can.SetLogy(1);
+      pname = "plots/1d/log_lumi_"+vars[var].tag+plot_tag;
+      can.SaveAs(pname);
+      can.SetLogy(0);
+      float maxpad(maxhisto + fracLeg*(maxhisto-minLog)/(1-fracLeg));
+      histo[0][var][firstplotted]->SetMinimum(0);
+      histo[0][var][firstplotted]->SetMaximum(maxpad);
+      pad = static_cast<TPad *>(can.cd(1));
+      style.moveYAxisLabel(histo[0][var][firstplotted], maxpad, false);
+      pname = "plots/1d/lumi_"+vars[var].tag+plot_tag;
+      can.SaveAs(pname);
+    }
     //////////// Plotting area-normalized distributions ////////////
     maxhisto = -999;
     for(int ileg(0); ileg<nLegs; ileg++) leg[ileg].Clear();
-    legcount = 0;
+    unsigned legcount = 0;
     for(unsigned sam(0); sam < Nsam; sam++){
       int isam = vars[var].samples[sam];
       histo[1][var][sam]->SetLineColor(Samples[isam].color);
       histo[1][var][sam]->SetMarkerColor(Samples[isam].color);
       histo[1][var][sam]->SetMarkerStyle(20);
       histo[1][var][sam]->SetLineStyle(abs(Samples[isam].style));
-      histo[1][var][sam]->SetLineWidth(3);
+      histo[1][var][sam]->SetLineWidth(4);
       if(nentries[sam]) histo[1][var][sam]->Scale(100./nentries[sam]);
       if(maxhisto < histo[1][var][sam]->GetMaximum()) maxhisto = histo[1][var][sam]->GetMaximum();
       if(sam==0){
@@ -218,14 +224,14 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
     } // Loop over samples
     for(int ileg(0); ileg<nLegs; ileg++) leg[ileg].Draw(); 
     if(vars[var].cut>0) line.DrawLine(vars[var].cut, 0, vars[var].cut, maxhisto);
-    maxpad = maxhisto + fracLeg*maxhisto/(1-fracLeg);
+    float maxpad = maxhisto + fracLeg*maxhisto/(1-fracLeg);
     histo[1][var][0]->SetMaximum(maxpad);
     histo[1][var][0]->Draw("axis same");
     style.moveYAxisLabel(histo[1][var][0], maxpad, false);
     can.SetLogy(0);
     pname = "plots/1d/shapes_"+vars[var].tag+plot_tag;
     can.SaveAs(pname);
-    maxpadLog = maxhisto*exp(fracLeg*log(maxhisto/minLog)/(1-fracLeg));
+    float maxpadLog = maxhisto*exp(fracLeg*log(maxhisto/minLog)/(1-fracLeg));
     histo[1][var][0]->SetMaximum(maxpadLog);
     style.moveYAxisLabel(histo[1][var][0], maxpadLog, true);
     can.SetLogy(1);
@@ -354,10 +360,12 @@ TString format_tag(TString tag){
   return tag;
 }
 
-sfeats::sfeats(vector<TString> ifile, TString ilabel, int icolor, int istyle, TString icut){
+sfeats::sfeats(vector<TString> ifile, TString ilabel, int icolor, int istyle, TString icut, 
+	       TString isamVariable){
   file = ifile; label = ilabel; cut = icut;
   color = icolor; style = istyle;
   isSig = ifile[0].Contains("T1tttt");
+  samVariable = isamVariable;
   factor = "1";
   tag = label;
   tag.ReplaceAll("(",""); tag.ReplaceAll(",","_");  tag.ReplaceAll(")","");

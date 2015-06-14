@@ -49,11 +49,13 @@ public:
 
 class sfeats {
 public:
-  sfeats(std::vector<TString> ifile, TString ilabel, int icolor, int istyle=1, TString icut="1");
+  sfeats(std::vector<TString> ifile, TString ilabel, int icolor=1, int istyle=1, TString icut="1",
+	 TString samVariable="noPlot");
   std::vector<TString> file;
   TString label, cut, factor,tag;
   int color, style;
   bool isSig;
+  TString samVariable;
 };
 
 void calc_chi2_diff(TH1D *histo1, TH1D *histo2, float &chi2, int &ndof, float &pvalue, float *average);

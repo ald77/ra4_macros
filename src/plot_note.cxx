@@ -22,7 +22,7 @@ namespace {
   TString luminosity="10";
   TString plot_type=".pdf";
   TString plot_style="RA4";
-  int section(6);
+  int section(1);
 }
 
 using namespace std;
@@ -80,6 +80,11 @@ int main(){
   } // Loop over samples
 
   // Other samples
+  unsigned isec1 = Samples.size();
+  Samples.push_back(sfeats(s_t1t, "True", ra4::c_t1tttt,1,"1","ntruels+ntrumus"));
+  Samples.push_back(sfeats(s_t1t, "Reco Rel. iso.", kGreen+2,2,"1","nels_reliso+nmus_reliso"));
+  Samples.push_back(sfeats(s_t1t, "Reco Mini iso.", 4,2,"1","nels+nmus"));
+
   unsigned isec6 = Samples.size();
   Samples.push_back(sfeats(s_tt, "t#bar{t} 1l, m_{T} #leq 140", 1, 1,"ntruleps==1&&mt<=140"));
   Samples.push_back(sfeats(s_tt, "t#bar{t} 1l, m_{T} > 140", 3, -1,"ntruleps==1&&mt>140"));
@@ -87,6 +92,11 @@ int main(){
   Samples.push_back(sfeats(s_tt, "t#bar{t} 2l, m_{T} > 140", 4, -1,"ntruleps>=2&&mt>140"));
 
   
+  vector<int> ra4_sec1;
+  ra4_sec1.push_back(isec1);
+  ra4_sec1.push_back(isec1+1);
+  ra4_sec1.push_back(isec1+2);
+
   vector<int> ra4_sec6;
   ra4_sec6.push_back(isec6);
   //ra4_sec6.push_back(isec6+1);
@@ -103,6 +113,9 @@ int main(){
 
   TString cuts("(nmus+nels)==1");
   switch(section){
+  case 1: // Intro
+    vars.push_back(hfeats("ntruels+ntrumus",5,-0.5,4.5, ra4_sec1, "Number of prompt e+#mu in T1tttt"));
+    break;
   case 5: // Event selection - N-1 plots
     vars.push_back(hfeats("ht",35,0,3500, ra4_sam_ns, "H_{T} (GeV)",
 			  "(nmus+nels)==1&&met>200&&njets>="+minjets+"&&nbm>=2",500));
@@ -110,7 +123,7 @@ int main(){
     vars.push_back(hfeats("met",40,0,800, ra4_sam_ns, "MET (GeV)",
 			  "(nmus+nels)==1&&ht>500&&njets>="+minjets+"&&nbm>=2",200));
     cuts += "&&met>200";
-    vars.push_back(hfeats("njets",18,-0.5,17.5, ra4_sam, "Number of 30 GeV jets",
+    vars.push_back(hfeats("njets",18,-0.5,17.5, ra4_sam, "Number of jets",
 			  "(nmus+nels)==1&&ht>500&&met>200&&nbm>=2",6.5));
     cuts += "&&njets>="+minjets;
     vars.push_back(hfeats("nbm",7,-0.5,6.5, ra4_sam, "Number of b-tags (CSVM)",
