@@ -20,6 +20,8 @@
 #include "TLine.h"
 #include "TLegend.h"
 #include "TRandom3.h"
+#include "TError.h" // Turns off "no dictionary for class" warnings
+#include "TSystem.h"
 
 #include "small_tree_quick.hpp"
 #include "timer.hpp"
@@ -34,6 +36,7 @@ namespace{
   double met_max = 0.;
   int njets_min = 7;
   int njets_max = 0;
+  int seed = 3239;
   bool merge_ttbar = false;
   bool compressed = false;
   bool no_signal = false;
@@ -45,13 +48,15 @@ TColor c_tt_2l(1006, 86/255.,160/255.,211/255.);
 TColor c_tt_1l(1000, 1/255.,57/255.,166/255.);
 
 int main(int argc, char *argv[]){
-  TRandom3 rand3(3235);
+  //gErrorIgnoreLevel=6000; // Turns off errors due to missing branches
   GetOptions(argc, argv);
+  TRandom3 rand3(seed);
   
   styles style("2Dnobar");
   style.setDefaultStyle();
   
   string folder = "/cms5r0/ald77/archive/2015_05_25/skim/";
+  folder = "/afs/cern.ch/user/m/manuelf/work/ucsb/2015_05_25/skim/";
   string sig_name = compressed ? "*T1tttt*1200*800*":"*T1tttt*1500*100*";
   small_tree_quick st_sig(folder+sig_name);
   small_tree_quick st_bkg(folder+"*TTJets*");
@@ -155,6 +160,7 @@ int main(int argc, char *argv[]){
   outname << "plots/scat_mj_mt_met_"
 	  << met_min << '_' << met_max
 	  << "_njets_" << njets_min << '_' << njets_max
+	  << "_seed" << seed
 	  << (merge_ttbar?"_merged":"_split")
 	  << (no_signal ? "_no_signal" : (compressed ? "_T1tttt_1200_800" : "_T1tttt_1500_100"))
 	  << (full_stats ? "_shapes" : "_lumi")
@@ -187,6 +193,7 @@ void Process(small_tree_quick &st, TGraph &g, TGraph &g_full,
   int num_entries = st.GetEntries();
   Timer timer(num_entries, 1.);
   timer.Start();
+  int n2(0), n4(0);
   for(int entry = 0; entry < num_entries; ++entry){
     timer.Iterate();
     st.GetEntry(entry);
@@ -208,8 +215,13 @@ void Process(small_tree_quick &st, TGraph &g, TGraph &g_full,
     AddPoint(g_full, mj, mt);
     if(indices.find(entry) == indices.end()) continue;
     AddPoint(g, mj, mt);
+    if(color==2) {
+      //cout<<entry<<": mj "<<mj<<", mt "<<mt<<endl;
+      if(mt<=140&&mj>400) n2++;
+      if(mt>140&&mj>400) n4++;
+    }
   }
-
+  if(color==2)cout<<"Nsig in R2 is "<<n2<<" and in R4 is "<<n4<<endl;
   g.SetLineColor(color);
   g.SetFillColor(color);
   g.SetMarkerColor(color);
@@ -231,6 +243,7 @@ void GetOptions(int argc, char *argv[]){
       {"met_max", required_argument, 0, 0},
       {"njets_min", required_argument, 0, 0},
       {"njets_max", required_argument, 0, 0},
+      {"seed", required_argument, 0, 0},
       {"merge_ttbar", no_argument, 0, 0},
       {"compressed", no_argument, 0, 0},
       {"no_signal", no_argument, 0, 0},
@@ -253,6 +266,8 @@ void GetOptions(int argc, char *argv[]){
 	met_max = atof(optarg);
       }else if(optname == "njets_min"){
 	njets_min = atoi(optarg);
+      }else if(optname == "seed"){
+	seed = atoi(optarg);
       }else if(optname == "njets_max"){
 	njets_max = atoi(optarg);
       }else if(optname == "merge_ttbar"){
