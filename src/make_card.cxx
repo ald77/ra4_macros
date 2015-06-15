@@ -288,7 +288,7 @@ void GetCounts(small_tree_quick &tree,
     bool fail = false;
     if(dilepton_mode){
       fail = (tree.nbm()<1
-              || tree.njets()<njets_min
+              || tree.njets()<(njets_min-1)
               || (tree.nmus()+tree.nels())!=2
               || tree.met()<=met_min
               || tree.ht()<=ht_min);

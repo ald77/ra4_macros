@@ -1,6 +1,7 @@
 #include "scatter_mj_mt.hpp"
 
 #include <cstdlib>
+#include <iostream>
 
 #include <string>
 #include <sstream>
@@ -44,7 +45,7 @@ TColor c_tt_2l(1006, 86/255.,160/255.,211/255.);
 TColor c_tt_1l(1000, 1/255.,57/255.,166/255.);
 
 int main(int argc, char *argv[]){
-  TRandom3 rand3(0);
+  TRandom3 rand3(3235);
   GetOptions(argc, argv);
   
   styles style("2Dnobar");
@@ -71,18 +72,22 @@ int main(int argc, char *argv[]){
   double ttbar_norm = 1.;
   double sig_norm = 1.;
   if(full_stats){
-    ttbar_norm = std::numeric_limits<float>::max();
+    ttbar_norm = -1.;
     sig_norm = 100.;
   }
-  Process(st_sig, g_sig, g_sig_full, rand3, 2, 20, 1, sig_norm);
+  set<size_t> indices_sig = GetRandomIndices(st_sig, sig_norm, rand3);
+  set<size_t> indices_bkg = GetRandomIndices(st_bkg, ttbar_norm, rand3);
+
+  Process(st_sig, g_sig, g_sig_full, 2, 20, 1, indices_sig);
   if(merge_ttbar){
-    Process(st_bkg, g_bkg, g_bkg_full, rand3, 1006, 21, 1, ttbar_norm);
+    Process(st_bkg, g_bkg, g_bkg_full, 1006, 21, 1, indices_bkg);
   }else{
-    Process(st_bkg, g_bkg1, g_bkg1_full, rand3, 1000, 23, 1, ttbar_norm, 1);
-    Process(st_bkg, g_bkg2, g_bkg2_full, rand3, 1006, 22, 1, ttbar_norm, 2);
+    Process(st_bkg, g_bkg1, g_bkg1_full, 1000, 23, 1, indices_bkg, 1);
+    Process(st_bkg, g_bkg2, g_bkg2_full, 1006, 22, 1, indices_bkg, 2);
   }
 
   double rho_sig = g_sig_full.GetCorrelationFactor();
+  
   double rho_bkg = g_bkg_full.GetCorrelationFactor();
   double rho_bkg1 = g_bkg1_full.GetCorrelationFactor();
   double rho_bkg2 = g_bkg2_full.GetCorrelationFactor();
@@ -157,40 +162,31 @@ int main(int argc, char *argv[]){
   c.Print(outname.str().c_str());
 }
 
-void GetRandomPoints(TRandom3 &rand3, const vector<double> &x_in, const vector<double> &y_in,
-		     vector<double> &x_out, vector<double> &y_out){
-  if(x_out.size() != y_out.size() || x_in.size() != y_in.size()
-     || x_out.size() > x_in.size() || y_out.size() > y_in.size()){
-    x_out = x_in;
-    y_out = y_in;
-    return;
-  }
-  
+set<size_t> GetRandomIndices(small_tree_quick &st, double norm, TRandom3 &rand3){
+  int num_entries = st.GetEntries();
+  if(num_entries<1) return set<size_t>();
+  st.GetEntry(0);
+  double weight = st.weight();
+  int num_points = std::min((norm<=0.
+			     ?num_entries
+			     :TMath::Nint(10.*weight*num_entries*norm)),
+			    num_entries);
+  cout << "Selecting " << num_points << " out of " << num_entries << "..." << endl;
   set<size_t> indices;
-  while(indices.size() < x_out.size()){
-    indices.insert(rand3.Integer(x_in.size()));
+  while(indices.size() < static_cast<size_t>(num_points)){
+    indices.insert(rand3.Integer(num_entries));
   }
-
-  x_out.resize(indices.size());
-  y_out.resize(indices.size());
-  size_t i = 0;
-  for(set<size_t>::const_iterator it = indices.begin();
-      it != indices.end();
-      ++it, ++i){
-    x_out.at(i) = x_in.at(*it);
-    y_out.at(i) = y_in.at(*it);
-  }
+  return indices;
 }
 
-void Process(small_tree_quick &st, TGraph &g, TGraph &g_full, TRandom3 &rand3,
-	     int color, int marker, int size, double norm, int nleps){
+void Process(small_tree_quick &st, TGraph &g, TGraph &g_full,
+	     int color, int marker, int size,
+	     const set<size_t> &indices, int nleps){
+  g = TGraph(0);
   g_full = TGraph(0);
   int num_entries = st.GetEntries();
   Timer timer(num_entries, 1.);
   timer.Start();
-  double sum = 0.;
-  int raw = 0;
-  vector<double> mj, mt;
   for(int entry = 0; entry < num_entries; ++entry){
     timer.Iterate();
     st.GetEntry(entry);
@@ -206,20 +202,14 @@ void Process(small_tree_quick &st, TGraph &g, TGraph &g_full, TRandom3 &rand3,
        || ((nleps == 1 && st.ntruleps()>1) || (nleps == 2 && st.ntruleps()<2))
        ) continue;
 
-    sum += 10.*st.weight();
-    ++raw;
-    mj.push_back(st.mj());
-    mt.push_back(st.mt());
-    AddPoint(g_full, st.mj(), st.mt());
+    double mj = std::min(999.9f, st.mj());
+    double mt = std::min(399.9f, st.mt());
+
+    AddPoint(g_full, mj, mt);
+    if(indices.find(entry) == indices.end()) continue;
+    AddPoint(g, mj, mt);
   }
 
-  int num_points = TMath::Nint(sum*norm);
-  if(num_points < 0 || num_points > raw) num_points = raw;
-  
-  vector<double> mj_out(num_points), mt_out(num_points);
-  GetRandomPoints(rand3, mj, mt, mj_out, mt_out);
-
-  g = TGraph(num_points, &mj_out.at(0), &mt_out.at(0));
   g.SetLineColor(color);
   g.SetFillColor(color);
   g.SetMarkerColor(color);

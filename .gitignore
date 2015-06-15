@@ -38,3 +38,5 @@ bin/*
 gmon.out
 out
 archive
+.nfs*
+.#-emacs*
