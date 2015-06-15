@@ -372,6 +372,28 @@ sfeats::sfeats(vector<TString> ifile, TString ilabel, int icolor, int istyle, TS
   tag.ReplaceAll("{",""); tag.ReplaceAll("#,","");  tag.ReplaceAll("}","");
 }
 
+sysfeats::sysfeats(TString iname, TString ititle):
+  name(iname),
+  title(ititle){
+  bincuts = vector<TString>();
+  weights = vector<double>();
+}
+void sysfeats::push_back(TString ibincut, double iweight){
+  bincuts.push_back(ibincut);
+  weights.push_back(iweight);
+}
+TString sysfeats::bincut(unsigned i){
+  if (i<bincuts.size()) return bincuts[i];
+  else {cout<<"ERROR: bincut out of range"<<endl; return "";}
+}
+double sysfeats::weight(unsigned i){
+  if (i<weights.size()) return weights[i];
+  else {cout<<"ERROR: weight out of range"<<endl; return -1.;}
+}
+unsigned sysfeats::size(){
+  return weights.size(); 
+}
+
 // Function that calculates the chi2 of a histogram with respect to the flat hypothesis
 void calc_chi2(TH1D *histo, float &chi2, int &ndof, float &pvalue, float &average){
   vector<double> vals[2];
