@@ -233,7 +233,7 @@ int main(int argc, char *argv[]){
   for(unsigned inj(0); inj<njcuts.size(); inj++){
     for(unsigned imet(0); imet<metcuts.size(); imet++){
       for(unsigned inb(0); inb<nbcuts.size(); inb++){
-	if(method==3 && (imet==0&&inb==3 || imet==1&&(inb==1||inb==2))) continue;
+	if(method==3 && ((imet==0&&inb==3) || (imet==1&&(inb==1||inb==2)))) continue;
 	vector<vector<vector<int> > > entries;
 	vector<vector<vector<float> > > weights;
 	for(unsigned div(0); div < nDiv; div++){

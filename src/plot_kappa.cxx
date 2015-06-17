@@ -177,7 +177,7 @@ int main(){
   for(unsigned inj(0); inj<njcuts.size(); inj++){
     for(unsigned imet(0); imet<metcuts.size(); imet++){
       for(unsigned inb(0); inb<nbcuts.size(); inb++){
-	if(method==3 && (imet==0&&inb==3 || imet==1&&(inb==1||inb==2))) continue;
+	if(method==3 && ((imet==0&&inb==3) || (imet==1&&(inb==1||inb==2)))) continue;
 	vector<vector<int> > entries;
 	vector<vector<float> > weights;
 	for(unsigned obs(0); obs < powersk.size(); obs++) {
@@ -263,7 +263,7 @@ int main(){
   for(unsigned inj(0); inj<njcuts.size(); inj++){
     for(unsigned imet(0); imet<metcuts.size(); imet++){
       for(unsigned inb(1); inb<nbcuts.size(); inb++){
-	if(method==3 && (imet==0&&inb==3 || imet==1&&(inb==1||inb==2))) continue;
+	if(method==3 && ((imet==0&&inb==3) || (imet==1&&(inb==1||inb==2)))) continue;
 	metcuts[imet].ReplaceAll("met>200&&","");
 	cutname = "$"+njcuts[inj]+", "+metcuts[imet];
 	if(method==3) cutname += ", "+nbcuts[inb];
