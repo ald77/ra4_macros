@@ -2,14 +2,14 @@
 #define H_MAKE_CARD
 
 #include <fstream>
+#include <sstream>
 #include <string>
 #include <vector>
 
+#include "gamma_params.hpp"
 #include "small_tree_quick.hpp"
 
-void GetCounts(small_tree_quick &tree,
-               std::vector<double> &raw,
-               std::vector<double> &wght);
+void GetCounts(small_tree_quick &tree, std::vector<GammaParams> &gp);
 
 void CountsToGammas(double sumw, double sumw2,
                     double sumw_backup, double sumw2_backup,
@@ -17,22 +17,20 @@ void CountsToGammas(double sumw, double sumw2,
 
 size_t LookUpBin(small_tree_quick &tree);
 
-void GetMCTotals(std::vector<double> &mc_raw, std::vector<double> &mc_wght,
-                 const std::vector<double> &pos_raw, const std::vector<double> &pos_wght,
-                 const std::vector<double> &neg_raw, const std::vector<double> &neg_wght);
+void GetMCTotals(std::vector<GammaParams> &mc_gp,
+		 const std::vector<std::vector<GammaParams> > &bkg_gps);
 
 void MockUpData(std::vector<double> &data,
-                const std::vector<double> &pos_raw, const std::vector<double> &pos_wght,
-                const std::vector<double> &neg_raw, const std::vector<double> & neg_wght,
-                const std::vector<double> &sig_raw, const std::vector<double> &sig_wght);
+		const std::vector<GammaParams> &sig_gp,
+		const std::vector<std::vector<GammaParams> > &bkg_gps);
 
 double sqr(double x);
 
-void WriteFile(const std::vector<double> &pos_raw, const std::vector<double> &pos_wght,
-               const std::vector<double> &neg_raw, const std::vector<double> &neg_wght,
-               const std::vector<double> &sig_raw, const std::vector<double> &sig_wght,
-               const std::vector<double> &mc_raw, const std::vector<double> &mc_wght,
-               const std::vector<double> &data_counts);
+void WriteFile(const std::vector<std::vector<GammaParams> > &bkg_gps,
+	       const std::vector<std::string> &bkg_names,
+	       const std::vector<GammaParams> &sig_gp,
+	       const std::vector<GammaParams> &mc_gp,
+	       const std::vector<double> &data_counts);
 
 void GetGammaParameters(int &raw, double &weight,
                         double sumw, double sumw2);
@@ -45,10 +43,8 @@ void GetBinMapping(size_t &nr1, std::vector<size_t> &r1_map,
 void GetOptions(int argc, char *argv[]);
 
 double GetPred(const std::vector<double> &data,
-               const std::vector<double> &mc_raw,
-               const std::vector<double> &mc_wght,
-               const std::vector<double> &proc_raw,
-               const std::vector<double> &proc_wght,
+               const std::vector<GammaParams> &mc_gp,
+               const std::vector<GammaParams> &proc_gp,
                size_t ir1,
                size_t ir2,
                size_t ir3,
@@ -57,18 +53,30 @@ double GetPred(const std::vector<double> &data,
 void PrintLogN(std::ofstream &file, const std::vector<size_t> map,
                const std::string &name, size_t ibin,
                size_t nr1, size_t nr2, size_t nr3, size_t nr4,
-               const std::vector<double> &raw_counts);
+               const std::vector<double> &raw_counts, size_t nbkgs);
 
 void PrintGamma(std::ofstream &file, const std::vector<size_t> map,
                 const std::string &name, size_t ibin,
                 size_t nr1, size_t nr2, size_t nr3, size_t nr4,
-                const std::vector<double> &raw_counts,
-                const std::vector<double> &weights,
+                const std::vector<GammaParams> &gp,
                 const std::vector<double> &preds,
-                size_t iproc);
+                size_t iproc, size_t nbkgs);
 
 std::string NoDecimal(double x);
 
-void PrintSystematics(std::ofstream &file);
+void PrintSystematics(std::ofstream &file, size_t bkgs);
+
+void RepLogN(std::ofstream &file, double val, size_t nbkgs);
+
+void RepAsymLogN(std::ofstream &file, double minus, double plus, size_t nbkgs);
+
+std::string Expand(std::string in, size_t size);
+
+template<typename T>
+std::string ToString(const T &x){
+  std::ostringstream oss;
+  oss << x;
+  return oss.str();
+}
 
 #endif

@@ -14,6 +14,7 @@
 
 #include "TMath.h"
 
+#include "gamma_params.hpp"
 #include "small_tree_quick.hpp"
 #include "timer.hpp"
 #include "utilities.hpp"
@@ -69,8 +70,8 @@ int main(int argc, char *argv[]){
   GetOptions(argc, argv);
   string folder="archive/"+ntuple_date+"/skim/";
 
-  small_tree_quick pos(folder+"*TTJets*");
-  pos.Add(folder+"*TTWJets*");
+  small_tree_quick ttbar(folder+"*TTJets*");
+  small_tree_quick pos(folder+"*TTWJets*");
   pos.Add(folder+"*TTZJets*");
   pos.Add(folder+"*QCD_Pt*");
   pos.Add(folder+"*WJetsToLNu_HT*");
@@ -80,30 +81,30 @@ int main(int argc, char *argv[]){
   small_tree_quick neg(folder+"*_T*-channel*");
   small_tree_quick sig(folder+"*T1tttt*"+mgluino+"*"+mlsp+"*");
 
-  //Single lepton region
-  vector<double> pos_raw, pos_wght;
-  vector<double> neg_raw, neg_wght;
-  vector<double> sig_raw, sig_wght;
-  GetCounts(pos, pos_raw, pos_wght);
-  GetCounts(neg, neg_raw, neg_wght);
-  GetCounts(sig, sig_raw, sig_wght);
+  vector<GammaParams> ttbar_gp, pos_gp, neg_gp, sig_gp;
+  GetCounts(ttbar, ttbar_gp);
+  GetCounts(pos, pos_gp);
+  GetCounts(neg, neg_gp);
+  GetCounts(sig, sig_gp);
 
-  vector<double> mc_raw, mc_wght;
-  GetMCTotals(mc_raw, mc_wght,
-              pos_raw, pos_wght,
-              neg_raw, neg_wght);
+  //Force possibly negative component to be positive and ignore uncertainty, then lump together with "pos"
+  vector<GammaParams> other_gp(pos_gp.size());
+  for(size_t bin = 0; bin < other_gp.size(); ++bin){
+    other_gp.at(bin).SetYieldAndUncertainty(pos_gp.at(bin).Yield()+max(0.,neg_gp.at(bin).Yield()), pos_gp.at(bin).Uncertainty());
+  }
+
+  vector<string> bkg_names;
+  vector<vector<GammaParams> > bkg_gps;
+  bkg_gps.push_back(ttbar_gp); bkg_names.push_back("ttbar");
+  bkg_gps.push_back(other_gp); bkg_names.push_back("other");
+
+  vector<GammaParams> mc_gp;
+  GetMCTotals(mc_gp, bkg_gps);
 
   vector<double> data_counts;
-  MockUpData(data_counts,
-             pos_raw, pos_wght,
-             neg_raw, neg_wght,
-             sig_raw, sig_wght);
+  MockUpData(data_counts, sig_gp, bkg_gps);
 
-  WriteFile(pos_raw, pos_wght,
-            neg_raw, neg_wght,
-            sig_raw, sig_wght,
-            mc_raw, mc_wght,
-            data_counts);
+  WriteFile(bkg_gps, bkg_names, sig_gp, mc_gp, data_counts);
 }
 
 void GetOptions(int argc, char *argv[]){
@@ -239,9 +240,7 @@ void GetOptions(int argc, char *argv[]){
   if(method == 1 && !set_mj_div) mj_div = 600.;
 }
 
-void GetCounts(small_tree_quick &tree,
-               vector<double> &raw,
-               vector<double> &wght){
+void GetCounts(small_tree_quick &tree, vector<GammaParams> &gp){
   size_t nbins = 0;
   switch(method){
   case 0: nbins = 8; break;
@@ -253,8 +252,6 @@ void GetCounts(small_tree_quick &tree,
 
   vector<double> counts(nbins, 0.);
   vector<double> squares(nbins, 0.);
-  raw = counts;
-  wght = counts;
 
   double sumw = 0., sumw2 = 0.;
 
@@ -284,11 +281,14 @@ void GetCounts(small_tree_quick &tree,
   }
   sumw2 /= mc_multiplier;
 
+  gp.resize(counts.size());
   for(size_t bin = 0; bin < counts.size(); ++bin){
+    double raw, weight;
     squares.at(bin) /= mc_multiplier;
     CountsToGammas(counts.at(bin), squares.at(bin),
                    sumw, sumw2,
-                   raw.at(bin), wght.at(bin));
+                   raw, weight);
+    gp.at(bin).SetNEffectiveAndWeight(raw, weight);
   }
 }
 
@@ -467,29 +467,30 @@ size_t LookUpBin(small_tree_quick &tree){
   return -1;
 }
 
-void GetMCTotals(vector<double> &mc_raw, vector<double> &mc_wght,
-                 const vector<double> &pos_raw, const vector<double> &pos_wght,
-                 const vector<double> &neg_raw, const vector<double> &neg_wght){
-  mc_raw.resize(pos_raw.size());
-  mc_wght.resize(pos_wght.size());
+void GetMCTotals(vector<GammaParams> &mc_gp,
+		 const vector<vector<GammaParams> > &bkg_gps){
+  if(bkg_gps.size() == 0){
+    mc_gp.clear();
+    return;
+  }
 
-  for(size_t i = 0; i < mc_raw.size(); ++i){
-    double yield = pos_raw.at(i)*pos_wght.at(i)+max(0.,neg_raw.at(i)*neg_wght.at(i));
-    double uncert_sqr = pos_raw.at(i)*sqr(pos_wght.at(i));
-    mc_raw.at(i) = sqr(yield)/uncert_sqr;
-    mc_wght.at(i) = uncert_sqr/yield;
+  mc_gp = vector<GammaParams>(bkg_gps.at(0).size());
+  for(size_t sample = 0; sample < bkg_gps.size(); ++sample){
+    for(size_t bin = 0; bin < bkg_gps.at(sample).size(); ++bin){
+      mc_gp.at(bin) += bkg_gps.at(sample).at(bin);
+    }
   }
 }
 
 void MockUpData(vector<double> &data,
-                const vector<double> &pos_raw, const vector<double> &pos_wght,
-                const vector<double> &neg_raw, const vector<double> &neg_wght,
-                const vector<double> &sig_raw, const vector<double> &sig_wght){
-  data = vector<double>(pos_raw.size(), 0);
-  for(size_t i = 0; i < pos_raw.size(); ++i){
-    data.at(i) = pos_raw.at(i)*pos_wght.at(i)
-      + max(0.,neg_raw.at(i)*neg_wght.at(i))
-      + inject_signal*sig_raw.at(i)*sig_wght.at(i);
+		const vector<GammaParams> &sig_gp,
+		const vector<vector<GammaParams> > &bkg_gps){
+  data.resize(sig_gp.size());
+  for(size_t bin = 0; bin < data.size(); ++bin){
+    data.at(bin) = inject_signal*sig_gp.at(bin).Yield();
+    for(size_t sample = 0; sample < bkg_gps.size(); ++sample){
+      data.at(bin) += bkg_gps.at(sample).at(bin).Yield();
+    }
   }
 }
 
@@ -539,11 +540,11 @@ double sqr(double x){
   return x*x;
 }
 
-void WriteFile(const vector<double> &pos_raw, const vector<double> &pos_wght,
-               const vector<double> &neg_raw, const vector<double> &neg_wght,
-               const vector<double> &sig_raw, const vector<double> &sig_wght,
-               const vector<double> &mc_raw, const vector<double> &mc_wght,
-               const vector<double> &data_counts){
+void WriteFile(const vector<vector<GammaParams> > &bkg_gps,
+	       const vector<string> &bkg_names,
+	       const vector<GammaParams> &sig_gp,
+	       const vector<GammaParams> &mc_gp,
+	       const vector<double> &data_counts){
   size_t nr1, nr2, nr3, nr4;
   vector<size_t> r1_map, r2_map, r3_map, r4_map;
   GetBinMapping(nr1, r1_map, nr2, r2_map, nr3, r3_map, nr4, r4_map);
@@ -569,7 +570,7 @@ void WriteFile(const vector<double> &pos_raw, const vector<double> &pos_wght,
 
   ofstream file(file_name.str().c_str());
   file << "imax " << nr4 << "   number of channels\n";
-  file << "jmax 2   number of backgrounds\n";
+  file << "jmax " << bkg_gps.size() << "   number of backgrounds\n";
   file << "kmax *   number of nuisance parameters\n";
   file << "------------\n";
   file << "bin        ";
@@ -583,83 +584,87 @@ void WriteFile(const vector<double> &pos_raw, const vector<double> &pos_wght,
   }
   file << '\n';
   file << "------------\n";
-  file << "bin                       ";
+  file << "bin                          ";
   for(size_t ir4 = 0; ir4 < nr4; ++ir4){
     for(size_t i = 0; i < 3; ++i){
       file << ' ' << setw(12) << (ir4+1);
     }
   }
   file << '\n';
-  file << "process                   ";
+  file << "process                      ";
   for(size_t ir4 = 0; ir4 < nr4; ++ir4){
-    file << ' ' << setw(12) << "sig" << ' ' << setw(12) << "pos" << ' ' << setw(12) << "neg";
+    file << ' ' << setw(12) << "sig";
+    for(size_t isam = 0; isam < bkg_names.size(); ++isam){
+      file  << ' ' << setw(12) << bkg_names.at(isam);
+    }
   }
   file << '\n';
-  file << "process                   ";
+  file << "process                      ";
   for(size_t ir4 = 0; ir4 < nr4; ++ir4){
-    file << "            0            1            2";
+    file << "            0";
+    for(size_t isam = 0; isam < bkg_names.size(); ++isam){
+      file << ' ' << setw(12) << (isam+1);
+    }
   }
   file << '\n';
-  file << "rate                      ";
-  vector<double> sig_pred(0), pos_pred(0), neg_pred(0);
+  file << "rate                         ";
+  vector<double> sig_pred(0);
+  vector<vector<double> > bkg_preds(bkg_gps.size());
   for(size_t ir4 = 0; ir4 < nr4; ++ir4){
     size_t ir1 = r1_map.at(ir4);
     size_t ir2 = r2_map.at(ir4)+nr1;
     size_t ir3 = r3_map.at(ir4)+nr1+nr2;
     size_t iir4 = r4_map.at(ir4)+nr1+nr2+nr3;
-    sig_pred.push_back(sig_raw.at(iir4)*sig_wght.at(iir4));
-    pos_pred.push_back(GetPred(data_counts, mc_raw, mc_wght, pos_raw, pos_wght, ir1, ir2, ir3, iir4));
-    neg_pred.push_back(GetPred(data_counts, mc_raw, mc_wght, neg_raw, neg_wght, ir1, ir2, ir3, iir4));
-    file
-      << ' ' << setw(12) << sig_pred.back()
-      << ' ' << setw(12) << pos_pred.back()
-      << ' ' << setw(12) << neg_pred.back();
+    sig_pred.push_back(sig_gp.at(iir4).Yield());
+    file << ' ' << setw(12) << sig_pred.back();
+    for(size_t isam = 0; isam < bkg_gps.size(); ++isam){
+      bkg_preds.at(isam).push_back(GetPred(data_counts, mc_gp, bkg_gps.at(isam), ir1, ir2, ir3, iir4));
+      file << ' ' << setw(12) << bkg_preds.at(isam).back();
+    }
   }
   file << '\n';
   file << "------------\n";
 
   //Print control region uncertainty from data
-  PrintLogN(file, r1_map, "data_r1", 1, nr1, nr2, nr3, nr4, data_counts);
-  PrintLogN(file, r2_map, "data_r2", 2, nr1, nr2, nr3, nr4, data_counts);
-  PrintLogN(file, r3_map, "data_r3", 3, nr1, nr2, nr3, nr4, data_counts);
+  PrintLogN(file, r1_map, "data_r1", 1, nr1, nr2, nr3, nr4, data_counts, bkg_gps.size());
+  PrintLogN(file, r2_map, "data_r2", 2, nr1, nr2, nr3, nr4, data_counts, bkg_gps.size());
+  PrintLogN(file, r3_map, "data_r3", 3, nr1, nr2, nr3, nr4, data_counts, bkg_gps.size());
 
-  if(no_mc_kappa){
-    //NEED TO FIX THIS!!!
-    //Faking this for now and just using uncertainty on MC bin count for statistical shape uncertainty.
-    //Does not take into account uncertainty on MC R4 total or anti-correlation between bin fractions.
-    PrintGamma(file, r4_map, "sgnl_r4", 4, nr1, nr2, nr3, nr4, sig_raw, sig_wght, sig_pred, 0);
-    PrintGamma(file, r4_map, "posi_r4", 4, nr1, nr2, nr3, nr4, pos_raw, pos_wght, pos_pred, 1);
-    //PrintGamma(file, r4_map, "nega_r4", 4, nr1, nr2, nr3, nr4, neg_raw, neg_wght, neg_pred, 2);
-  }else{
-    //Print MC kappa uncertainties
-    PrintLogN(file, r1_map, "mc___r1", 1, nr1, nr2, nr3, nr4, mc_raw);
-    PrintLogN(file, r2_map, "mc___r2", 2, nr1, nr2, nr3, nr4, mc_raw);
-    PrintLogN(file, r3_map, "mc___r3", 3, nr1, nr2, nr3, nr4, mc_raw);
-    PrintGamma(file, r4_map, "sgnl_r4", 4, nr1, nr2, nr3, nr4, sig_raw, sig_wght, sig_pred, 0);
-    PrintGamma(file, r4_map, "posi_r4", 4, nr1, nr2, nr3, nr4, pos_raw, pos_wght, pos_pred, 1);
-    //PrintGamma(file, r4_map, "nega_r4", 4, nr1, nr2, nr3, nr4, neg_raw, neg_wght, neg_pred, 2);
+  vector<double> mc_counts(mc_gp.size());
+  for(size_t i = 0; i < mc_gp.size(); ++i){
+    mc_counts.at(i) = mc_gp.at(i).NEffective();
+  }
+  if(!no_mc_kappa){
+    PrintLogN(file, r1_map, "mc___r1", 1, nr1, nr2, nr3, nr4, mc_counts, bkg_gps.size());
+    PrintLogN(file, r2_map, "mc___r2", 2, nr1, nr2, nr3, nr4, mc_counts, bkg_gps.size());
+    PrintLogN(file, r3_map, "mc___r3", 3, nr1, nr2, nr3, nr4, mc_counts, bkg_gps.size());
+  }
+
+  PrintGamma(file, r4_map, "sgnl_r4", 4, nr1, nr2, nr3, nr4, sig_gp, sig_pred, 0, bkg_gps.size());
+  for(size_t isam = 0; isam < bkg_preds.size(); ++isam){
+    PrintGamma(file, r4_map, bkg_names.at(isam)+"_r4",4, nr1, nr2, nr3, nr4, bkg_gps.at(isam), bkg_preds.at(isam), isam+1, bkg_gps.size());
   }
 
   if(!no_systematics){
-    PrintSystematics(file);
+    PrintSystematics(file, bkg_gps.size());
   }
 
-  file << "#kappa                    ";
+  file << "#kappa                       ";
   for(size_t ir4 = 0; ir4 < nr4; ++ir4){
     size_t ir1 = r1_map.at(ir4);
     size_t ir2 = r2_map.at(ir4)+nr1;
     size_t ir3 = r3_map.at(ir4)+nr1+nr2;
     size_t iir4 = r4_map.at(ir4)+nr1+nr2+nr3;
 
-    double kappa = mc_raw.at(ir1)*mc_wght.at(ir1);
-    kappa /= mc_raw.at(ir2)*mc_wght.at(ir2);
-    kappa /= mc_raw.at(ir3)*mc_wght.at(ir3);
-    kappa *= mc_raw.at(iir4)*mc_wght.at(iir4);
+    double kappa = mc_gp.at(ir1).Yield();
+    kappa /= mc_gp.at(ir2).Yield();
+    kappa /= mc_gp.at(ir3).Yield();
+    kappa *= mc_gp.at(iir4).Yield();
 
-    file
-      << ' ' << setw(12) << '-'
-      << ' ' << setw(12) << kappa
-      << ' ' << setw(12) << kappa;
+    file << ' ' << setw(12) << '-';
+    for(size_t isam = 0; isam < bkg_gps.size(); ++isam){
+      file << ' ' << setw(12) << kappa;
+    }
   }
 
   file << endl;
@@ -679,10 +684,8 @@ void GetGammaParameters(int &raw_out, double &weight_out,
 }
 
 double GetPred(const vector<double> &data,
-               const vector<double> &mc_raw,
-               const vector<double> &mc_wght,
-               const vector<double> &proc_raw,
-               const vector<double> &proc_wght,
+               const vector<GammaParams> &mc_gp,
+               const vector<GammaParams> &proc_gp,
                size_t ir1,
                size_t ir2,
                size_t ir3,
@@ -691,14 +694,14 @@ double GetPred(const vector<double> &data,
   double pred = data.at(ir2)*data.at(ir3)/data.at(ir1);
 
   //Fraction belonging to this process
-  pred *= (proc_raw.at(ir4)*proc_wght.at(ir4))/(mc_raw.at(ir4)*mc_wght.at(ir4));
+  pred *= (proc_gp.at(ir4).Yield())/mc_gp.at(ir4).Yield();
 
   //MC kappa correction
   if(!no_mc_kappa){
-    pred *= mc_raw.at(ir1)*mc_wght.at(ir1);
-    pred /= mc_raw.at(ir2)*mc_wght.at(ir2);
-    pred /= mc_raw.at(ir3)*mc_wght.at(ir3);
-    pred *= mc_raw.at(ir4)*mc_wght.at(ir4);
+    pred *= mc_gp.at(ir1).Yield();
+    pred /= mc_gp.at(ir2).Yield();
+    pred /= mc_gp.at(ir3).Yield();
+    pred *= mc_gp.at(ir4).Yield();
   }else{
     if(method==0){
       //Deal with MET spectrum from MC due to incomplete binning in R2
@@ -710,8 +713,8 @@ double GetPred(const vector<double> &data,
       case 7: id1 = 5; id2 = 7; break;
       default: break;
       }
-      pred *= proc_raw.at(ir4)*proc_wght.at(ir4);
-      pred /= proc_raw.at(id1)*proc_wght.at(id1)+proc_raw.at(id2)*proc_wght.at(id2);
+      pred *= proc_gp.at(ir4).Yield();
+      pred /= proc_gp.at(id1).Yield()+proc_gp.at(id2).Yield();
     }
   }
 
@@ -721,7 +724,7 @@ double GetPred(const vector<double> &data,
 void PrintLogN(ofstream &file, const vector<size_t> map,
                const string &name, size_t ibin,
                size_t nr1, size_t nr2, size_t nr3, size_t nr4,
-               const vector<double> &raw_counts){
+               const vector<double> &raw_counts, size_t nbkgs){
   size_t nri = -1; size_t offset = 0;
   switch(ibin){
   case 1: nri = nr1; offset = 0; break;
@@ -731,13 +734,18 @@ void PrintLogN(ofstream &file, const vector<size_t> map,
   default: break;
   }
   for(size_t iri = 0; iri < nri; ++iri){
-    file << name << '_' << (iri+1) << " lnN             ";
+    file << Expand(name+'_'+ToString(iri+1),12) << " lnN             ";
     for(size_t ir4 = 0; ir4 < nr4; ++ir4){
       if(map.at(ir4) == iri){
         double val = 1.+1./sqrt(raw_counts.at(iri+offset)+1.);
-        file << "            - " << setw(12) << val << ' ' << setw(12) << val;
+        file << "            -";
+	for(size_t ibkg = 0; ibkg < nbkgs; ++ibkg){
+	  file << ' ' << setw(12) << val;
+	}
       }else{
-        file << "            -            -            -";
+	for(size_t ibkg = 0; ibkg < (nbkgs+1); ++ibkg){
+	  file << ' ' << setw(12) << '-';
+	}
       }
     }
     file << '\n';
@@ -747,10 +755,9 @@ void PrintLogN(ofstream &file, const vector<size_t> map,
 void PrintGamma(ofstream &file, const vector<size_t> map,
                 const string &name, size_t ibin,
                 size_t nr1, size_t nr2, size_t nr3, size_t nr4,
-                const vector<double> &raw_counts,
-                const vector<double> &weights,
+		const vector<GammaParams> &gps,
                 const vector<double> &preds,
-                size_t iproc){
+                size_t iproc, size_t nbkgs){
   size_t nri = -1; size_t offset = 0;
   switch(ibin){
   case 1: nri = nr1; offset = 0; break;
@@ -762,11 +769,11 @@ void PrintGamma(ofstream &file, const vector<size_t> map,
   for(size_t iri = 0; iri < nri; ++iri){
     int gmn_raw;
     double gmn_wght;
-    GetGammaParameters(gmn_raw, gmn_wght, raw_counts.at(iri+offset), weights.at(iri+offset), preds.at(iri));
-    file << name << '_' << (iri+1) << " gmN " << setw(12) << gmn_raw;
+    GetGammaParameters(gmn_raw, gmn_wght, gps.at(iri+offset).NEffective(), gps.at(iri+offset).Weight(), preds.at(iri));
+    file << Expand(name+'_'+ToString(iri+1),12) << " gmN " << setw(12) << gmn_raw;
     for(size_t ir4 = 0; ir4 < nr4; ++ir4){
       if(map.at(ir4) == iri){
-        for(size_t i = 0; i < 3; ++i){
+        for(size_t i = 0; i < (nbkgs+1); ++i){
           if(i == iproc){
             file << ' ' << setw(12) << gmn_wght;
           }else{
@@ -774,7 +781,9 @@ void PrintGamma(ofstream &file, const vector<size_t> map,
           }
         }
       }else{
-        file << "            -            -            -";
+	for(size_t isam = 0; isam < (nbkgs+1); ++isam){
+	  file << ' ' << setw(12) << '-';
+	}
       }
     }
     file << '\n';
@@ -794,208 +803,158 @@ string NoDecimal(double x){
   return s;
 }
 
-void PrintSystematics(ofstream &file){
+void PrintSystematics(ofstream &file, size_t nbkgs){
+  double lf = 1./sqrt(lumi/10.);
   switch(method){
   case 0:
   case 1:
-    file << "n_isr     lnN             ";
-    file << ' ' << setw(12) << '-';
-    file << ' ' << setw(12) << 1.04;
-    file << ' ' << setw(12) << 1.04;
-    file << ' ' << setw(12) << '-';
-    file << ' ' << setw(12) << 1.04;
-    file << ' ' << setw(12) << 1.04;
-    file << ' ' << setw(12) << '-';
-    file << ' ' << setw(12) << 1.09;
-    file << ' ' << setw(12) << 1.09;
-    file << ' ' << setw(12) << '-';
-    file << ' ' << setw(12) << 1.14;
-    file << ' ' << setw(12) << 1.14;
+    file << "n_isr        lnN             ";
+    RepLogN(file, 4, nbkgs);
+    RepLogN(file, 4, nbkgs);
+    RepLogN(file, 9, nbkgs);
+    RepLogN(file, 14, nbkgs);
     file << endl;
-    file << "isr_pt    lnN             ";
-    file << ' ' << setw(12) << '-';
-    file << ' ' << setw(12) << 1.04;
-    file << ' ' << setw(12) << 1.04;
-    file << ' ' << setw(12) << '-';
-    file << ' ' << setw(12) << 1.05;
-    file << ' ' << setw(12) << 1.05;
-    file << ' ' << setw(12) << '-';
-    file << ' ' << setw(12) << 1.59;
-    file << ' ' << setw(12) << 1.59;
-    file << ' ' << setw(12) << '-';
-    file << ' ' << setw(12) << 1.19;
-    file << ' ' << setw(12) << 1.19;
+    file << "isr_pt       lnN             ";
+    RepLogN(file, 4, nbkgs);
+    RepLogN(file, 5, nbkgs);
+    RepLogN(file, 59, nbkgs);
+    RepLogN(file, 19, nbkgs);
     file << endl;
-    file << "top_pt    lnN             ";
-    file << ' ' << setw(12) << '-';
-    file << ' ' << setw(12) << 1.01;
-    file << ' ' << setw(12) << 1.01;
-    file << ' ' << setw(12) << '-';
-    file << ' ' << setw(12) << 1.01;
-    file << ' ' << setw(12) << 1.01;
-    file << ' ' << setw(12) << '-';
-    file << ' ' << setw(12) << 1.08;
-    file << ' ' << setw(12) << 1.08;
-    file << ' ' << setw(12) << '-';
-    file << ' ' << setw(12) << 1.00;
-    file << ' ' << setw(12) << 1.00;
+    file << "top_pt       lnN             ";
+    RepLogN(file, 1, nbkgs);
+    RepLogN(file, 1, nbkgs);
+    RepLogN(file, 8, nbkgs);
+    RepLogN(file, 0, nbkgs);
     file << endl;
-    file << "high_mt   lnN             ";
-    file << ' ' << setw(12) << '-';
-    file << ' ' << setw(12) << 1.07;
-    file << ' ' << setw(12) << 1.07;
-    file << ' ' << setw(12) << '-';
-    file << ' ' << setw(12) << 1.16;
-    file << ' ' << setw(12) << 1.16;
-    file << ' ' << setw(12) << '-';
-    file << ' ' << setw(12) << 1.02;
-    file << ' ' << setw(12) << 1.02;
-    file << ' ' << setw(12) << '-';
-    file << ' ' << setw(12) << 1.23;
-    file << ' ' << setw(12) << 1.23;
+    file << "high_mt      lnN             ";
+    RepLogN(file, 7, nbkgs);
+    RepLogN(file, 16, nbkgs);
+    RepLogN(file, 2, nbkgs);
+    RepLogN(file, 23, nbkgs);
+    file << endl;
+    file << "dilep_data   lnN             ";
+    RepAsymLogN(file, 58.4*lf, 30.8*lf, nbkgs);
+    RepAsymLogN(file, 94.0*lf, 72.2*lf, nbkgs);
+    RepAsymLogN(file, 58.4*lf, 30.8*lf, nbkgs);
+    RepAsymLogN(file, 94.0*lf, 72.2*lf, nbkgs);
+    file << endl;
+    file << "dilep_mc     lnN             ";
+    RepAsymLogN(file, 16.2, 16.7, nbkgs);
+    RepAsymLogN(file, 30.3, 31.8, nbkgs);
+    RepAsymLogN(file, 16.2, 16.7, nbkgs);
+    RepAsymLogN(file, 30.3, 31.8, nbkgs);
     file << endl;
     break;
   case 2:
-    file << "n_isr     lnN             ";
-    file << ' ' << setw(12) << '-';
-    file << ' ' << setw(12) << 1.02;
-    file << ' ' << setw(12) << 1.02;
-    file << ' ' << setw(12) << '-';
-    file << ' ' << setw(12) << 1.06;
-    file << ' ' << setw(12) << 1.06;
-    file << ' ' << setw(12) << '-';
-    file << ' ' << setw(12) << 1.04;
-    file << ' ' << setw(12) << 1.04;
-    file << ' ' << setw(12) << '-';
-    file << ' ' << setw(12) << 1.19;
-    file << ' ' << setw(12) << 1.19;
+    file << "n_isr        lnN             ";
+    RepLogN(file, 2, nbkgs);
+    RepLogN(file, 6, nbkgs);
+    RepLogN(file, 4, nbkgs);
+    RepLogN(file, 19, nbkgs);
     file << endl;
-    file << "isr_pt    lnN             ";
-    file << ' ' << setw(12) << '-';
-    file << ' ' << setw(12) << 1.04;
-    file << ' ' << setw(12) << 1.04;
-    file << ' ' << setw(12) << '-';
-    file << ' ' << setw(12) << 1.01;
-    file << ' ' << setw(12) << 1.01;
-    file << ' ' << setw(12) << '-';
-    file << ' ' << setw(12) << 1.25;
-    file << ' ' << setw(12) << 1.25;
-    file << ' ' << setw(12) << '-';
-    file << ' ' << setw(12) << 1.42;
-    file << ' ' << setw(12) << 1.42;
+    file << "isr_pt       lnN             ";
+    RepLogN(file, 4, nbkgs);
+    RepLogN(file, 1, nbkgs);
+    RepLogN(file, 25, nbkgs);
+    RepLogN(file, 42, nbkgs);
     file << endl;
-    file << "top_pt    lnN             ";
-    file << ' ' << setw(12) << '-';
-    file << ' ' << setw(12) << 1.01;
-    file << ' ' << setw(12) << 1.01;
-    file << ' ' << setw(12) << '-';
-    file << ' ' << setw(12) << 1.02;
-    file << ' ' << setw(12) << 1.02;
-    file << ' ' << setw(12) << '-';
-    file << ' ' << setw(12) << 1.10;
-    file << ' ' << setw(12) << 1.10;
-    file << ' ' << setw(12) << '-';
-    file << ' ' << setw(12) << 1.23;
-    file << ' ' << setw(12) << 1.23;
+    file << "top_pt       lnN             ";
+    RepLogN(file, 1, nbkgs);
+    RepLogN(file, 2, nbkgs);
+    RepLogN(file, 10, nbkgs);
+    RepLogN(file, 23, nbkgs);
     file << endl;
-    file << "high_mt   lnN             ";
-    file << ' ' << setw(12) << '-';
-    file << ' ' << setw(12) << 1.09;
-    file << ' ' << setw(12) << 1.09;
-    file << ' ' << setw(12) << '-';
-    file << ' ' << setw(12) << 1.17;
-    file << ' ' << setw(12) << 1.17;
-    file << ' ' << setw(12) << '-';
-    file << ' ' << setw(12) << 1.18;
-    file << ' ' << setw(12) << 1.18;
-    file << ' ' << setw(12) << '-';
-    file << ' ' << setw(12) << 1.20;
-    file << ' ' << setw(12) << 1.20;
+    file << "high_mt      lnN             ";
+    RepLogN(file, 9, nbkgs);
+    RepLogN(file, 17, nbkgs);
+    RepLogN(file, 18, nbkgs);
+    RepLogN(file, 20, nbkgs);
+    file << endl;
+    file << "dilep_data   lnN             ";
+    RepAsymLogN(file, 15.5*lf, 16.3*lf, nbkgs);
+    RepAsymLogN(file, 37.6*lf, 28.0*lf, nbkgs);
+    RepAsymLogN(file, 15.5*lf, 16.3*lf, nbkgs);
+    RepAsymLogN(file, 37.6*lf, 28.0*lf, nbkgs);
+    file << endl;
+    file << "dilep_mc     lnN             ";
+    RepAsymLogN(file, 8.2, 8.5, nbkgs);
+    RepAsymLogN(file, 15.2, 15.6, nbkgs);
+    RepAsymLogN(file, 8.2, 8.5, nbkgs);
+    RepAsymLogN(file, 15.2, 15.6, nbkgs);
     file << endl;
     break;
   case 3:
-    file << "n_isr     lnN             ";
-    file << ' ' << setw(12) << '-';
-    file << ' ' << setw(12) << 1.02;
-    file << ' ' << setw(12) << 1.02;
-    file << ' ' << setw(12) << '-';
-    file << ' ' << setw(12) << 1.02;
-    file << ' ' << setw(12) << 1.02;
-    file << ' ' << setw(12) << '-';
-    file << ' ' << setw(12) << 1.06;
-    file << ' ' << setw(12) << 1.06;
-    file << ' ' << setw(12) << '-';
-    file << ' ' << setw(12) << 1.06;
-    file << ' ' << setw(12) << 1.06;
-    file << ' ' << setw(12) << '-';
-    file << ' ' << setw(12) << 1.04;
-    file << ' ' << setw(12) << 1.04;
-    file << ' ' << setw(12) << '-';
-    file << ' ' << setw(12) << 1.19;
-    file << ' ' << setw(12) << 1.19;
+    file << "n_isr        lnN             ";
+    RepLogN(file, 2, nbkgs);
+    RepLogN(file, 2, nbkgs);
+    RepLogN(file, 6, nbkgs);
+    RepLogN(file, 6, nbkgs);
+    RepLogN(file, 4, nbkgs);
+    RepLogN(file, 19, nbkgs);
     file << endl;
-    file << "isr_pt    lnN             ";
-    file << ' ' << setw(12) << '-';
-    file << ' ' << setw(12) << 1.04;
-    file << ' ' << setw(12) << 1.04;
-    file << ' ' << setw(12) << '-';
-    file << ' ' << setw(12) << 1.04;
-    file << ' ' << setw(12) << 1.04;
-    file << ' ' << setw(12) << '-';
-    file << ' ' << setw(12) << 1.01;
-    file << ' ' << setw(12) << 1.01;
-    file << ' ' << setw(12) << '-';
-    file << ' ' << setw(12) << 1.01;
-    file << ' ' << setw(12) << 1.01;
-    file << ' ' << setw(12) << '-';
-    file << ' ' << setw(12) << 1.25;
-    file << ' ' << setw(12) << 1.25;
-    file << ' ' << setw(12) << '-';
-    file << ' ' << setw(12) << 1.42;
-    file << ' ' << setw(12) << 1.42;
+    file << "isr_pt       lnN             ";
+    RepLogN(file, 4, nbkgs);
+    RepLogN(file, 4, nbkgs);
+    RepLogN(file, 1, nbkgs);
+    RepLogN(file, 1, nbkgs);
+    RepLogN(file, 25, nbkgs);
+    RepLogN(file, 42, nbkgs);
     file << endl;
-    file << "top_pt    lnN             ";
-    file << ' ' << setw(12) << '-';
-    file << ' ' << setw(12) << 1.01;
-    file << ' ' << setw(12) << 1.01;
-    file << ' ' << setw(12) << '-';
-    file << ' ' << setw(12) << 1.01;
-    file << ' ' << setw(12) << 1.01;
-    file << ' ' << setw(12) << '-';
-    file << ' ' << setw(12) << 1.02;
-    file << ' ' << setw(12) << 1.02;
-    file << ' ' << setw(12) << '-';
-    file << ' ' << setw(12) << 1.02;
-    file << ' ' << setw(12) << 1.02;
-    file << ' ' << setw(12) << '-';
-    file << ' ' << setw(12) << 1.10;
-    file << ' ' << setw(12) << 1.10;
-    file << ' ' << setw(12) << '-';
-    file << ' ' << setw(12) << 1.23;
-    file << ' ' << setw(12) << 1.23;
+    file << "top_pt       lnN             ";
+    RepLogN(file, 1, nbkgs);
+    RepLogN(file, 1, nbkgs);
+    RepLogN(file, 2, nbkgs);
+    RepLogN(file, 2, nbkgs);
+    RepLogN(file, 10, nbkgs);
+    RepLogN(file, 23, nbkgs);
     file << endl;
-    file << "high_mt   lnN             ";
-    file << ' ' << setw(12) << '-';
-    file << ' ' << setw(12) << 1.09;
-    file << ' ' << setw(12) << 1.09;
-    file << ' ' << setw(12) << '-';
-    file << ' ' << setw(12) << 1.09;
-    file << ' ' << setw(12) << 1.09;
-    file << ' ' << setw(12) << '-';
-    file << ' ' << setw(12) << 1.17;
-    file << ' ' << setw(12) << 1.17;
-    file << ' ' << setw(12) << '-';
-    file << ' ' << setw(12) << 1.17;
-    file << ' ' << setw(12) << 1.17;
-    file << ' ' << setw(12) << '-';
-    file << ' ' << setw(12) << 1.18;
-    file << ' ' << setw(12) << 1.18;
-    file << ' ' << setw(12) << '-';
-    file << ' ' << setw(12) << 1.20;
-    file << ' ' << setw(12) << 1.20;
+    file << "high_mt      lnN             ";
+    RepLogN(file, 9, nbkgs);
+    RepLogN(file, 9, nbkgs);
+    RepLogN(file, 17, nbkgs);
+    RepLogN(file, 17, nbkgs);
+    RepLogN(file, 18, nbkgs);
+    RepLogN(file, 20, nbkgs);
+    file << endl;
+    file << "dilep_data   lnN             ";
+    RepAsymLogN(file, 15.5*lf, 16.3*lf, nbkgs);
+    RepAsymLogN(file, 15.5*lf, 16.3*lf, nbkgs);
+    RepAsymLogN(file, 37.6*lf, 28.0*lf, nbkgs);
+    RepAsymLogN(file, 37.6*lf, 28.0*lf, nbkgs);
+    RepAsymLogN(file, 15.5*lf, 16.3*lf, nbkgs);
+    RepAsymLogN(file, 37.6*lf, 28.0*lf, nbkgs);
+    file << endl;
+    file << "dilep_mc     lnN             ";
+    RepAsymLogN(file, 8.2, 8.5, nbkgs);
+    RepAsymLogN(file, 8.2, 8.5, nbkgs);
+    RepAsymLogN(file, 15.2, 15.6, nbkgs);
+    RepAsymLogN(file, 15.2, 15.6, nbkgs);
+    RepAsymLogN(file, 8.2, 8.5, nbkgs);
+    RepAsymLogN(file, 15.2, 15.6, nbkgs);
     file << endl;
     break;
   default:
     break;
   }
+}
+
+void RepLogN(ofstream &file, double val, size_t nbkgs){
+  file << ' ' << setw(12) << '-';
+  for(size_t ibkg = 0; ibkg < nbkgs; ++ibkg){
+    file << ' ' << setw(12) << (1.+val/100.);
+  }
+}
+
+void RepAsymLogN(ofstream &file, double minus, double plus, size_t nbkgs){
+  file << ' ' << setw(12) << '-';
+  for(size_t ibkg = 0; ibkg < nbkgs; ++ibkg){
+    file << ' ' << setw(12) << (ToString(1.+minus/100.)+'/'+ToString(1.+plus/100.));
+  }
+}
+
+string Expand(string in, size_t size){
+  while(in.size() < size){
+    in += ' ';
+  }
+  return in;
 }
