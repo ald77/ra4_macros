@@ -839,10 +839,10 @@ void PrintSystematics(ofstream &file, size_t nbkgs){
     RepAsymLogN(file, 94.0*lf, 72.2*lf, nbkgs);
     file << endl;
     file << "dilep_mc     lnN             ";
-    RepAsymLogN(file, 16.2, 16.7, nbkgs);
-    RepAsymLogN(file, 30.3, 31.8, nbkgs);
-    RepAsymLogN(file, 16.2, 16.7, nbkgs);
-    RepAsymLogN(file, 30.3, 31.8, nbkgs);
+    RepAsymLogN(file, 16.2*lf, 16.7*lf, nbkgs);
+    RepAsymLogN(file, 30.3*lf, 31.8*lf, nbkgs);
+    RepAsymLogN(file, 16.2*lf, 16.7*lf, nbkgs);
+    RepAsymLogN(file, 30.3*lf, 31.8*lf, nbkgs);
     file << endl;
     break;
   case 2:
@@ -877,10 +877,10 @@ void PrintSystematics(ofstream &file, size_t nbkgs){
     RepAsymLogN(file, 37.6*lf, 28.0*lf, nbkgs);
     file << endl;
     file << "dilep_mc     lnN             ";
-    RepAsymLogN(file, 8.2, 8.5, nbkgs);
-    RepAsymLogN(file, 15.2, 15.6, nbkgs);
-    RepAsymLogN(file, 8.2, 8.5, nbkgs);
-    RepAsymLogN(file, 15.2, 15.6, nbkgs);
+    RepAsymLogN(file, 8.2*lf, 8.5*lf, nbkgs);
+    RepAsymLogN(file, 15.2*lf, 15.6*lf, nbkgs);
+    RepAsymLogN(file, 8.2*lf, 8.5*lf, nbkgs);
+    RepAsymLogN(file, 15.2*lf, 15.6*lf, nbkgs);
     file << endl;
     break;
   case 3:
@@ -925,12 +925,12 @@ void PrintSystematics(ofstream &file, size_t nbkgs){
     RepAsymLogN(file, 37.6*lf, 28.0*lf, nbkgs);
     file << endl;
     file << "dilep_mc     lnN             ";
-    RepAsymLogN(file, 8.2, 8.5, nbkgs);
-    RepAsymLogN(file, 8.2, 8.5, nbkgs);
-    RepAsymLogN(file, 15.2, 15.6, nbkgs);
-    RepAsymLogN(file, 15.2, 15.6, nbkgs);
-    RepAsymLogN(file, 8.2, 8.5, nbkgs);
-    RepAsymLogN(file, 15.2, 15.6, nbkgs);
+    RepAsymLogN(file, 8.2*lf, 8.5*lf, nbkgs);
+    RepAsymLogN(file, 8.2*lf, 8.5*lf, nbkgs);
+    RepAsymLogN(file, 15.2*lf, 15.6*lf, nbkgs);
+    RepAsymLogN(file, 15.2*lf, 15.6*lf, nbkgs);
+    RepAsymLogN(file, 8.2*lf, 8.5*lf, nbkgs);
+    RepAsymLogN(file, 15.2*lf, 15.6*lf, nbkgs);
     file << endl;
     break;
   default:
@@ -948,7 +948,7 @@ void RepLogN(ofstream &file, double val, size_t nbkgs){
 void RepAsymLogN(ofstream &file, double minus, double plus, size_t nbkgs){
   file << ' ' << setw(12) << '-';
   for(size_t ibkg = 0; ibkg < nbkgs; ++ibkg){
-    file << ' ' << setw(12) << (ToString(1.+minus/100.)+'/'+ToString(1.+plus/100.));
+    file << ' ' << setw(12) << (ToString(1./(1.+minus/100.))+'/'+ToString(1.+plus/100.));
   }
 }
 
