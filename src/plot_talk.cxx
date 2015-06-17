@@ -22,7 +22,7 @@ namespace {
   TString luminosity="10";
   TString plot_type=".pdf";
   TString plot_style="RA4";
-  int section(6);
+  int section(1);
 }
 
 using namespace std;
@@ -116,6 +116,9 @@ int main(){
   TString cuts("(nmus+nels)==1");
   switch(section){
   case 1: // Intro
+    vars.push_back(hfeats("ntruels+ntrumus",5,-0.5,4.5, ra4_sec1, "Number of prompt e+#mu in T1tttt(1500,100)"));
+    break;
+  case 2: // MJ-mT plane
     cuts = "(nmus+nels)==1&&ht>500&&met>200&&njets>=7&&nbm>=2&&met>400";
     vars.push_back(hfeats("mt",25,0,500, ra4_sam, "m_{T} (GeV)",cuts,140));
     cuts += "&&mt>140";
@@ -125,14 +128,6 @@ int main(){
     cuts += "&&mt>140";
     vars.push_back(hfeats("mj",32,0,1600, ra4_sam, "M_{J} (GeV)",cuts,400));
 
-    vars.push_back(hfeats("ntruels+ntrumus",5,-0.5,4.5, ra4_sec1, "Number of prompt e+#mu in T1tttt(1500,100)"));
-    vars.push_back(hfeats("ht",30,500,3500, ra4_sam, "H_{T} (GeV)",
-			  "(nmus+nels)==1&&met>200&&njets>=7&&nbm>=2&&mt>140",500));
-    vars.push_back(hfeats("ht",30,500,3500, ra4_sam, "H_{T} (GeV)",
-			  "(nmus+nels)==1&&met>200&&njets>=7&&nbm>=2&&mt>140&&mj>400",500));
-    vars.push_back(hfeats("ht",30,500,3500, ra4_sam, "H_{T} (GeV)",
-			  "(nmus+nels)==1&&met>200&&njets>=7&&nbm>=2&&mt>140&&njets>=9",500));
-    break;
   case 5: // Event selection - N-1 plots
     vars.push_back(hfeats("ht",35,0,3500, ra4_sam_ns, "H_{T} (GeV)",
 			  "(nmus+nels)==1&&met>200&&njets>="+minjets+"&&nbm>=2",500));
@@ -163,6 +158,14 @@ int main(){
     vars.push_back(hfeats("njets",6,6.5,12.5, ra4_sec6, "Number of 30 GeV jets",cuts+"&&njets>=7"));
 
     break;
+  case 7: // HT distributions to compare MC stats with tt HT binning
+    vars.push_back(hfeats("ht",30,500,3500, ra4_sam, "H_{T} (GeV)",
+			  "(nmus+nels)==1&&met>200&&njets>=7&&nbm>=2&&mt>140",500));
+    vars.push_back(hfeats("ht",30,500,3500, ra4_sam, "H_{T} (GeV)",
+			  "(nmus+nels)==1&&met>200&&njets>=7&&nbm>=2&&mt>140&&mj>400",500));
+    vars.push_back(hfeats("ht",30,500,3500, ra4_sam, "H_{T} (GeV)",
+			  "(nmus+nels)==1&&met>200&&njets>=7&&nbm>=2&&mt>140&&njets>=9",500));
+    
   default:
     break;
   }

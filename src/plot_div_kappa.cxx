@@ -25,7 +25,6 @@ namespace  {
   TString ntuple_date("2015_05_25");
   TString lumi("10");
   int method(3);
-  int nrep = 10000;    // Fluctuations of Gamma distribution
   bool do_1ltt(false); // Kappa just for 1l ttbar
   bool do_2ltt(false); // Kappa just for 2l ttbar
   bool do_ttbar(true); // Include ttbar in kappa
@@ -39,15 +38,10 @@ namespace  {
 
 using namespace std;
 
-// yields[Nobs][Nsam] has the entries for each sample for each observable going into kappa
-// weights[Nobs][Nsam] has the average weight of each observable for each sample
-// powers[Nobs] defines kappa = Product_obs{ Sum_sam{yields[sam][obs]*weights[sam][obs]}^powers[obs] }
-double calcKappa(vector<vector<int> > &entries, vector<vector<float> > &weights,
-		 vector<float> &powers, bool do_data, float &mSigma, float &pSigma);
-
 void plotKappa(vector<vector<double> > &vx, vector<vector<double> > &vy, vector<vector<double> > &vexl, 
 	       vector<vector<double> > &vexh, vector<vector<double> > &veyl, vector<vector<double> > &veyh,
-	       vector<vector<double> > &vdx, vector<vector<double> > &vdy, vector<vector<double> > &vmx, vector<vector<double> > &vmy, unsigned iDiv,
+	       vector<vector<double> > &vdx, vector<vector<double> > &vdy, vector<vector<double> > &vmx, 
+	       vector<vector<double> > &vmy, unsigned iDiv,
 	       unsigned idata, TH1D &histo, vector<TString> &nbcuts);
 
 int main(int argc, char *argv[]){ 
@@ -233,18 +227,17 @@ int main(int argc, char *argv[]){
   for(unsigned inj(0); inj<njcuts.size(); inj++){
     for(unsigned imet(0); imet<metcuts.size(); imet++){
       for(unsigned inb(0); inb<nbcuts.size(); inb++){
-	if(method==3 && ((imet==0&&inb==3) || (imet==1&&(inb==1||inb==2)))) continue;
-	vector<vector<vector<int> > > entries;
-	vector<vector<vector<float> > > weights;
+	if(method==3 && ((imet==0&&inb==3) || (imet==1&& (inb==1||inb==2)))) continue;
+	vector<vector<vector<float> > > entries, weights;
 	for(unsigned div(0); div < nDiv; div++){
-	  entries.push_back(vector<vector<int> >());
+	  entries.push_back(vector<vector<float> >());
 	  weights.push_back(vector<vector<float> >());
 	  // totcut = lumi+"*weight*("+baseline+"&&"+nbcuts[inb]+"&&"+metcuts[imet]+"&&"+cuts[obs];
 	  // if(method==1 || obs%2==1) totcut += "&&"+njcuts[inj];
 	  // totcut += ")";
 	  // cout << totcut<<endl;
 	  for(unsigned obs(0); obs < powersn.size(); obs++) {
-	    entries[div].push_back(vector<int>());
+	    entries[div].push_back(vector<float>());
 	    weights[div].push_back(vector<float>());
 	    for(unsigned sam(0); sam < ra4_sam.size(); sam++) {
 	      totcut = (lumi+"*weight*("+baseline+"&&"+nbcuts[inb]+"&&"+metcuts[imet]+"&&"+cuts[obs]+
@@ -281,9 +274,9 @@ int main(int argc, char *argv[]){
 	for(unsigned idata(0); idata<nData; idata++){
 	  double kappa(0), fixk(1);
 	  if(idata<2) kappa = calcKappa(entries[iDiv], weights[iDiv], powersn, 
-					(idata%2)==1, mSigma, pSigma);  
+					mSigma, pSigma, (idata%2)==1);  
 	  else kappa = calcKappa(entries[iDiv], weights[iDiv], powersn, 
-				 (idata%2)==1, mSigma, pSigma);  
+				 mSigma, pSigma, (idata%2)==1);  
 	  float xpoint = inj*wnj+imet*wmet+(inb+2)*wnb;
 	  if(method==3 && inb==3) xpoint = inj*wnj+imet*wmet+(inb)*wnb;
 	  if(do_normalized && kappa>0) fixk = kappa;
@@ -495,101 +488,5 @@ void plotKappa(vector<vector<double> > &vx, vector<vector<double> > &vy, vector<
   if(do_pred || !do_kappa) pname.ReplaceAll("kappa","npred");
   can.SaveAs(pname);
 
-}
-
-double calcKappa(vector<vector<int> > &entries, vector<vector<float> > &weights,
-		 vector<float> &powers, bool do_data, float &mSigma, float &pSigma){
-  int nbadk(0);
-  TCanvas can;
-  vector<float> fKappas;
-  double mean(0.), bignum(1e10);
-  // Doing kappa variations
-  for(int rep(0), irep(0); rep < nrep; rep++) {
-    fKappas.push_back(1.);
-    bool Denom_is0(false);
-    for(unsigned obs(0); obs < powers.size(); obs++) {
-      float observed(0.);
-      for(unsigned sam(0); sam < entries[obs].size(); sam++) {
-	// Using a flat prior, the expected average of the Poisson with N observed is Gamma(N+1,1)
-	float alpha(entries[obs][sam]), beta(1);
-	if(do_data) alpha *= weights[obs][sam];
-	if(do_mcprior){
-	  beta = 1/2.; // Actually, this is theta. beta = 1/theta = 2
-	  alpha *= 2;
-	}
-	alpha = static_cast<int>(1.5+alpha);
-
-	if(do_data) observed += gsl_ran_gamma(static_cast<int>(0.5+entries[obs][sam]*weights[obs][sam])+1,1);
-	else observed += gsl_ran_gamma(entries[obs][sam]+1,1)*weights[obs][sam];
-      } // Loop over samples
-      if(observed <= 0 && powers[obs] < 0) Denom_is0 = true;
-      else fKappas[irep] *= pow(observed, powers[obs]);
-    } // Loop over number of observables going into kappa
-    if(Denom_is0 && fKappas[irep]==0) {
-      fKappas.pop_back();
-      nbadk++;
-    }else {
-      if(Denom_is0) fKappas[irep] = bignum;
-      else mean += fKappas[irep];
-      irep++;
-    }
-  } // Loop over fluctuations of kappa (repetitions)
-  int ntot(nrep-nbadk);
-  mean /= static_cast<double>(ntot);
-
-  sort(fKappas.begin(), fKappas.end());
-  double gSigma = intGaus(0,1,0,1);
-  int iMedian((nrep-nbadk+1)/2-1);
-  int imSigma(iMedian-static_cast<int>(gSigma*ntot)), ipSigma(iMedian+static_cast<int>(gSigma*ntot));
-  float median(fKappas[iMedian]);
-  mSigma = median-fKappas[imSigma]; pSigma = fKappas[ipSigma]-median;
-
-  // Finding standard value
-  float stdval(1.);
-  bool infStd(false);
-  for(unsigned obs(0); obs < powers.size(); obs++) {
-    float stdyield(0.);
-    for(unsigned sam(0); sam < entries[obs].size(); sam++) 
-      stdyield += entries[obs][sam]*weights[obs][sam];
-    //cout<<obs<<": stdyield "<<stdyield<<endl;
-    if(stdyield <= 0 && powers[obs] < 0) infStd = true;
-    else stdval *= pow(stdyield, powers[obs]);
-  } // Loop over number of observables going into kappa
-  if(infStd) stdval = median;
-  else {
-    int istd(0);
-    for(int rep(0); rep < ntot; rep++) 
-      if(fKappas[rep]>stdval) {istd = rep; break;}
-    imSigma = istd-static_cast<int>(gSigma*ntot);
-    ipSigma = istd+static_cast<int>(gSigma*ntot);
-    if(imSigma<0){ // Adjusting the length of the interval in case imSigma has less than 1sigma
-      ipSigma += (-imSigma);
-      imSigma = 0;
-    }
-    if(ipSigma>=ntot){ // Adjusting the length of the interval in case ipSigma has less than 1sigma
-      imSigma -= (ipSigma-ntot+1);
-      ipSigma = ntot-1;
-    }
-    mSigma = stdval-fKappas[imSigma]; pSigma = fKappas[ipSigma]-stdval;
-  }
-
-  int nbins(100);
-  double minH(stdval-3*mSigma), maxH(stdval+3*pSigma);
-  if(minH < fKappas[0]) minH = fKappas[0];
-  if(maxH > fKappas[ntot-1]) maxH = fKappas[ntot-1];
-  TH1D histo("h","",nbins, minH, maxH);
-  for(int rep(0); rep < ntot; rep++) 
-    histo.Fill(fKappas[rep]);   
-  //histo.SetBinContent(1, histo.GetBinContent(1)+nbadk);
-  //histo.SetBinContent(nbins, histo.GetBinContent(nbins)+histo.GetBinContent(nbins+1));
-  histo.SetMaximum(histo.GetMaximum()*1.2);
-  histo.Draw();
-  //can.SaveAs("test.eps");
-
-  double mode(histo.GetBinLowEdge(histo.GetMaximumBin()));
-  cout<<"Std kappa = "<<stdval<<"+"<<pSigma<<"-"<<mSigma<<".   Mean = "<<mean
-      <<". Mode = "<<mode<<". Median = "<<median<<endl;
-
-  return stdval;
 }
 

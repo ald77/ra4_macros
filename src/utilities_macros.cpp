@@ -52,7 +52,6 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
   double legY(0.902), legSingle = 0.052;
   double legW = 0.13, legH = legSingle*(vars[0].samples.size()+1)/2;
   double legX1[] = {legLeft, legLeft+(legRight-legLeft)/2.*1.15};
-  if(vars[0].samples.size()<4) legX1[0] = 0.5;
   TLegend leg[2]; int nLegs(2);
   for(int ileg(0); ileg<nLegs; ileg++){
     leg[ileg].SetX1NDC(legX1[ileg]); leg[ileg].SetX2NDC(legX1[ileg]+legW); 
@@ -68,6 +67,13 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
   TString hname, pname, variable, samVariable, leghisto, totCut, title, ytitle, lumilabel, cmslabel;
   for(unsigned var(0); var<vars.size(); var++){
     const unsigned Nsam(vars[var].samples.size());
+    if(Nsam>=4) {
+      leg[0].SetX1NDC(legX1[0]);
+      leg[0].SetX2NDC(legX1[0]+legW);
+    } else {
+      leg[0].SetX1NDC(0.5);
+      leg[0].SetX2NDC(0.5+legW);
+    }
     legH = (Nsam<=3?legSingle*Nsam:legSingle*(Nsam+1)/2);
     fracLeg = legH/(1-style.PadTopMargin-style.PadBottomMargin)*1.25;
     for(int ileg(0); ileg<nLegs; ileg++) leg[ileg].SetY1NDC(legY-legH); 
@@ -513,3 +519,109 @@ double gsl_ran_gamma(const double a, const double b){
     
   return b * d * v;
 }
+
+
+// yields[Nobs][Nsam] has the entries for each sample for each observable going into kappa
+// weights[Nobs][Nsam] has the average weight of each observable for each sample
+// powers[Nobs] defines kappa = Product_obs{ Sum_sam{yields[sam][obs]*weights[sam][obs]}^powers[obs] }
+double calcKappa(vector<vector<float> > &entries, vector<vector<float> > &weights,
+		 vector<float> &powers, float &mSigma, float &pSigma, bool do_data,
+		 bool verbose, bool do_plot, int nrep){
+  styles style("RA4"); style.setDefaultStyle();
+  int nbadk(0);
+  TCanvas can;
+  vector<float> fKappas;
+  double mean(0.), bignum(1e10);
+  // Doing kappa variations
+  for(int rep(0), irep(0); rep < nrep; rep++) {
+    fKappas.push_back(1.);
+    bool Denom_is0(false);
+    for(unsigned obs(0); obs < powers.size(); obs++) {
+      float observed(0.);
+      for(unsigned sam(0); sam < entries[obs].size(); sam++) {
+	// Using a flat prior, the expected average of the Poisson with N observed is Gamma(N+1,1)
+	//if(do_data) observed += gsl_ran_gamma(static_cast<int>(0.5+entries[obs][sam]*weights[obs][sam])+1,1);
+	if(do_data) observed += gsl_ran_gamma(entries[obs][sam]*weights[obs][sam]+1,1);
+	else observed += gsl_ran_gamma(entries[obs][sam]+1,1)*weights[obs][sam];
+      } // Loop over samples
+      if(observed <= 0 && powers[obs] < 0) Denom_is0 = true;
+      else fKappas[irep] *= pow(observed, powers[obs]);
+    } // Loop over number of observables going into kappa
+    if(Denom_is0 && fKappas[irep]==0) {
+      fKappas.pop_back();
+      nbadk++;
+    }else {
+      if(Denom_is0) fKappas[irep] = bignum;
+      else mean += fKappas[irep];
+      irep++;
+    }
+  } // Loop over fluctuations of kappa (repetitions)
+  int ntot(nrep-nbadk);
+  mean /= static_cast<double>(ntot);
+
+  sort(fKappas.begin(), fKappas.end());
+  double gSigma = intGaus(0,1,0,1);
+  int iMedian((nrep-nbadk+1)/2-1);
+  int imSigma(iMedian-static_cast<int>(gSigma*ntot)), ipSigma(iMedian+static_cast<int>(gSigma*ntot));
+  float median(fKappas[iMedian]);
+  mSigma = median-fKappas[imSigma]; pSigma = fKappas[ipSigma]-median;
+
+  // Finding standard value
+  float stdval(1.);
+  bool infStd(false);
+  for(unsigned obs(0); obs < powers.size(); obs++) {
+    float stdyield(0.);
+    if(verbose) cout<<obs<<": ";
+    for(unsigned sam(0); sam < entries[obs].size(); sam++) {
+      if(verbose) cout<<"Yield"<<sam<<" "<<entries[obs][sam]*weights[obs][sam]
+		      <<", N"<<sam<<" "<<entries[obs][sam]
+		      <<", avW"<<sam<<" "<<weights[obs][sam]<<". ";
+      stdyield += entries[obs][sam]*weights[obs][sam];
+    }
+    if(verbose) cout<<"  ==> Total yield "<<stdyield<<endl;
+    if(stdyield <= 0 && powers[obs] < 0) infStd = true;
+    else stdval *= pow(stdyield, powers[obs]);
+  } // Loop over number of observables going into kappa
+  if(infStd) stdval = median;
+  else {
+    int istd(0);
+    for(int rep(0); rep < ntot; rep++) 
+      if(fKappas[rep]>stdval) {istd = rep; break;}
+    imSigma = istd-static_cast<int>(gSigma*ntot);
+    ipSigma = istd+static_cast<int>(gSigma*ntot);
+    if(imSigma<0){ // Adjusting the length of the interval in case imSigma has less than 1sigma
+      ipSigma += (-imSigma);
+      imSigma = 0;
+    }
+    if(ipSigma>=ntot){ // Adjusting the length of the interval in case ipSigma has less than 1sigma
+      imSigma -= (ipSigma-ntot+1);
+      ipSigma = ntot-1;
+    }
+    mSigma = stdval-fKappas[imSigma]; pSigma = fKappas[ipSigma]-stdval;
+  }
+
+  int nbins(100);
+  double minH(stdval-3*mSigma), maxH(stdval+3*pSigma);
+  if(minH < fKappas[0]) minH = fKappas[0];
+  if(maxH > fKappas[ntot-1]) maxH = fKappas[ntot-1];
+  TH1D histo("h","",nbins, minH, maxH);
+  for(int rep(0); rep < ntot; rep++) 
+    histo.Fill(fKappas[rep]);   
+  //histo.SetBinContent(1, histo.GetBinContent(1)+nbadk);
+  //histo.SetBinContent(nbins, histo.GetBinContent(nbins)+histo.GetBinContent(nbins+1));
+  histo.Scale(1/histo.Integral());
+  histo.SetMaximum(histo.GetMaximum()*1.2);
+  histo.SetLineWidth(3);
+  histo.Draw();
+  histo.SetXTitle("Expected value");
+  histo.SetYTitle("Probability");
+  histo.Draw();
+  if(do_plot) can.SaveAs("test.eps");
+
+  double mode(histo.GetBinLowEdge(histo.GetMaximumBin()));
+  if(verbose) cout<<"Std kappa = "<<stdval<<"+"<<pSigma<<"-"<<mSigma<<".   Mean = "<<mean
+		  <<". Mode = "<<mode<<". Median = "<<median<<endl;
+
+  return stdval;
+}
+

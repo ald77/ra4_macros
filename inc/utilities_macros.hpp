@@ -82,4 +82,11 @@ TString invertcut(TString cut);
 TString format_tag(TString tag);
 double gsl_ran_gamma (const double a, const double b);
 double intGaus(double mean, double sigma, double minX, double maxX);
+// yields[Nobs][Nsam] has the entries for each sample for each observable going into kappa
+// weights[Nobs][Nsam] has the average weight of each observable for each sample
+// powers[Nobs] defines kappa = Product_obs{ Sum_sam{yields[sam][obs]*weights[sam][obs]}^powers[obs] }
+double calcKappa(std::vector<std::vector<float> > &entries, std::vector<std::vector<float> > &weights,
+		 std::vector<float> &powers, float &mSigma, float &pSigma, bool do_data=false, 
+		 bool verbose=false, bool do_plot=false, int nrep=100000);
+
 #endif

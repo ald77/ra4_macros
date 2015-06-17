@@ -35,6 +35,7 @@ int main(){
   TCanvas can;
 
   TString folder="/cms5r0/ald77/archive/"+ntuple_date+"/skim100/";
+  folder="/afs/cern.ch/user/m/manuelf/work/ucsb/2015_05_25/skim/";
   vector<TString> s_tt;
   s_tt.push_back(folder+"*_TTJet*");
   vector<TString> s_wjets;
@@ -83,18 +84,24 @@ int main(){
   ra4_sam.push_back(7);
 
   const int scanbins(100);
-  vars.push_back(hfeats("met",scanbins,100,1200, ra4_sam, "Cut on MET (GeV)",
-  			"ht>500&&nbm>=2&&njets>="+minjets+"&&mt>140&&(nmus+nels)==1",200));
-  vars.push_back(hfeats("njets",18,-0.5,17.5, ra4_sam, "Cut on n_{jets}",
-  			"ht>500&&met>200&&nbm>=2&&mt>140&&(nmus+nels)==1",minjets.Atof()));
-  vars.push_back(hfeats("nbm",7,-0.5,6.5, ra4_sam, "Cut on n_{b}",
-  			"ht>500&&met>200&&njets>="+minjets+"&&mt>140&&(nmus+nels)==1",2));
+  // vars.push_back(hfeats("met",scanbins,100,1200, ra4_sam, "Cut on MET (GeV)",
+  // 			"ht>500&&nbm>=2&&njets>="+minjets+"&&mt>140&&(nmus+nels)==1",200));
+  // vars.push_back(hfeats("njets",18,-0.5,17.5, ra4_sam, "Cut on n_{jets}",
+  // 			"ht>500&&met>200&&nbm>=2&&mt>140&&(nmus+nels)==1",minjets.Atof()));
+  // vars.push_back(hfeats("nbm",7,-0.5,6.5, ra4_sam, "Cut on n_{b}",
+  // 			"ht>500&&met>200&&njets>="+minjets+"&&mt>140&&(nmus+nels)==1",2));
 
 
   // vars.push_back(hfeats("mt",scanbins,0,600, ra4_sam, "Cut on m_{T} (GeV)",
   // 			"ht>500&&met>400&&nbm>=2&&njets>=6&&(nmus+nels)==1",140));
   // vars.push_back(hfeats("mj",scanbins,0,1600, ra4_sam, "Cut on M_{J} (GeV)",
   // 			"ht>500&&met>400&&nbm>=2&&njets>=6&&mt>140&&(nmus+nels)==1",600));
+
+
+  vars.push_back(hfeats("mj",scanbins,0,1600, ra4_sam, "Cut on M_{J} (GeV)",
+                        "ht>500&&met>200&&nbm>=2&&njets>=7&&mt>140&&(nmus+nels)==1"));
+  vars.push_back(hfeats("ht",scanbins,500,3000, ra4_sam, "Cut on H_{T} (GeV)",
+                        "ht>500&&met>200&&nbm>=2&&njets>=7&&mt>140&&(nmus+nels)==1"));
 
 
   TString plot_tag("_lumi"+luminosity+plot_type);
@@ -212,6 +219,7 @@ int main(){
     leg.AddEntry(histo[0][var][sam_c], Samples[isam_c].label);
     float hismax = max(histo[0][var][sam_nc]->GetMaximum(), histo[0][var][sam_c]->GetMaximum())*maxleg;
     histo[0][var][sam_nc]->SetMaximum(hismax);
+    histo[0][var][sam_nc]->SetMaximum(3.7);
     histo[0][var][sam_nc]->SetMinimum(0);
     histo[0][var][sam_nc]->Draw("l hist");
     histo[0][var][sam_c]->Draw("l hist same");
