@@ -9,8 +9,7 @@
 
 void GetCounts(small_tree_quick &tree,
                std::vector<double> &raw,
-               std::vector<double> &wght,
-               bool dilepton_mode = false);
+               std::vector<double> &wght);
 
 void CountsToGammas(double sumw, double sumw2,
                     double sumw_backup, double sumw2_backup,
@@ -19,26 +18,24 @@ void CountsToGammas(double sumw, double sumw2,
 size_t LookUpBin(small_tree_quick &tree);
 
 void GetMCTotals(std::vector<double> &mc_raw, std::vector<double> &mc_wght,
-                 const std::vector<double> &ttbar_raw, const std::vector<double> &ttbar_wght,
-                 const std::vector<double> &other_raw, const std::vector<double> &other_wght);
+                 const std::vector<double> &pos_raw, const std::vector<double> &pos_wght,
+                 const std::vector<double> &neg_raw, const std::vector<double> &neg_wght);
 
 void MockUpData(std::vector<double> &data,
-                const std::vector<double> &ttbar_raw, const std::vector<double> &ttbar_wght,
-                const std::vector<double> &other_raw, const std::vector<double> & other_wght,
+                const std::vector<double> &pos_raw, const std::vector<double> &pos_wght,
+                const std::vector<double> &neg_raw, const std::vector<double> & neg_wght,
                 const std::vector<double> &sig_raw, const std::vector<double> &sig_wght);
 
 double sqr(double x);
 
-void WriteFile(const std::vector<double> &ttbar_raw, const std::vector<double> &ttbar_wght,
-               const std::vector<double> &other_raw, const std::vector<double> &other_wght,
+void WriteFile(const std::vector<double> &pos_raw, const std::vector<double> &pos_wght,
+               const std::vector<double> &neg_raw, const std::vector<double> &neg_wght,
                const std::vector<double> &sig_raw, const std::vector<double> &sig_wght,
                const std::vector<double> &mc_raw, const std::vector<double> &mc_wght,
-               const std::vector<double> &data_counts, const std::vector<double> &dilep_count);
+               const std::vector<double> &data_counts);
 
 void GetGammaParameters(int &raw, double &weight,
                         double sumw, double sumw2);
-
-void GetDileptonBinMapping(size_t &nr4, std::vector<size_t> &r4_map);
 
 void GetBinMapping(size_t &nr1, std::vector<size_t> &r1_map,
                    size_t &nr2, std::vector<size_t> &r2_map,
@@ -71,8 +68,6 @@ void PrintGamma(std::ofstream &file, const std::vector<size_t> map,
                 size_t iproc);
 
 std::string NoDecimal(double x);
-
-void PrintDilepton(std::ofstream &file, const std::vector<double> &dilep_count);
 
 void PrintSystematics(std::ofstream &file);
 
