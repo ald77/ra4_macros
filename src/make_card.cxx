@@ -21,8 +21,9 @@
 namespace{
   //Options that can all be set with command line args
   int method = 0;
-  std::string ntuple_date = "2015_05_25";
+  std::string ntuple_date = "2015_06_05";
   double lumi = 10.;
+  double mc_multiplier = 1.;
   bool no_mc_kappa = false;
   bool no_dilep = false;
   bool no_systematics = false;
@@ -50,6 +51,7 @@ namespace{
   bool set_method = false;
   bool set_ntuple_date = false;
   bool set_lumi = false;
+  bool set_mc_multiplier = false;
 
   bool set_masses = false;
   bool set_inject_signal = false;
@@ -67,6 +69,8 @@ using namespace std;
 int main(int argc, char *argv[]){
   GetOptions(argc, argv);
   string folder="/cms5r0/ald77/archive/"+ntuple_date+"/skim/";
+  //string folder="/afs/cern.ch/user/m/manuelf/work/ucsb/"+ntuple_date+"/skim/";
+  cout << folder << endl;
 
   small_tree_quick ttbar(folder+"*TTJets*");
   small_tree_quick other(folder+"*QCD_Pt*");
@@ -128,6 +132,7 @@ void GetOptions(int argc, char *argv[]){
       {"method", required_argument, 0, 'm'},
       {"ntuple_date", required_argument, 0, 'd'},
       {"lumi", required_argument, 0, 'l'},
+      {"mc_multiplier", required_argument, 0, 0},
       {"no_mc_kappa", no_argument, 0, 0},
       {"no_dilep", no_argument, 0, 0},
       {"no_systematics", no_argument, 0, 0},
@@ -176,7 +181,10 @@ void GetOptions(int argc, char *argv[]){
       break;
     case 0:
       optname = long_options[option_index].name;
-      if(optname == "no_mc_kappa"){
+      if(optname == "mc_multiplier"){
+	mc_multiplier = atof(optarg);
+	set_mc_multiplier = true;
+      }else if(optname == "no_mc_kappa"){
         no_mc_kappa = true;
       }else if(optname == "no_dilep"){
         no_dilep = true;
@@ -320,8 +328,10 @@ void GetCounts(small_tree_quick &tree,
     sumw += weight;
     sumw2 += weight*weight;
   }
+  sumw2 /= mc_multiplier;
 
   for(size_t bin = 0; bin < counts.size(); ++bin){
+    squares.at(bin) /= mc_multiplier;
     CountsToGammas(counts.at(bin), squares.at(bin),
                    sumw, sumw2,
                    raw.at(bin), wght.at(bin));
@@ -620,6 +630,7 @@ void WriteFile(const vector<double> &ttbar_raw, const vector<double> &ttbar_wght
   file_name << "txt/data_card";
   if(set_ntuple_date) file_name << '_' << ntuple_date;
   if(set_method) file_name << "_method_" << method;
+  if(set_mc_multiplier) file_name << "_mc_multplier_" << NoDecimal(mc_multiplier);
   if(no_mc_kappa) file_name << "_no_mc_kappa";
   if(no_dilep) file_name << "_no_dilep";
   if(no_systematics) file_name << "_no_systematics";
@@ -871,7 +882,6 @@ void PrintDilepton(ofstream &file, const vector<double> &dilep_count){
   GetDileptonBinMapping(nr4, bin_map);
   file << "dilepton  lnN             ";
   for(size_t ir4 = 0; ir4 < nr4; ++ir4){
-    cout << dilep_count.at(bin_map.at(ir4)) << endl;
     double val = 1.+1./sqrt(dilep_count.at(bin_map.at(ir4))+1);
     file << "            - "
          << setw(12) << val
