@@ -22,7 +22,7 @@ namespace {
   TString luminosity="10";
   TString plot_type=".pdf";
   TString plot_style="RA4";
-  int section(1);
+  int section(6);
 }
 
 using namespace std;
@@ -55,6 +55,17 @@ int main(){
   s_other.push_back(folder+"*DY*");
   s_other.push_back(folder+"*WH_HToBB*");
   s_other.push_back(folder+"*_TTJet*");
+  vector<TString> s_bkg;
+  s_bkg.push_back(folder+"*_TTJet*");
+  s_bkg.push_back(folder+"*_WJets*");
+  s_bkg.push_back(folder+"*_T*channel*");
+  s_bkg.push_back(folder+"*TTW*");
+  s_bkg.push_back(folder+"*TTZ*");
+  s_bkg.push_back(folder+"*QCD_HT*");
+  s_bkg.push_back(folder+"*_ZJet*");
+  s_bkg.push_back(folder+"*DY*");
+  s_bkg.push_back(folder+"*WH_HToBB*");
+  s_bkg.push_back(folder+"*_TTJet*");
 
   // Reading ntuples
   vector<sfeats> Samples; 
@@ -88,10 +99,14 @@ int main(){
   Samples.push_back(sfeats(s_t1t, "Reco Mini iso.", 4,2,"1","nels+nmus"));
 
   unsigned isec6 = Samples.size();
-  Samples.push_back(sfeats(s_tt, "t#bar{t} 1l, m_{T} #leq 140", 1, 1,"ntruleps==1&&mt<=140"));
-  Samples.push_back(sfeats(s_tt, "t#bar{t} 1l, m_{T} > 140", 3, -1,"ntruleps==1&&mt>140"));
-  Samples.push_back(sfeats(s_tt, "t#bar{t} 2l, m_{T} #leq 140", 2, -1,"ntruleps>=2&&mt<=140"));
-  Samples.push_back(sfeats(s_tt, "t#bar{t} 2l, m_{T} > 140", 4, -1,"ntruleps>=2&&mt>140"));
+  // Samples.push_back(sfeats(s_bkg, "All bkg, m_{T} #leq 140", 1, 1,"mt<=140"));
+  // Samples.push_back(sfeats(s_bkg, "All bkg, m_{T} > 140", 2, -1,"mt>140"));
+  Samples.push_back(sfeats(s_tt, "t#bar{t}, m_{T} #leq 140", 1, 1,"mt<=140"));
+  Samples.push_back(sfeats(s_tt, "t#bar{t}, m_{T} > 140", 2, -1,"mt>140"));
+  // Samples.push_back(sfeats(s_tt, "t#bar{t} 1l, m_{T} #leq 140", 1, 1,"ntruleps==1&&mt<=140"));
+  // Samples.push_back(sfeats(s_tt, "t#bar{t} 1l, m_{T} > 140", 3, -1,"ntruleps==1&&mt>140"));
+  // Samples.push_back(sfeats(s_tt, "t#bar{t} 2l, m_{T} #leq 140", 2, -1,"ntruleps>=2&&mt<=140"));
+  // Samples.push_back(sfeats(s_tt, "t#bar{t} 2l, m_{T} > 140", 4, -1,"ntruleps>=2&&mt>140"));
 
   
   vector<int> ra4_sec1;
@@ -101,9 +116,9 @@ int main(){
 
   vector<int> ra4_sec6;
   ra4_sec6.push_back(isec6);
-  //ra4_sec6.push_back(isec6+1);
-  ra4_sec6.push_back(isec6+2);
-  ra4_sec6.push_back(isec6+3);
+  ra4_sec6.push_back(isec6+1);
+  //ra4_sec6.push_back(isec6+2);
+  //ra4_sec6.push_back(isec6+3);
 
   vector<int> ra4_tt_t1_noskim;
   ra4_tt_t1_noskim.push_back(nsam);
@@ -156,6 +171,11 @@ int main(){
 
     vars.push_back(hfeats("njets",7,-0.5,6.5, ra4_sec6, "Number of 30 GeV jets",cuts+"&&njets<=6"));
     vars.push_back(hfeats("njets",6,6.5,12.5, ra4_sec6, "Number of 30 GeV jets",cuts+"&&njets>=7"));
+
+    vars.push_back(hfeats("njets",7,-0.5,6.5, ra4_sam, "Number of 30 GeV jets",cuts+"&&njets<=6&&mt<=140", -1, "components"));
+    vars.push_back(hfeats("njets",7,-0.5,6.5, ra4_sam, "Number of 30 GeV jets",cuts+"&&njets<=6&&mt>140", -1, "components"));
+    vars.push_back(hfeats("njets",6,6.5,12.5, ra4_sam, "Number of 30 GeV jets",cuts+"&&njets>=7&&mt<=140", -1, "components"));
+    vars.push_back(hfeats("njets",6,6.5,12.5, ra4_sam, "Number of 30 GeV jets",cuts+"&&njets>=7&&mt>140", -1, "components"));
 
     break;
   case 7: // HT distributions to compare MC stats with tt HT binning

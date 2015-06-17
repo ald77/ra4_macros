@@ -123,8 +123,10 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
       }
       histo[0][var][sam]->SetYTitle(ytitle);
       // Cloning histos for later
-      for(int bin(0); bin<=histo[0][var][sam]->GetNbinsX()+1; bin++)
+      for(int bin(0); bin<=histo[0][var][sam]->GetNbinsX()+1; bin++){
 	histo[1][var][sam]->SetBinContent(bin, histo[0][var][sam]->GetBinContent(bin));
+	histo[1][var][sam]->SetBinError(bin, histo[0][var][sam]->GetBinError(bin));
+      }
     }
     if(nbkg>0){
       //// Plotting lumi-weighted distributions in histo[0], and then area-normalized in histo[1] ///

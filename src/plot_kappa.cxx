@@ -25,6 +25,7 @@ namespace  {
   TString lumi("10");
   int method(3);
   int nrep = 100000;    // Fluctuations of Gamma distribution
+  bool do_2l(false);  // Calculate dilepton closure stat uncertainty
   bool do_1ltt(false); // Kappa just for 1l ttbar
   bool do_2ltt(false); // Kappa just for 2l ttbar
   bool do_ttbar(true); // Include ttbar in kappa
@@ -75,7 +76,8 @@ int main(int argc, char *argv[]){
   vector<TString> s_tt;
   s_tt.push_back(folder+"*_TTJet*");
   vector<TString> s_singlet;
-  s_singlet.push_back(folder+"*_T*channel*");
+  s_singlet.push_back(folder+"*_T*t-channel*");
+  s_singlet.push_back(folder+"*_T*s-channel*");
   vector<TString> s_other;
   s_other.push_back(folder+"*QCD_HT*");
   s_other.push_back(folder+"*_ZJet*");
@@ -84,7 +86,7 @@ int main(int argc, char *argv[]){
   s_other.push_back(folder+"*TTW*");
   s_other.push_back(folder+"*TTZ*");
   s_other.push_back(folder+"*_WJets*");
-  if(t_other) s_other.push_back(folder+"*_T*channel*");
+  s_singlet.push_back(folder+"*_T*W-channel*");
 
   // Reading ntuples
   vector<sfeats> Samples; 
@@ -94,7 +96,7 @@ int main(int argc, char *argv[]){
     else {
       if(do_ttbar) Samples.push_back(sfeats(s_tt, "t#bar{t}, 2 l", ra4::c_tt_2l,1));
       if(do_other){
-	if(!t_other) Samples.push_back(sfeats(s_singlet, "Single t", ra4::c_singlet));
+	Samples.push_back(sfeats(s_singlet, "Single t", ra4::c_singlet));
 	Samples.push_back(sfeats(s_other, "Other", ra4::c_other, 1)); 
       }
     }
@@ -127,10 +129,15 @@ int main(int argc, char *argv[]){
   float mSigma, pSigma;
   vector<float> powersk, powersn;
   vector<TString> cuts;
-  powersk.push_back(1);  cuts.push_back("mt<=140&&mj<="+mjthresh); // R1
-  powersk.push_back(-1); cuts.push_back("mt<=140&&mj>"+mjthresh);  // R2
-  powersk.push_back(-1); cuts.push_back("mt>140&&mj<="+mjthresh);  // R3
-  powersk.push_back(1);  cuts.push_back("mt>140&&mj>"+mjthresh);   // R4
+  if(!do_2l){
+    powersk.push_back(1);  cuts.push_back("mt<=140&&mj<="+mjthresh); // R1
+    powersk.push_back(-1); cuts.push_back("mt<=140&&mj>"+mjthresh);  // R2
+    powersk.push_back(-1); cuts.push_back("mt>140&&mj<="+mjthresh);  // R3
+    powersk.push_back(1);  cuts.push_back("mt>140&&mj>"+mjthresh);   // R4
+  } else {
+    powersk.push_back(-1); cuts.push_back("mj<="+mjthresh);  // R3
+    powersk.push_back(1);  cuts.push_back("mj>"+mjthresh);   // R4
+  }
 
   powersn.push_back(-1);  
   powersn.push_back(1); 
@@ -138,22 +145,30 @@ int main(int argc, char *argv[]){
   //powersn.push_back(1);  
 
 
-
   TString baseline("(nmus+nels)==1&&ht>500&&met>200&&njets>=7&&nbm>=1");
+  if(do_2l) baseline = "(nmus+nels)==2&&ht>500&&met>200&&njets>=6&&nbm>=1";
   vector<TString> metcuts, njcuts, nbcuts, metnames;
   // metcuts.push_back("met>100&&met<=200");
   // metcuts.push_back("met>200&&met<=300");
   // metcuts.push_back("met>300&&met<=400");
   metcuts.push_back("met>200&&met<=400");
   metcuts.push_back("met>400");
-  njcuts.push_back("njets<=8");
-  njcuts.push_back("njets>=9");
-  nbcuts.push_back("nbm==1");
-  if(method==1 || method==2) nbcuts.push_back("nbm>=2");
+  if(!do_2l){
+    njcuts.push_back("njets<=8");
+    njcuts.push_back("njets>=9");
+  } else {
+    njcuts.push_back("njets<=7");
+    njcuts.push_back("njets>=8");
+  }
+  if(do_2l) nbcuts.push_back("nbm<=2");
   else {
-    nbcuts.push_back("nbm==2");
-    nbcuts.push_back("nbm>=3");
-    nbcuts.push_back("nbm>=2");
+    nbcuts.push_back("nbm==1");
+    if(method==1 || method==2) nbcuts.push_back("nbm>=2");
+    else {
+      nbcuts.push_back("nbm==2");
+      nbcuts.push_back("nbm>=3");
+      nbcuts.push_back("nbm>=2");
+    }
   }
   for(unsigned imet(0); imet<metcuts.size(); imet++){
     metnames.push_back(metcuts[imet]);
@@ -196,8 +211,8 @@ int main(int argc, char *argv[]){
   for(unsigned inj(0); inj<njcuts.size(); inj++){
     for(unsigned imet(0); imet<metcuts.size(); imet++){
       for(unsigned inb(0); inb<nbcuts.size(); inb++){
-	if(method==3 && ((imet==0&&inb==3) || (imet==1&& (inb==1||inb==2)))) continue;
-	//if(!(inb==2&&imet==0&&inj==0)) continue;
+	if(method==3 && ((imet==0&&inb==3) || (imet==1&& (inb==1||inb==2)))) if(!do_2l) continue;
+	//if(!(inb==2&&imet==0&&inj==0)) continue; // Calculate just one kappa
 	vector<vector<float> > entries;
 	vector<vector<float> > weights;
 	for(unsigned obs(0); obs < powersk.size(); obs++) {
@@ -207,18 +222,25 @@ int main(int argc, char *argv[]){
 	  // if(method==1 || obs%2==1) totcut += "&&"+njcuts[inj];
 	  // totcut += ")";
 	  // cout << totcut<<endl;
+	  float yield_singlet(0);
 	  for(unsigned sam(0); sam < ra4_sam.size(); sam++) {
 	    totcut = (lumi+"*weight*("+baseline+"&&"+nbcuts[inb]+"&&"+metcuts[imet]+"&&"+cuts[obs]+
 		      "&&"+Samples[ra4_sam[sam]].cut);
-	    if(method==1 || obs%2==1 || powersk.size()<3) totcut += "&&"+njcuts[inj];
+	    if(method==1 || obs%2==1) totcut += "&&"+njcuts[inj];
 	    totcut += ")";
 	    //cout << totcut<<endl;
 	    double yield(0.), sigma(0.), avWeight(1.);
 	    int Nentries(0);
 	    Nentries = getYieldErr(*chain[ra4_sam[sam]], totcut, yield, sigma);
+	    // Zero-ing out the single t, not adding its uncertainty
+	    if(Samples[ra4_sam[sam]].label=="Single t"){
+	      if(yield>0) yield_singlet = yield;
+	      continue;
+	    }
+	    if(Samples[ra4_sam[sam]].label=="Other") yield += yield_singlet;
 	    if(yield<=0) entries[obs].push_back(0);
 	    else {
-	      if(do_sigma_avError) entries[obs].push_back(yield*sqrt(Nentries)/sigma);	    
+	      if(do_sigma_avError) entries[obs].push_back(yield*yield/pow(sigma,2));	    
 	      else entries[obs].push_back(Nentries);	    
 	    }
 	    if(Nentries==0){ // If no entries, find averate weight in signal bin
@@ -229,10 +251,8 @@ int main(int argc, char *argv[]){
 		totcut = (lumi+"*weight*("+baseline+")");
 		Nentries = getYieldErr(*chain[ra4_sam[sam]], totcut, yield, sigma);
 	      }
-	      // cout<<obs<<","<<sam<<": sigma "<<sigma<<", Nentries "<<Nentries<<", yield "<<yield
-	      // 	  <<", sigma*sqrt(N) "<<sigma*sqrt(Nentries)<<endl;
 	    }
-	    if(do_sigma_avError) avWeight = sigma/sqrt(Nentries);
+	    if(do_sigma_avError) avWeight = sigma*sigma/yield;
 	    else avWeight = fabs(yield/static_cast<double>(Nentries));
 	    weights[obs].push_back(avWeight);
 	    //cout<<obs<<","<<sam<<": entries "<<entries[obs][sam]<<", weight "<<avWeight<<", yield "<<yield<<endl;
@@ -242,6 +262,7 @@ int main(int argc, char *argv[]){
 	time(&endtime); time_ntu += difftime(endtime, begtime);
 	time(&begtime);
 	for(unsigned idata(0); idata<4; idata++){
+	  if(do_2l && idata>=2) continue;
 	  double kappa(0);
 	  if(idata<2) kappa = calcKappa(entries, weights, powersk, mSigma, pSigma, (idata%2)==1, true);  
 	  else kappa = calcKappa(entries, weights, powersn, mSigma, pSigma, (idata%2)==1, true);  
@@ -260,8 +281,35 @@ int main(int argc, char *argv[]){
     } // Loop over met cuts
   } // Loop over nj cuts
 
-  int digits(1), digper(0);
   vector<unsigned> ind(nbcuts.size(),0);
+  if(do_2l) {
+    for(unsigned inj(0); inj<njcuts.size(); inj++){
+      for(unsigned imet(0); imet<metcuts.size(); imet++){
+	unsigned inb(0);
+	if(method==3 && ((imet==0&&inb==3) || (imet==1&& (inb==1||inb==2)))) continue;
+	float MC(vy[0][inb][ind[inb]]), Data(vy[1][inb][ind[inb]]);
+	float epMC(veyh[0][inb][ind[inb]]), emMC(veyl[0][inb][ind[inb]]);
+	float epData(veyh[1][inb][ind[inb]]), emData(veyl[1][inb][ind[inb]]);
+	float epTotal(sqrt(pow(epMC/MC,2)+pow(epData/Data,2))), emTotal(sqrt(pow(emMC/MC,2)+pow(emData/Data,2)));
+
+	metcuts[imet].ReplaceAll("met>200&&","");
+	TString cutname = njcuts[inj]+", "+metcuts[imet];
+	if(method==3) cutname += ", "+nbcuts[inb];
+	// cutname.ReplaceAll("njets","n_{\\rm j}");
+	// cutname.ReplaceAll("<=","\\leq "); cutname.ReplaceAll(">=","\\geq "); 
+	// cutname.ReplaceAll("met","{\\rm MET}"); cutname.ReplaceAll("nbm","n_b");
+	// cutname.ReplaceAll("==","="); 
+
+	cout<<endl<<cutname<<": Data +"<<RoundNumber(epData*100,1,Data)<<"% -"<<RoundNumber(emData*100,1,Data)
+	    <<"%\t  MC +"<<RoundNumber(epMC*100,1,MC)<<"% -"<<RoundNumber(emMC*100,1,MC)
+	    <<"% \t  Total +"<<RoundNumber(epTotal*100,1)<<"% -"<<RoundNumber(emTotal*100,1)<<endl;
+	ind[inb]++;
+      }
+    }  // Loop over nj cuts
+    return 0;
+  }
+
+  int digits(1), digper(0);
   TString pname = "txt/kappa_method", cutname; pname += method;
   if(do_1ltt) pname += "_1ltt";
   else {
