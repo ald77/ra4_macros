@@ -50,13 +50,8 @@ double GetPred(const std::vector<double> &data,
                size_t ir3,
                size_t ir4);
 
-void PrintLogN(std::ofstream &file, const std::vector<size_t> map,
-               const std::string &name, size_t ibin,
-               size_t nr1, size_t nr2, size_t nr3, size_t nr4,
-               const std::vector<double> &raw_counts, size_t nbkgs);
-
 void PrintGamma(std::ofstream &file, const std::vector<size_t> map,
-                const std::string &name, size_t ibin,
+                const std::string &name, size_t iregion,
                 size_t nr1, size_t nr2, size_t nr3, size_t nr4,
                 const std::vector<GammaParams> &gp,
                 const std::vector<double> &preds,
@@ -78,5 +73,21 @@ std::string ToString(const T &x){
   oss << x;
   return oss.str();
 }
+
+void GammaToLogN13(std::ofstream &file, const std::vector<size_t> &map,
+		 size_t nr1, size_t nr2, size_t nr4,
+		 const std::vector<double> &counts, size_t nbkgs);
+
+void GammaToLogN2(std::ofstream &file, const std::vector<size_t> &map,
+		  size_t nr1, size_t nr2, size_t nr4,
+		 const std::vector<double> &counts, size_t nbkgs);
+
+void GammaToLogN13(std::ofstream &file, const std::vector<size_t> &map,
+		 size_t nr1, size_t nr2, size_t nr4,
+		   const std::vector<std::vector<GammaParams> > &gps);
+
+void GammaToLogN2(std::ofstream &file, const std::vector<size_t> &map,
+		  size_t nr1, size_t nr2, size_t nr4,
+		  const std::vector<std::vector<GammaParams> > &gps);
 
 #endif
