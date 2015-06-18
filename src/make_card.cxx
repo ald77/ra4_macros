@@ -107,13 +107,6 @@ int main(int argc, char *argv[]){
   bkg_gps.push_back(ttbar_gp); bkg_names.push_back("ttbar");
   bkg_gps.push_back(other_gp); bkg_names.push_back("other");
 
-  if(verbose){
-    PrintDebug(sig_gp, "signal");
-    for(size_t ibkg = 0; ibkg < bkg_gps.size(); ++ibkg){
-      PrintDebug(bkg_gps.at(ibkg), bkg_names.at(ibkg));
-    }
-  }
-
   vector<GammaParams> mc_gp;
   GetMCTotals(mc_gp, bkg_gps);
 
@@ -121,6 +114,13 @@ int main(int argc, char *argv[]){
   MockUpData(data_counts, sig_gp, bkg_gps);
 
   WriteFile(bkg_gps, bkg_names, sig_gp, mc_gp, data_counts);
+
+  if(verbose){
+    PrintDebug(sig_gp, "signal");
+    for(size_t ibkg = 0; ibkg < bkg_gps.size(); ++ibkg){
+      PrintDebug(bkg_gps.at(ibkg), bkg_names.at(ibkg));
+    }
+  }
 }
 
 void GetOptions(int argc, char *argv[]){
@@ -961,7 +961,7 @@ void GammaToLogN13(ofstream &file, const vector<size_t> &map,
 
     float minus, plus;
 
-    double center = calcKappa(entries, weights, powers, minus, plus);
+    double center = calcKappa(entries, weights, powers, minus, plus, false, verbose);
     minus = 1./(1.+minus/center);
     plus = 1.+plus/center;
     for(size_t ir4 = 0; ir4 < nr4; ++ir4){
@@ -991,7 +991,7 @@ void GammaToLogN2(ofstream &file, const vector<size_t> &map,
 
     float minus, plus;
 
-    double center = calcKappa(entries, weights, powers, minus, plus);
+    double center = calcKappa(entries, weights, powers, minus, plus, false, verbose);
     minus = 1./(1.+minus/center);
     plus = 1.+plus/center;
     for(size_t ir4 = 0; ir4 < nr4; ++ir4){
@@ -1028,7 +1028,7 @@ void GammaToLogN13(ofstream &file, const vector<size_t> &map,
 
     float minus, plus;
 
-    double center = calcKappa(entries, weights, powers, minus, plus);
+    double center = calcKappa(entries, weights, powers, minus, plus, false, verbose);
     minus = 1./(1.+minus/center);
     plus = 1.+plus/center;
     for(size_t ir4 = 0; ir4 < nr4; ++ir4){
@@ -1061,7 +1061,7 @@ void GammaToLogN2(ofstream &file, const vector<size_t> &map,
 
     float minus, plus;
 
-    double center = calcKappa(entries, weights, powers, minus, plus);
+    double center = calcKappa(entries, weights, powers, minus, plus, false, verbose);
     minus = 1./(1.+minus/center);
     plus = 1.+plus/center;
     for(size_t ir4 = 0; ir4 < nr4; ++ir4){
