@@ -86,8 +86,8 @@ int main(int argc, char *argv[]){
   pos.Add(folder+"*DYJets*");
   pos.Add(folder+"*H_HToBB*");
   small_tree_quick neg(folder+"*_T*s-channel*");
-  neg.Add(folder+"_T*tW-channel*");
-  neg.Add(folder+"_T*t-channel*");
+  neg.Add(folder+"*_T*tW-channel*");
+  neg.Add(folder+"*_T*t-channel*");
   small_tree_quick sig(folder+"*T1tttt*"+mgluino+"*"+mlsp+"*");
 
   vector<GammaParams> ttbar_gp, pos_gp, neg_gp, sig_gp;
@@ -99,7 +99,8 @@ int main(int argc, char *argv[]){
   //Force possibly negative component to be positive and ignore uncertainty, then lump together with "pos"
   vector<GammaParams> other_gp(pos_gp.size());
   for(size_t bin = 0; bin < other_gp.size(); ++bin){
-    other_gp.at(bin).SetYieldAndUncertainty(pos_gp.at(bin).Yield()+max(0.,neg_gp.at(bin).Yield()), pos_gp.at(bin).Uncertainty());
+    other_gp.at(bin).SetYieldAndUncertainty(pos_gp.at(bin).Yield()+max(0.,neg_gp.at(bin).Yield()),
+					    pos_gp.at(bin).Uncertainty());
   }
 
   vector<string> bkg_names;
@@ -120,6 +121,8 @@ int main(int argc, char *argv[]){
     for(size_t ibkg = 0; ibkg < bkg_gps.size(); ++ibkg){
       PrintDebug(bkg_gps.at(ibkg), bkg_names.at(ibkg));
     }
+    PrintDebug(pos_gp,"pos");
+    PrintDebug(neg_gp,"neg");
   }
 }
 
