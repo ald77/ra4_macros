@@ -5,6 +5,7 @@
 
 #include "TMath.h"
 #include "TChain.h"
+#include "TRandom3.h"
 #include "TH1D.h"
 #include "TCanvas.h"
 #include "TLegend.h"
@@ -329,6 +330,7 @@ int main(){
 
 double calcKappaRelUnc(vector<vector<vector<int> > > &entries, vector<vector<vector<float> > > &weights, vector<float> &powers,
                     float &mSigma, float &pSigma, TString label){
+  TRandom3 rand(1234);
   int nbadk(0);
   TCanvas can;
   vector<float> fKappaRelShift;
@@ -342,8 +344,8 @@ double calcKappaRelUnc(vector<vector<vector<int> > > &entries, vector<vector<vec
       for(unsigned sam(0); sam < entries[obs].size(); sam++) {
         for(unsigned sysbin(0); sysbin < entries[obs][sam].size(); sysbin++) {
         // Using a flat prior, the expected average of the Poisson with N observed is Gamma(N+1,1)
-          // double grnd = gsl_ran_gamma(entries[obs][sam][sysbin]+1,1);
-          double grnd = gsl_ran_gamma(entries[obs][sam][sysbin]+1,1);
+          // double grnd = gsl_ran_gamma(entries[obs][sam][sysbin]+1,1,rand);
+          double grnd = gsl_ran_gamma(entries[obs][sam][sysbin]+1,1,rand);
           observed += grnd*weights[obs][sam][0]; //store the nominal weight at 0
           observed_sys += grnd*weights[obs][sam][0]*weights[obs][sam][sysbin+1];
           // if (irep==0)

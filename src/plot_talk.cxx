@@ -33,7 +33,7 @@ int main(){
   TString folder="/cms5r0/ald77/archive/"+ntuple_date+"/skim/";
   TString folder_ns="/cms5r0/ald77/archive/"+ntuple_date+"/";
   folder="/afs/cern.ch/user/m/manuelf/work/ucsb/2015_05_25/skim/";
-  folder_ns="/afs/cern.ch/user/m/manuelf/work/ucsb/2015_05_25/skim/";
+  folder_ns="/afs/cern.ch/user/m/manuelf/work/ucsb/2015_06_05/skim/";
 
 
   vector<TString> s_t1t;
@@ -65,12 +65,22 @@ int main(){
   s_bkg.push_back(folder+"*_ZJet*");
   s_bkg.push_back(folder+"*DY*");
   s_bkg.push_back(folder+"*WH_HToBB*");
-  s_bkg.push_back(folder+"*_TTJet*");
+  vector<TString> s_bkgmtt;
+  s_bkgmtt.push_back(folder+"*_WJets*");
+  s_bkgmtt.push_back(folder+"*_T*channel*");
+  s_bkgmtt.push_back(folder+"*TTW*");
+  s_bkgmtt.push_back(folder+"*TTZ*");
+  s_bkgmtt.push_back(folder+"*QCD_HT*");
+  s_bkgmtt.push_back(folder+"*_ZJet*");
+  s_bkgmtt.push_back(folder+"*DY*");
+  s_bkgmtt.push_back(folder+"*WH_HToBB*");
 
   // Reading ntuples
   vector<sfeats> Samples; 
-  Samples.push_back(sfeats(s_t1t, "T1tttt(1500,100)", ra4::c_t1tttt));
-  Samples.push_back(sfeats(s_t1tc, "T1tttt(1200,800)", ra4::c_t1tttt,2));
+  Samples.push_back(sfeats(s_t1t, "T1tttt(1500,100)", ra4::c_t1tttt)); 
+  if(section==10) Samples.back().doStack = true;
+  Samples.push_back(sfeats(s_t1tc, "T1tttt(1200,800)", ra4::c_t1tttt,2)); 
+  if(section==10) Samples.back().doStack = true;
   Samples.push_back(sfeats(s_tt, "t#bar{t}, 1 l", ra4::c_tt_1l, 1,"ntruleps==1"));
   Samples.push_back(sfeats(s_tt, "t#bar{t}, 2 l", ra4::c_tt_2l,1,"ntruleps>=2"));
   Samples.push_back(sfeats(s_wjets, "W+jets", ra4::c_wjets));
@@ -99,10 +109,12 @@ int main(){
   Samples.push_back(sfeats(s_t1t, "Reco Mini iso.", 4,2,"1","nels+nmus"));
 
   unsigned isec6 = Samples.size();
-  // Samples.push_back(sfeats(s_bkg, "All bkg, m_{T} #leq 140", 1, 1,"mt<=140"));
-  // Samples.push_back(sfeats(s_bkg, "All bkg, m_{T} > 140", 2, -1,"mt>140"));
+  Samples.push_back(sfeats(s_bkg, "All bkg, m_{T} #leq 140", 1, 1,"mt<=140"));
+  Samples.push_back(sfeats(s_bkg, "All bkg, m_{T} > 140", 2, -1,"mt>140"));
   Samples.push_back(sfeats(s_tt, "t#bar{t}, m_{T} #leq 140", 1, 1,"mt<=140"));
   Samples.push_back(sfeats(s_tt, "t#bar{t}, m_{T} > 140", 2, -1,"mt>140"));
+  Samples.push_back(sfeats(s_bkgmtt, "Non-tt bkg, m_{T} #leq 140", 1, 1,"mt<=140"));
+  Samples.push_back(sfeats(s_bkgmtt, "Non-tt bkg, m_{T} > 140", 2, -1,"mt>140"));
   // Samples.push_back(sfeats(s_tt, "t#bar{t} 1l, m_{T} #leq 140", 1, 1,"ntruleps==1&&mt<=140"));
   // Samples.push_back(sfeats(s_tt, "t#bar{t} 1l, m_{T} > 140", 3, -1,"ntruleps==1&&mt>140"));
   // Samples.push_back(sfeats(s_tt, "t#bar{t} 2l, m_{T} #leq 140", 2, -1,"ntruleps>=2&&mt<=140"));
@@ -114,11 +126,13 @@ int main(){
   ra4_sec1.push_back(isec1+1);
   ra4_sec1.push_back(isec1+2);
 
-  vector<int> ra4_sec6;
-  ra4_sec6.push_back(isec6);
-  ra4_sec6.push_back(isec6+1);
-  //ra4_sec6.push_back(isec6+2);
-  //ra4_sec6.push_back(isec6+3);
+  vector<int> ra4_sec6, ra4_sec6_bkg, ra4_sec6_bkgmtt;
+  ra4_sec6_bkg.push_back(isec6);
+  ra4_sec6_bkg.push_back(isec6+1);
+  ra4_sec6.push_back(isec6+2);
+  ra4_sec6.push_back(isec6+3);
+  ra4_sec6_bkgmtt.push_back(isec6+4);
+  ra4_sec6_bkgmtt.push_back(isec6+5);
 
   vector<int> ra4_tt_t1_noskim;
   ra4_tt_t1_noskim.push_back(nsam);
@@ -135,19 +149,19 @@ int main(){
     break;
   case 2: // MJ-mT plane
     cuts = "(nmus+nels)==1&&ht>500&&met>200&&njets>=7&&nbm>=2&&met>400";
-    vars.push_back(hfeats("mt",25,0,500, ra4_sam, "m_{T} (GeV)",cuts,140));
+    vars.push_back(hfeats("mt",25,0,500, ra4_sam, "m_{T} [GeV]",cuts,140));
     cuts += "&&mt>140";
-    vars.push_back(hfeats("mj",32,0,1600, ra4_sam, "M_{J} (GeV)",cuts,400));
+    vars.push_back(hfeats("mj",32,0,1600, ra4_sam, "M_{J} [GeV]",cuts,400));
     cuts = "(nmus+nels)==1&&ht>500&&met>200&&njets>=9&&nbm>=2&&met>400";
-    vars.push_back(hfeats("mt",25,0,500, ra4_sam, "m_{T} (GeV)",cuts,140));
+    vars.push_back(hfeats("mt",25,0,500, ra4_sam, "m_{T} [GeV]",cuts,140));
     cuts += "&&mt>140";
-    vars.push_back(hfeats("mj",32,0,1600, ra4_sam, "M_{J} (GeV)",cuts,400));
+    vars.push_back(hfeats("mj",32,0,1600, ra4_sam, "M_{J} [GeV]",cuts,400));
 
   case 5: // Event selection - N-1 plots
-    vars.push_back(hfeats("ht",35,0,3500, ra4_sam_ns, "H_{T} (GeV)",
+    vars.push_back(hfeats("ht",35,0,3500, ra4_sam_ns, "H_{T} [GeV]",
 			  "(nmus+nels)==1&&met>200&&njets>="+minjets+"&&nbm>=2",500));
     cuts += "&&ht>500";
-    vars.push_back(hfeats("met",40,0,800, ra4_sam_ns, "MET (GeV)",
+    vars.push_back(hfeats("met",40,0,800, ra4_sam_ns, "MET [GeV]",
 			  "(nmus+nels)==1&&ht>500&&njets>="+minjets+"&&nbm>=2",200));
     cuts += "&&met>200";
     vars.push_back(hfeats("njets",18,-0.5,17.5, ra4_sam, "Number of jets",
@@ -156,36 +170,70 @@ int main(){
     vars.push_back(hfeats("nbm",7,-0.5,6.5, ra4_sam, "Number of b-tags (CSVM)",
 			  "(nmus+nels)==1&&ht>500&&met>200&&njets>="+minjets,1.5));
     cuts += "&&nbm>=2";
-    vars.push_back(hfeats("mt",25,0,500, ra4_sam, "m_{T} (GeV)",cuts,140));
+    vars.push_back(hfeats("mt",25,0,500, ra4_sam, "m_{T} [GeV]",cuts,140));
     cuts += "&&mt>140";
-    vars.push_back(hfeats("mj",32,0,1600, ra4_sam, "M_{J} (GeV)",cuts,mjthresh.Atof()));
+    vars.push_back(hfeats("mj",32,0,1600, ra4_sam, "M_{J} [GeV]",cuts,mjthresh.Atof()));
 
     break;
 
   case 6: // Background estimation
     cuts += "&&ht>500&&met>200";
-    vars.push_back(hfeats("mj",28,0,1400, ra4_sec6, "M_{J} (GeV)",cuts+"&&njets<=4", mjthresh.Atof()));
-    vars.push_back(hfeats("mj",28,0,1400, ra4_sec6, "M_{J} (GeV)",cuts+"&&njets>=5&&njets<=6", mjthresh.Atof()));
-    vars.push_back(hfeats("mj",28,0,1400, ra4_sec6, "M_{J} (GeV)",cuts+"&&njets>=7&&njets<=8", mjthresh.Atof()));
-    vars.push_back(hfeats("mj",28,0,1400, ra4_sec6, "M_{J} (GeV)",cuts+"&&njets>=9", mjthresh.Atof()));
+    cuts += "&&nbm>=2";
+    vars.push_back(hfeats("mj",28,0,1400, ra4_sec6, "M_{J} [GeV]",cuts+"&&njets<=4", mjthresh.Atof()));
+    vars.push_back(hfeats("mj",28,0,1400, ra4_sec6, "M_{J} [GeV]",cuts+"&&njets>=5&&njets<=6", mjthresh.Atof()));
+    vars.push_back(hfeats("mj",28,0,1400, ra4_sec6, "M_{J} [GeV]",cuts+"&&njets>=7&&njets<=8", mjthresh.Atof()));
+    vars.push_back(hfeats("mj",28,0,1400, ra4_sec6, "M_{J} [GeV]",cuts+"&&njets>=9", mjthresh.Atof()));
 
-    vars.push_back(hfeats("njets",7,-0.5,6.5, ra4_sec6, "Number of 30 GeV jets",cuts+"&&njets<=6"));
-    vars.push_back(hfeats("njets",6,6.5,12.5, ra4_sec6, "Number of 30 GeV jets",cuts+"&&njets>=7"));
+    vars.push_back(hfeats("njets",7,-0.5,6.5, ra4_sec6, "Number of jets",cuts+"&&njets<=6"));
+    vars.push_back(hfeats("njets",6,6.5,12.5, ra4_sec6, "Number of jets",cuts+"&&njets>=7"));
 
-    vars.push_back(hfeats("njets",7,-0.5,6.5, ra4_sam, "Number of 30 GeV jets",cuts+"&&njets<=6&&mt<=140", -1, "components"));
-    vars.push_back(hfeats("njets",7,-0.5,6.5, ra4_sam, "Number of 30 GeV jets",cuts+"&&njets<=6&&mt>140", -1, "components"));
-    vars.push_back(hfeats("njets",6,6.5,12.5, ra4_sam, "Number of 30 GeV jets",cuts+"&&njets>=7&&mt<=140", -1, "components"));
-    vars.push_back(hfeats("njets",6,6.5,12.5, ra4_sam, "Number of 30 GeV jets",cuts+"&&njets>=7&&mt>140", -1, "components"));
+    vars.push_back(hfeats("mj",28,0,1400, ra4_sec6_bkg, "M_{J} [GeV]",cuts+"&&njets<=4", mjthresh.Atof(), "bkg"));
+    vars.push_back(hfeats("mj",28,0,1400, ra4_sec6_bkg, "M_{J} [GeV]",cuts+"&&njets>=5&&njets<=6", mjthresh.Atof(), "bkg"));
+    vars.push_back(hfeats("mj",28,0,1400, ra4_sec6_bkg, "M_{J} [GeV]",cuts+"&&njets>=7&&njets<=8", mjthresh.Atof(), "bkg"));
+    vars.push_back(hfeats("mj",28,0,1400, ra4_sec6_bkg, "M_{J} [GeV]",cuts+"&&njets>=9", mjthresh.Atof(), "bkg"));
+
+    vars.push_back(hfeats("njets",7,-0.5,6.5, ra4_sec6_bkg, "Number of jets",cuts+"&&njets<=6",-1, "bkg"));
+    vars.push_back(hfeats("njets",6,6.5,12.5, ra4_sec6_bkg, "Number of jets",cuts+"&&njets>=7",-1, "bkg"));
+
+    vars.push_back(hfeats("mj",28,0,1400, ra4_sec6_bkgmtt, "M_{J} [GeV]",cuts+"&&njets<=4", mjthresh.Atof(), "bkgmtt"));
+    vars.push_back(hfeats("mj",28,0,1400, ra4_sec6_bkgmtt, "M_{J} [GeV]",cuts+"&&njets>=5&&njets<=6", mjthresh.Atof(), "bkgmtt"));
+    vars.push_back(hfeats("mj",28,0,1400, ra4_sec6_bkgmtt, "M_{J} [GeV]",cuts+"&&njets>=7&&njets<=8", mjthresh.Atof(), "bkgmtt"));
+    vars.push_back(hfeats("mj",28,0,1400, ra4_sec6_bkgmtt, "M_{J} [GeV]",cuts+"&&njets>=9", mjthresh.Atof(), "bkgmtt"));
+
+    vars.push_back(hfeats("njets",7,-0.5,6.5, ra4_sec6_bkgmtt, "Number of jets",cuts+"&&njets<=6",-1, "bkgmtt"));
+    vars.push_back(hfeats("njets",6,6.5,12.5, ra4_sec6_bkgmtt, "Number of jets",cuts+"&&njets>=7",-1, "bkgmtt"));
+
+    vars.push_back(hfeats("njets",7,-0.5,6.5, ra4_sam, "Number of jets",cuts+"&&njets<=6&&mt<=140", -1, "components"));
+    vars.push_back(hfeats("njets",7,-0.5,6.5, ra4_sam, "Number of jets",cuts+"&&njets<=6&&mt>140", -1, "components"));
+    vars.push_back(hfeats("njets",6,6.5,12.5, ra4_sam, "Number of jets",cuts+"&&njets>=7&&mt<=140", -1, "components"));
+    vars.push_back(hfeats("njets",6,6.5,12.5, ra4_sam, "Number of jets",cuts+"&&njets>=7&&mt>140", -1, "components"));
 
     break;
   case 7: // HT distributions to compare MC stats with tt HT binning
-    vars.push_back(hfeats("ht",30,500,3500, ra4_sam, "H_{T} (GeV)",
+    vars.push_back(hfeats("ht",30,500,3500, ra4_sam, "H_{T} [GeV]",
 			  "(nmus+nels)==1&&met>200&&njets>=7&&nbm>=2&&mt>140",500));
-    vars.push_back(hfeats("ht",30,500,3500, ra4_sam, "H_{T} (GeV)",
+    vars.push_back(hfeats("ht",30,500,3500, ra4_sam, "H_{T} [GeV]",
 			  "(nmus+nels)==1&&met>200&&njets>=7&&nbm>=2&&mt>140&&mj>400",500));
-    vars.push_back(hfeats("ht",30,500,3500, ra4_sam, "H_{T} (GeV)",
+    vars.push_back(hfeats("ht",30,500,3500, ra4_sam, "H_{T} [GeV]",
 			  "(nmus+nels)==1&&met>200&&njets>=7&&nbm>=2&&mt>140&&njets>=9",500));
-    
+
+  case 10: // Corroborators
+    cuts = "(nmus+nels)==1&&ht>500&&met>200&&nbm>=2&&njets>=7&&mt>140&&mj>600";
+    vars.push_back(hfeats("fjets08_m[0]",12,0,600,  ra4_sam, "m(J_{1}) [GeV]",cuts));
+    vars.back().maxYaxis = 10.5;
+    vars.push_back(hfeats("fjets08_m[1]",12,0,300,  ra4_sam, "m(J_{2}) [GeV]",cuts));
+    vars.back().maxYaxis = 6.7;
+    vars.push_back(hfeats("fjets08_m[2]",12,0,300,  ra4_sam, "m(J_{3}) [GeV]",cuts));
+    vars.push_back(hfeats("min_dphi_bb",8,0,3.2,  ra4_sam_ns, "Minimum #Delta#phi(b,b)",cuts));
+   
+    cuts = "(nmus+nels)==1&&ht>500&&met>400&&nbm>=2&&njets>=7&&mt>140&&mj>600";
+    vars.push_back(hfeats("fjets08_m[0]",12,0,600,  ra4_sam, "m(J_{1}) [GeV]",cuts));
+    vars.back().maxYaxis = 10.5;
+    vars.push_back(hfeats("fjets08_m[1]",12,0,300,  ra4_sam, "m(J_{2}) [GeV]",cuts));
+    vars.back().maxYaxis = 6.7;
+    vars.push_back(hfeats("fjets08_m[2]",12,0,300,  ra4_sam, "m(J_{3}) [GeV]",cuts));
+    vars.push_back(hfeats("min_dphi_bb",8,0,3.2,  ra4_sam_ns, "Minimum #Delta#phi(b,b)",cuts));
+   
   default:
     break;
   }

@@ -81,6 +81,7 @@ int main(int argc, char *argv[]){
   vector<TString> s_singlet;
   s_singlet.push_back(folder+"*_T*t-channel*");
   s_singlet.push_back(folder+"*_T*s-channel*");
+  s_singlet.push_back(folder+"*_T*W-channel*");
   vector<TString> s_other;
   s_other.push_back(folder+"*QCD_HT*");
   s_other.push_back(folder+"*_ZJet*");
@@ -89,7 +90,6 @@ int main(int argc, char *argv[]){
   s_other.push_back(folder+"*TTW*");
   s_other.push_back(folder+"*TTZ*");
   s_other.push_back(folder+"*_WJets*");
-  s_singlet.push_back(folder+"*_T*W-channel*");
 
   // Reading ntuples
   vector<sfeats> Samples; 
@@ -134,7 +134,7 @@ int main(int argc, char *argv[]){
   vector<TString> cuts;
   if(!do_2l){
     powersk.push_back(1);  cuts.push_back("mt<=140&&mj<="+mjthresh); // R1
-    powersk.push_back(-1); cuts.push_back("mt<=140&&mj>"+mjthresh);  // R2
+    //powersk.push_back(-1); cuts.push_back("mt<=140&&mj>"+mjthresh);  // R2
     powersk.push_back(-1); cuts.push_back("mt>140&&mj<="+mjthresh);  // R3
     powersk.push_back(1);  cuts.push_back("mt>140&&mj>"+mjthresh);   // R4
   } else {
@@ -143,7 +143,7 @@ int main(int argc, char *argv[]){
   }
 
   powersn.push_back(-1);  
-  powersn.push_back(1); 
+  //powersn.push_back(1); 
   powersn.push_back(1); 
   //powersn.push_back(1);  
 
@@ -215,7 +215,7 @@ int main(int argc, char *argv[]){
     for(unsigned imet(0); imet<metcuts.size(); imet++){
       for(unsigned inb(0); inb<nbcuts.size(); inb++){
 	if(method==3 && ((imet==0&&inb==3) || (imet==1&& (inb==1||inb==2)))) if(!do_2l) continue;
-	//if(!(inb==2&&imet==0&&inj==0)) continue; // Calculate just one kappa
+	//if(!(inb==3&&imet==1&&inj==1)) continue; // Calculate just one kappa
 	vector<vector<float> > entries;
 	vector<vector<float> > weights;
 	for(unsigned obs(0); obs < powersk.size(); obs++) {
@@ -283,6 +283,7 @@ int main(int argc, char *argv[]){
       } // Loop over nb cuts
     } // Loop over met cuts
   } // Loop over nj cuts
+
 
   vector<unsigned> ind(nbcuts.size(),0);
   if(do_2l) {

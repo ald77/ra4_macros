@@ -117,27 +117,27 @@ int main(){
   switch(section){
   case 1: // Intro
     cuts = "(nmus+nels)==1&&ht>500&&met>200&&njets>=7&&nbm>=2&&met>400";
-    vars.push_back(hfeats("mt",25,0,500, ra4_sam, "m_{T} (GeV)",cuts,140));
+    vars.push_back(hfeats("mt",25,0,500, ra4_sam, "m_{T} [GeV]",cuts,140));
     cuts += "&&mt>140";
-    vars.push_back(hfeats("mj",32,0,1600, ra4_sam, "M_{J} (GeV)",cuts,400));
+    vars.push_back(hfeats("mj",32,0,1600, ra4_sam, "M_{J} [GeV]",cuts,400));
     cuts = "(nmus+nels)==1&&ht>500&&met>200&&njets>=9&&nbm>=2&&met>400";
-    vars.push_back(hfeats("mt",25,0,500, ra4_sam, "m_{T} (GeV)",cuts,140));
+    vars.push_back(hfeats("mt",25,0,500, ra4_sam, "m_{T} [GeV]",cuts,140));
     cuts += "&&mt>140";
-    vars.push_back(hfeats("mj",32,0,1600, ra4_sam, "M_{J} (GeV)",cuts,400));
+    vars.push_back(hfeats("mj",32,0,1600, ra4_sam, "M_{J} [GeV]",cuts,400));
 
     vars.push_back(hfeats("ntruels+ntrumus",5,-0.5,4.5, ra4_sec1, "Number of prompt e+#mu in T1tttt(1500,100)"));
-    vars.push_back(hfeats("ht",30,500,3500, ra4_sam, "H_{T} (GeV)",
+    vars.push_back(hfeats("ht",30,500,3500, ra4_sam, "H_{T} [GeV]",
 			  "(nmus+nels)==1&&met>200&&njets>=7&&nbm>=2&&mt>140",500));
-    vars.push_back(hfeats("ht",30,500,3500, ra4_sam, "H_{T} (GeV)",
+    vars.push_back(hfeats("ht",30,500,3500, ra4_sam, "H_{T} [GeV]",
 			  "(nmus+nels)==1&&met>200&&njets>=7&&nbm>=2&&mt>140&&mj>400",500));
-    vars.push_back(hfeats("ht",30,500,3500, ra4_sam, "H_{T} (GeV)",
+    vars.push_back(hfeats("ht",30,500,3500, ra4_sam, "H_{T} [GeV]",
 			  "(nmus+nels)==1&&met>200&&njets>=7&&nbm>=2&&mt>140&&njets>=9",500));
     break;
   case 5: // Event selection - N-1 plots
-    vars.push_back(hfeats("ht",35,0,3500, ra4_sam_ns, "H_{T} (GeV)",
+    vars.push_back(hfeats("ht",35,0,3500, ra4_sam_ns, "H_{T} [GeV]",
 			  "(nmus+nels)==1&&met>200&&njets>="+minjets+"&&nbm>=2",500));
     cuts += "&&ht>500";
-    vars.push_back(hfeats("met",40,0,800, ra4_sam_ns, "MET (GeV)",
+    vars.push_back(hfeats("met",40,0,800, ra4_sam_ns, "MET [GeV]",
 			  "(nmus+nels)==1&&ht>500&&njets>="+minjets+"&&nbm>=2",200));
     cuts += "&&met>200";
     vars.push_back(hfeats("njets",18,-0.5,17.5, ra4_sam, "Number of jets",
@@ -146,21 +146,21 @@ int main(){
     vars.push_back(hfeats("nbm",7,-0.5,6.5, ra4_sam, "Number of b-tags (CSVM)",
 			  "(nmus+nels)==1&&ht>500&&met>200&&njets>="+minjets,1.5));
     cuts += "&&nbm>=2";
-    vars.push_back(hfeats("mt",25,0,500, ra4_sam, "m_{T} (GeV)",cuts,140));
+    vars.push_back(hfeats("mt",25,0,500, ra4_sam, "m_{T} [GeV]",cuts,140));
     cuts += "&&mt>140";
-    vars.push_back(hfeats("mj",32,0,1600, ra4_sam, "M_{J} (GeV)",cuts,mjthresh.Atof()));
+    vars.push_back(hfeats("mj",32,0,1600, ra4_sam, "M_{J} [GeV]",cuts,mjthresh.Atof()));
 
     break;
 
   case 6: // Background estimation
     cuts += "&&ht>500&&met>200";
-    vars.push_back(hfeats("mj",28,0,1400, ra4_sec6, "M_{J} (GeV)",cuts+"&&njets<=4", mjthresh.Atof()));
-    vars.push_back(hfeats("mj",28,0,1400, ra4_sec6, "M_{J} (GeV)",cuts+"&&njets>=5&&njets<=6", mjthresh.Atof()));
-    vars.push_back(hfeats("mj",28,0,1400, ra4_sec6, "M_{J} (GeV)",cuts+"&&njets>=7&&njets<=8", mjthresh.Atof()));
-    vars.push_back(hfeats("mj",28,0,1400, ra4_sec6, "M_{J} (GeV)",cuts+"&&njets>=9", mjthresh.Atof()));
+    vars.push_back(hfeats("mj",28,0,1400, ra4_sec6, "M_{J} [GeV]",cuts+"&&njets<=4", mjthresh.Atof()));
+    vars.push_back(hfeats("mj",28,0,1400, ra4_sec6, "M_{J} [GeV]",cuts+"&&njets>=5&&njets<=6", mjthresh.Atof()));
+    vars.push_back(hfeats("mj",28,0,1400, ra4_sec6, "M_{J} [GeV]",cuts+"&&njets>=7&&njets<=8", mjthresh.Atof()));
+    vars.push_back(hfeats("mj",28,0,1400, ra4_sec6, "M_{J} [GeV]",cuts+"&&njets>=9", mjthresh.Atof()));
 
-    vars.push_back(hfeats("njets",7,-0.5,6.5, ra4_sec6, "Number of 30 GeV jets",cuts+"&&njets<=6"));
-    vars.push_back(hfeats("njets",6,6.5,12.5, ra4_sec6, "Number of 30 GeV jets",cuts+"&&njets>=7"));
+    vars.push_back(hfeats("njets",7,-0.5,6.5, ra4_sec6, "Number of jets",cuts+"&&njets<=6"));
+    vars.push_back(hfeats("njets",6,6.5,12.5, ra4_sec6, "Number of jets",cuts+"&&njets>=7"));
 
     break;
   default:

@@ -106,6 +106,7 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
 					histo[0][var][sam]->GetBinContent(vars[var].nbins)+
 					histo[0][var][sam]->GetBinContent(vars[var].nbins+1));
       nentries[sam] = histo[0][var][sam]->Integral(1,vars[var].nbins);
+      if(nentries[sam]<0) nentries[sam]=0;
       if(namestyle!="CMSPaper") {
 	ytitle = "Entries for "+luminosity+" fb^{-1}";
 	lumilabel = "";
@@ -130,6 +131,7 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
     }
     if(nbkg>0){
       //// Plotting lumi-weighted distributions in histo[0], and then area-normalized in histo[1] ///
+      int bkgind(-1);
       for(unsigned sam(Nsam-1); sam < Nsam; sam--){
 	int isam = vars[var].samples[sam];
 	bool isSig = Samples[isam].isSig;
@@ -142,16 +144,18 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
 	  histo[0][var][sam]->SetFillStyle(1001);
 	  histo[0][var][sam]->SetLineColor(1);
 	  histo[0][var][sam]->SetLineWidth(1);
+	  bkgind = sam;
 	} else {
 	  histo[0][var][sam]->SetLineColor(Samples[isam].color);
 	  histo[0][var][sam]->SetLineStyle(abs(Samples[isam].style));
 	  histo[0][var][sam]->SetLineWidth(6);
+	  if(Samples[isam].doStack)  histo[0][var][sam]->Add(histo[0][var][bkgind]);
 	}
 	if(maxhisto < histo[0][var][sam]->GetMaximum()) maxhisto = histo[0][var][sam]->GetMaximum();
       } // First loop over samples
-      int firstplotted(-1);
       for(int ileg(0); ileg<nLegs; ileg++) leg[ileg].Clear();
       unsigned legcount(0);
+      int firstplotted(-1);
       for(unsigned sam(0); sam < Nsam; sam++){
 	int isam = vars[var].samples[sam];
 	leghisto = Samples[isam].label;
@@ -189,6 +193,7 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
       can.SaveAs(pname);
       can.SetLogy(0);
       float maxpad(maxhisto + fracLeg*(maxhisto-minLog)/(1-fracLeg));
+      if(vars[var].maxYaxis > 0) maxpad = vars[var].maxYaxis;
       histo[0][var][firstplotted]->SetMinimum(0);
       histo[0][var][firstplotted]->SetMaximum(maxpad);
       pad = static_cast<TPad *>(can.cd(1));
@@ -314,6 +319,7 @@ hfeats::hfeats(TString ivarname, int inbins, float iminx, float imaxx, vector<in
   tagname(itagname){
   format_tag();
   unit = "";
+  maxYaxis = -1.;
   string ctitle(title.Data()); // Needed because effing TString can't handle square brackets
   if(!(ctitle.find("GeV")==std::string::npos)) unit = "GeV";
   if(!(ctitle.find("phi")==std::string::npos)) unit = "rad";
@@ -332,6 +338,7 @@ hfeats::hfeats(TString ivarname, int inbins, float *ibinning, vector<int> isampl
   minx = binning[0]; maxx = binning[nbins];
   format_tag();
   unit = "";
+  maxYaxis = -1.;
   string ctitle(title.Data()); // Needed because effing TString can't handle square brackets
   if(!(ctitle.find("GeV")==std::string::npos)) unit = "GeV";
   if(!(ctitle.find("phi")==std::string::npos)) unit = "rad";
@@ -378,6 +385,7 @@ sfeats::sfeats(vector<TString> ifile, TString ilabel, int icolor, int istyle, TS
   tag = label;
   tag.ReplaceAll("(",""); tag.ReplaceAll(",","_");  tag.ReplaceAll(")","");
   tag.ReplaceAll("{",""); tag.ReplaceAll("#,","");  tag.ReplaceAll("}","");
+  doStack = false;
 }
 
 sysfeats::sysfeats(TString iname, TString ititle):
@@ -490,12 +498,10 @@ double intGaus(double mean, double sigma, double minX, double maxX){
 
 // Code from http://www.hongliangjie.com/2012/12/19/how-to-generate-gamma-random-variables/
 // Parameter b could be theta...
-double gsl_ran_gamma(const double a, const double b){
-  TRandom3 rand(0); 
-
+double gsl_ran_gamma(const double a, const double b, TRandom3 &rand){
   if (a < 1){
     double u = rand.Uniform(1);
-    return gsl_ran_gamma(1.0 + a, b) * pow (u, 1.0 / a);
+    return gsl_ran_gamma(1.0 + a, b, rand) * pow (u, 1.0 / a);
   }
 
   double x, v, u;
@@ -529,6 +535,7 @@ double gsl_ran_gamma(const double a, const double b){
 double calcKappa(vector<vector<float> > &entries, vector<vector<float> > &weights,
 		 vector<float> &powers, float &mSigma, float &pSigma, bool do_data,
 		 bool verbose, bool do_plot, int nrep){
+  TRandom3 rand(1234);
   styles style("RA4"); style.setDefaultStyle();
   int nbadk(0);
   TCanvas can;
@@ -541,11 +548,13 @@ double calcKappa(vector<vector<float> > &entries, vector<vector<float> > &weight
     for(unsigned obs(0); obs < powers.size(); obs++) {
       float observed(0.);
       for(unsigned sam(0); sam < entries[obs].size(); sam++) {
-	// Using a flat prior, the expected average of the Poisson with N observed is Gamma(N+1,1)
-	//if(do_data) observed += gsl_ran_gamma(static_cast<int>(0.5+entries[obs][sam]*weights[obs][sam])+1,1);
-	if(do_data) observed += gsl_ran_gamma(entries[obs][sam]*weights[obs][sam]+1,1);
-	else observed += gsl_ran_gamma(entries[obs][sam]+1,1)*weights[obs][sam];
+	// With a flat prior, the expected average of the Poisson with N observed is Gamma(N+1,1)
+	// Rounding the expected yield for data stats
+	if(do_data) observed += entries[obs][sam]*weights[obs][sam];
+	else observed += gsl_ran_gamma(entries[obs][sam]+1,1,rand)*weights[obs][sam];
       } // Loop over samples
+      //if(do_data) observed = gsl_ran_gamma(static_cast<int>(0.5+observed)+1,1,rand);
+      if(do_data) observed = gsl_ran_gamma(observed+1,1,rand);
       if(observed <= 0 && powers[obs] < 0) Denom_is0 = true;
       else fKappas[irep] *= pow(observed, powers[obs]);
     } // Loop over number of observables going into kappa

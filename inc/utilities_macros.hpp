@@ -9,6 +9,7 @@
 
 #include "TString.h"
 #include "TH1D.h"
+#include "TRandom3.h"
 #include "TChain.h"
 
 namespace ra4{
@@ -41,7 +42,7 @@ public:
   TString title, varname, tag, cuts, unit;
   int nbins;
   float *binning;
-  float minx, maxx, cut;
+  float minx, maxx, cut, maxYaxis;
   std::vector<int> samples;
   TString tagname;
   void format_tag();
@@ -54,7 +55,7 @@ public:
   std::vector<TString> file;
   TString label, cut, factor,tag;
   int color, style;
-  bool isSig;
+  bool isSig, doStack;
   TString samVariable;
 };
 
@@ -80,7 +81,7 @@ void plot_distributions(std::vector<sfeats> Samples, std::vector<hfeats> vars, T
 TString cuts2title(TString title);
 TString invertcut(TString cut);
 TString format_tag(TString tag);
-double gsl_ran_gamma (const double a, const double b);
+double gsl_ran_gamma (const double a, const double b, TRandom3 &rand);
 double intGaus(double mean, double sigma, double minX, double maxX);
 // yields[Nobs][Nsam] has the entries for each sample for each observable going into kappa
 // weights[Nobs][Nsam] has the average weight of each observable for each sample
