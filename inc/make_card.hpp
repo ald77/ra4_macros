@@ -90,4 +90,6 @@ void GammaToLogN2(std::ofstream &file, const std::vector<size_t> &map,
 		  size_t nr1, size_t nr2, size_t nr4,
 		  const std::vector<std::vector<GammaParams> > &gps);
 
+void PrintDebug(const std::vector<GammaParams> &gps, const std::string &name);
+
 #endif

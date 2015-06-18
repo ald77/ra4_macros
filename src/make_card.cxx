@@ -13,6 +13,8 @@
 #include <getopt.h>
 
 #include "TMath.h"
+#include "TError.h"
+#include "TSystem.h"
 
 #include "gamma_params.hpp"
 #include "small_tree_quick.hpp"
@@ -48,6 +50,8 @@ namespace{
   int nb_min = 2;
   int nb_div = 3;
 
+  bool verbose = false;
+
   //Track whether option was set in command line for logging purposes
   bool set_method = false;
   bool set_ntuple_date = false;
@@ -68,7 +72,9 @@ namespace{
 using namespace std;
 
 int main(int argc, char *argv[]){
+  gErrorIgnoreLevel=6000;
   GetOptions(argc, argv);
+
   string folder="archive/"+ntuple_date+"/skim/";
 
   small_tree_quick ttbar(folder+"*TTJets*");
@@ -79,8 +85,8 @@ int main(int argc, char *argv[]){
   pos.Add(folder+"*ZJetsToLNu_HT*");
   pos.Add(folder+"*DYJets*");
   pos.Add(folder+"*H_HToBB*");
-  pos.Add(folder+"_T*tW-channel*");
   small_tree_quick neg(folder+"*_T*s-channel*");
+  neg.Add(folder+"_T*tW-channel*");
   neg.Add(folder+"_T*t-channel*");
   small_tree_quick sig(folder+"*T1tttt*"+mgluino+"*"+mlsp+"*");
 
@@ -100,6 +106,13 @@ int main(int argc, char *argv[]){
   vector<vector<GammaParams> > bkg_gps;
   bkg_gps.push_back(ttbar_gp); bkg_names.push_back("ttbar");
   bkg_gps.push_back(other_gp); bkg_names.push_back("other");
+
+  if(verbose){
+    PrintDebug(sig_gp, "signal");
+    for(size_t ibkg = 0; ibkg < bkg_gps.size(); ++ibkg){
+      PrintDebug(bkg_gps.at(ibkg), bkg_names.at(ibkg));
+    }
+  }
 
   vector<GammaParams> mc_gp;
   GetMCTotals(mc_gp, bkg_gps);
@@ -134,12 +147,13 @@ void GetOptions(int argc, char *argv[]){
       {"met_div", required_argument, 0, 0},
       {"ht_min", required_argument, 0, 0},
       {"nb_min", required_argument, 0, 0},
+      {"verbose", no_argument, 0, 'v'},
       {0, 0, 0, 0}
     };
 
     char opt = -1;
     int option_index;
-    opt = getopt_long(argc, argv, "m:d:l:s:t", long_options, &option_index);
+    opt = getopt_long(argc, argv, "m:d:l:s:tv", long_options, &option_index);
     if( opt == -1) break;
 
     string optname;
@@ -162,6 +176,9 @@ void GetOptions(int argc, char *argv[]){
       break;
     case 't':
       do_tk_veto = true;
+      break;
+    case 'v':
+      verbose = true;
       break;
     case 0:
       optname = long_options[option_index].name;
@@ -257,7 +274,6 @@ void GetCounts(small_tree_quick &tree, vector<GammaParams> &gp){
   vector<double> squares(nbins, 0.);
 
   double sumw = 0., sumw2 = 0.;
-
   int num_entries = tree.GetEntries();
   Timer timer(num_entries, 1.);
   timer.Start();
@@ -272,8 +288,9 @@ void GetCounts(small_tree_quick &tree, vector<GammaParams> &gp){
        || (tree.nmus()+tree.nels())!=1
        || tree.met()<=met_min
        || (do_tk_veto && tree.ntks_chg_mini()>0)
-       || tree.ht()<=ht_min) continue;
-
+       || tree.ht()<=ht_min){
+      continue;
+    }
     size_t bin = LookUpBin(tree);
 
     counts.at(bin) += weight;
@@ -1060,5 +1077,26 @@ void GammaToLogN2(ofstream &file, const vector<size_t> &map,
       }
     }
     file << '\n';
+  }
+}
+
+void PrintDebug(const vector<GammaParams> &gps, const string &name){
+  cout
+    << ' ' << setw(16) << "Process"
+    << ' ' << setw(16) << "Bin"
+    << ' ' << setw(16) << "Yield"
+    << ' ' << setw(16) << "Uncertainty"
+    << ' ' << setw(16) << "N. Effective"
+    << ' ' << setw(16) << "Weight"
+    << endl;
+  for(size_t ibin = 0; ibin < gps.size(); ++ibin){
+    printf(" %16s", name.c_str());
+    printf(" %16d", static_cast<int>(ibin+1));
+    printf(" %16.2f", gps.at(ibin).Yield());
+    printf(" %16.2f", gps.at(ibin).Uncertainty());
+    printf(" %16.2f", gps.at(ibin).NEffective());
+    printf(" %16.6f", gps.at(ibin).Weight());
+    printf("\n");
+    fflush(0);
   }
 }
