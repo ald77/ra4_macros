@@ -6,6 +6,9 @@
 #include <vector>
 #include <ctime>
 
+#include <unistd.h>
+#include <getopt.h>
+
 #include "TMath.h"
 #include "TChain.h"
 #include "TH1D.h"

@@ -6,6 +6,9 @@
 #include <vector>
 #include <ctime>
 
+#include <unistd.h>
+#include <getopt.h>
+
 #include "TMath.h"
 #include "TChain.h"
 #include "TH1D.h"
@@ -31,7 +34,7 @@ namespace  {
   bool do_other(true); // Include other in kappa
   bool do_normalized(false); // Normalize kappa
   TString plot_type=".eps";
-  unsigned iDiv(4);
+  unsigned iDivGlobal(4);
   bool do_kappa(false);
   bool do_mcprior(false);
 }
@@ -56,7 +59,7 @@ int main(int argc, char *argv[]){
       method=atoi(optarg);
       break;
     case 'i':
-      iDiv=static_cast<unsigned>(atoi(optarg));
+      iDivGlobal=static_cast<unsigned>(atoi(optarg));
       break;
     case 'n':
       do_normalized = true;
@@ -273,9 +276,9 @@ int main(int argc, char *argv[]){
 	time(&begtime);
 	for(unsigned idata(0); idata<nData; idata++){
 	  double kappa(0), fixk(1);
-	  if(idata<2) kappa = calcKappa(entries[iDiv], weights[iDiv], powersn, 
+	  if(idata<2) kappa = calcKappa(entries[iDivGlobal], weights[iDivGlobal], powersn, 
 					mSigma, pSigma, (idata%2)==1);  
-	  else kappa = calcKappa(entries[iDiv], weights[iDiv], powersn, 
+	  else kappa = calcKappa(entries[iDivGlobal], weights[iDivGlobal], powersn, 
 				 mSigma, pSigma, (idata%2)==1);  
 	  float xpoint = inj*wnj+imet*wmet+(inb+2)*wnb;
 	  if(method==3 && inb==3) xpoint = inj*wnj+imet*wmet+(inb)*wnb;
@@ -291,7 +294,7 @@ int main(int argc, char *argv[]){
 	  veyh[idata][inb].push_back(pSigma);
 	  vector<float> averobs(powersn.size(),0);
 	  for(unsigned div(0); div < nDiv; div++){
-	    if(div==iDiv) continue;
+	    if(div==iDivGlobal) continue;
 	    kappa = 1;
 	    for(unsigned obs(0); obs < powersn.size(); obs++) {
 	      float observed(0);
@@ -387,7 +390,7 @@ int main(int argc, char *argv[]){
       histo.GetXaxis()->SetBinLabel(1+imet+inj*metcuts.size(), metnames[imet]);
   for(unsigned idata(0); idata<nData; idata++)
     plotKappa(vx[idata], vy[idata], vexl[idata], vexh[idata], veyl[idata], veyh[idata], 
-	      vdx[idata], vdy[idata], vmx[idata], vmy[idata], iDiv, idata, histo, nbcuts);
+	      vdx[idata], vdy[idata], vmx[idata], vmy[idata], iDivGlobal, idata, histo, nbcuts);
 
 
   time(&endtime); time_setup += difftime(endtime, begtime);
