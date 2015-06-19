@@ -18,19 +18,19 @@ void CountsToGammas(double sumw, double sumw2,
 size_t LookUpBin(small_tree_quick &tree);
 
 void GetMCTotals(std::vector<GammaParams> &mc_gp,
-		 const std::vector<std::vector<GammaParams> > &bkg_gps);
+                 const std::vector<std::vector<GammaParams> > &bkg_gps);
 
 void MockUpData(std::vector<double> &data,
-		const std::vector<GammaParams> &sig_gp,
-		const std::vector<std::vector<GammaParams> > &bkg_gps);
+                const std::vector<GammaParams> &sig_gp,
+                const std::vector<std::vector<GammaParams> > &bkg_gps);
 
 double sqr(double x);
 
 void WriteFile(const std::vector<std::vector<GammaParams> > &bkg_gps,
-	       const std::vector<std::string> &bkg_names,
-	       const std::vector<GammaParams> &sig_gp,
-	       const std::vector<GammaParams> &mc_gp,
-	       const std::vector<double> &data_counts);
+               const std::vector<std::string> &bkg_names,
+               const std::vector<GammaParams> &sig_gp,
+               const std::vector<GammaParams> &mc_gp,
+               const std::vector<double> &data_counts);
 
 void GetGammaParameters(int &raw, double &weight,
                         double sumw, double sumw2);
@@ -75,20 +75,20 @@ std::string ToString(const T &x){
 }
 
 void GammaToLogN13(std::ofstream &file, const std::vector<size_t> &map,
-		 size_t nr1, size_t nr2, size_t nr4,
-		 const std::vector<double> &counts, size_t nbkgs);
+                   size_t nr1, size_t nr2, size_t nr4,
+                   const std::vector<double> &counts, size_t nbkgs);
 
 void GammaToLogN2(std::ofstream &file, const std::vector<size_t> &map,
-		  size_t nr1, size_t nr2, size_t nr4,
-		 const std::vector<double> &counts, size_t nbkgs);
+                  size_t nr1, size_t nr2, size_t nr4,
+                  const std::vector<double> &counts, size_t nbkgs);
 
 void GammaToLogN13(std::ofstream &file, const std::vector<size_t> &map,
-		 size_t nr1, size_t nr2, size_t nr4,
-		   const std::vector<std::vector<GammaParams> > &gps);
+                   size_t nr1, size_t nr2, size_t nr4,
+                   const std::vector<std::vector<GammaParams> > &gps);
 
 void GammaToLogN2(std::ofstream &file, const std::vector<size_t> &map,
-		  size_t nr1, size_t nr2, size_t nr4,
-		  const std::vector<std::vector<GammaParams> > &gps);
+                  size_t nr1, size_t nr2, size_t nr4,
+                  const std::vector<std::vector<GammaParams> > &gps);
 
 void PrintDebug(const std::vector<GammaParams> &gps, const std::string &name);
 

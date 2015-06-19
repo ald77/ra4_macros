@@ -100,7 +100,7 @@ int main(int argc, char *argv[]){
   vector<GammaParams> other_gp(pos_gp.size());
   for(size_t bin = 0; bin < other_gp.size(); ++bin){
     other_gp.at(bin).SetYieldAndUncertainty(pos_gp.at(bin).Yield()+max(0.,neg_gp.at(bin).Yield()),
-					    pos_gp.at(bin).Uncertainty());
+                                            pos_gp.at(bin).Uncertainty());
   }
 
   vector<string> bkg_names;
@@ -186,8 +186,8 @@ void GetOptions(int argc, char *argv[]){
     case 0:
       optname = long_options[option_index].name;
       if(optname == "mc_multiplier"){
-	mc_multiplier = atof(optarg);
-	set_mc_multiplier = true;
+        mc_multiplier = atof(optarg);
+        set_mc_multiplier = true;
       }else if(optname == "no_mc_kappa"){
         no_mc_kappa = true;
       }else if(optname == "no_systematics"){
@@ -491,7 +491,7 @@ size_t LookUpBin(small_tree_quick &tree){
 }
 
 void GetMCTotals(vector<GammaParams> &mc_gp,
-		 const vector<vector<GammaParams> > &bkg_gps){
+                 const vector<vector<GammaParams> > &bkg_gps){
   if(bkg_gps.size() == 0){
     mc_gp.clear();
     return;
@@ -506,8 +506,8 @@ void GetMCTotals(vector<GammaParams> &mc_gp,
 }
 
 void MockUpData(vector<double> &data,
-		const vector<GammaParams> &sig_gp,
-		const vector<vector<GammaParams> > &bkg_gps){
+                const vector<GammaParams> &sig_gp,
+                const vector<vector<GammaParams> > &bkg_gps){
   data.resize(sig_gp.size());
   for(size_t bin = 0; bin < data.size(); ++bin){
     data.at(bin) = inject_signal*sig_gp.at(bin).Yield();
@@ -564,10 +564,10 @@ double sqr(double x){
 }
 
 void WriteFile(const vector<vector<GammaParams> > &bkg_gps,
-	       const vector<string> &bkg_names,
-	       const vector<GammaParams> &sig_gp,
-	       const vector<GammaParams> &mc_gp,
-	       const vector<double> &data_counts){
+               const vector<string> &bkg_names,
+               const vector<GammaParams> &sig_gp,
+               const vector<GammaParams> &mc_gp,
+               const vector<double> &data_counts){
   size_t nr1, nr2, nr3, nr4;
   vector<size_t> r1_map, r2_map, r3_map, r4_map;
   GetBinMapping(nr1, r1_map, nr2, r2_map, nr3, r3_map, nr4, r4_map);
@@ -576,7 +576,7 @@ void WriteFile(const vector<vector<GammaParams> > &bkg_gps,
   file_name << "txt/data_card";
   if(set_ntuple_date) file_name << '_' << ntuple_date;
   if(set_method) file_name << "_method_" << method;
-  if(set_mc_multiplier) file_name << "_mc_multplier_" << NoDecimal(mc_multiplier);
+  if(set_mc_multiplier) file_name << "_mc_multiplier_" << NoDecimal(mc_multiplier);
   if(no_mc_kappa) file_name << "_no_mc_kappa";
   if(no_systematics) file_name << "_no_systematics";
   if(set_masses) file_name << "_T1tttt_" << mgluino << '_' << mlsp;
@@ -745,7 +745,7 @@ double GetPred(const vector<double> &data,
 void PrintGamma(ofstream &file, const vector<size_t> map,
                 const string &name, size_t iregion,
                 size_t nr1, size_t nr2, size_t nr3, size_t nr4,
-		const vector<GammaParams> &gps,
+                const vector<GammaParams> &gps,
                 const vector<double> &preds,
                 size_t iproc, size_t nbkgs){
   size_t nri = -1; size_t offset = 0;
@@ -771,9 +771,9 @@ void PrintGamma(ofstream &file, const vector<size_t> map,
           }
         }
       }else{
-	for(size_t isam = 0; isam < (nbkgs+1); ++isam){
-	  file << ' ' << setw(12) << '-';
-	}
+        for(size_t isam = 0; isam < (nbkgs+1); ++isam){
+          file << ' ' << setw(12) << '-';
+        }
       }
     }
     file << '\n';
@@ -951,8 +951,8 @@ string Expand(string in, size_t size){
 }
 
 void GammaToLogN13(ofstream &file, const vector<size_t> &map,
-		 size_t nr1, size_t nr2, size_t nr4,
-		 const vector<double> &counts, size_t nbkgs){
+                   size_t nr1, size_t nr2, size_t nr4,
+                   const vector<double> &counts, size_t nbkgs){
   for(size_t icr = 0; icr < nr1; ++icr){
     file << Expand(string("data_31_")+ToString(icr+1),12) << " lnN             ";
     vector<vector<float> > entries(2,vector<float>(1)), weights(2,vector<float>(1,1.));
@@ -969,14 +969,14 @@ void GammaToLogN13(ofstream &file, const vector<size_t> &map,
     plus = 1.+plus/center;
     for(size_t ir4 = 0; ir4 < nr4; ++ir4){
       if(map.at(ir4) == icr){
-	file << "            -";
-	for(size_t ibkg = 0; ibkg < nbkgs; ++ibkg){
-	  file << ' ' << minus << '/' << plus;
-	}
+        file << "            -";
+        for(size_t ibkg = 0; ibkg < nbkgs; ++ibkg){
+          file << ' ' << minus << '/' << plus;
+        }
       }else{
-	for(size_t ibkg = 0; ibkg < (nbkgs+1); ++ibkg){
-	  file << ' ' << setw(12) << '-';
-	}
+        for(size_t ibkg = 0; ibkg < (nbkgs+1); ++ibkg){
+          file << ' ' << setw(12) << '-';
+        }
       }
     }
     file << '\n';
@@ -984,8 +984,8 @@ void GammaToLogN13(ofstream &file, const vector<size_t> &map,
 }
 
 void GammaToLogN2(ofstream &file, const vector<size_t> &map,
-		  size_t nr1, size_t nr2, size_t nr4,
-		 const vector<double> &counts, size_t nbkgs){
+                  size_t nr1, size_t nr2, size_t nr4,
+                  const vector<double> &counts, size_t nbkgs){
   for(size_t icr = 0; icr < nr2; ++icr){
     file << Expand(string("data_r2_")+ToString(icr+1),12) << " lnN             ";
     vector<vector<float> > entries(1,vector<float>(1)), weights(1,vector<float>(1,1.));
@@ -999,14 +999,14 @@ void GammaToLogN2(ofstream &file, const vector<size_t> &map,
     plus = 1.+plus/center;
     for(size_t ir4 = 0; ir4 < nr4; ++ir4){
       if(map.at(ir4) == icr){
-	file << "            -";
-	for(size_t ibkg = 0; ibkg < nbkgs; ++ibkg){
-	  file << ' ' << minus << '/' << plus;
-	}
+        file << "            -";
+        for(size_t ibkg = 0; ibkg < nbkgs; ++ibkg){
+          file << ' ' << minus << '/' << plus;
+        }
       }else{
-	for(size_t ibkg = 0; ibkg < (nbkgs+1); ++ibkg){
-	  file << ' ' << setw(12) << '-';
-	}
+        for(size_t ibkg = 0; ibkg < (nbkgs+1); ++ibkg){
+          file << ' ' << setw(12) << '-';
+        }
       }
     }
     file << '\n';
@@ -1014,8 +1014,8 @@ void GammaToLogN2(ofstream &file, const vector<size_t> &map,
 }
 
 void GammaToLogN13(ofstream &file, const vector<size_t> &map,
-		   size_t nr1, size_t nr2, size_t nr4,
-		   const vector<vector<GammaParams> > &gps){
+                   size_t nr1, size_t nr2, size_t nr4,
+                   const vector<vector<GammaParams> > &gps){
   for(size_t icr = 0; icr < nr1; ++icr){
     file << Expand(string("mc_13_")+ToString(icr+1),12) << " lnN             ";
     vector<vector<float> > entries(2,vector<float>(gps.size())), weights(2,vector<float>(gps.size()));
@@ -1036,14 +1036,14 @@ void GammaToLogN13(ofstream &file, const vector<size_t> &map,
     plus = 1.+plus/center;
     for(size_t ir4 = 0; ir4 < nr4; ++ir4){
       if(map.at(ir4) == icr){
-	file << "            -";
-	for(size_t ibkg = 0; ibkg < gps.size(); ++ibkg){
-	  file << ' ' << minus << '/' << plus;
-	}
+        file << "            -";
+        for(size_t ibkg = 0; ibkg < gps.size(); ++ibkg){
+          file << ' ' << minus << '/' << plus;
+        }
       }else{
-	for(size_t ibkg = 0; ibkg < (gps.size()+1); ++ibkg){
-	  file << ' ' << setw(12) << '-';
-	}
+        for(size_t ibkg = 0; ibkg < (gps.size()+1); ++ibkg){
+          file << ' ' << setw(12) << '-';
+        }
       }
     }
     file << '\n';
@@ -1051,8 +1051,8 @@ void GammaToLogN13(ofstream &file, const vector<size_t> &map,
 }
 
 void GammaToLogN2(ofstream &file, const vector<size_t> &map,
-		  size_t nr1, size_t nr2, size_t nr4,
-		  const vector<vector<GammaParams> > &gps){
+                  size_t nr1, size_t nr2, size_t nr4,
+                  const vector<vector<GammaParams> > &gps){
   for(size_t icr = 0; icr < nr2; ++icr){
     file << Expand(string("mc_r2_")+ToString(icr+1),12) << " lnN             ";
     vector<vector<float> > entries(1,vector<float>(gps.size())), weights(1,vector<float>(gps.size()));
@@ -1069,14 +1069,14 @@ void GammaToLogN2(ofstream &file, const vector<size_t> &map,
     plus = 1.+plus/center;
     for(size_t ir4 = 0; ir4 < nr4; ++ir4){
       if(map.at(ir4) == icr){
-	file << "            -";
-	for(size_t ibkg = 0; ibkg < gps.size(); ++ibkg){
-	  file << ' ' << minus << '/' << plus;
-	}
+        file << "            -";
+        for(size_t ibkg = 0; ibkg < gps.size(); ++ibkg){
+          file << ' ' << minus << '/' << plus;
+        }
       }else{
-	for(size_t ibkg = 0; ibkg < (gps.size()+1); ++ibkg){
-	  file << ' ' << setw(12) << '-';
-	}
+        for(size_t ibkg = 0; ibkg < (gps.size()+1); ++ibkg){
+          file << ' ' << setw(12) << '-';
+        }
       }
     }
     file << '\n';
