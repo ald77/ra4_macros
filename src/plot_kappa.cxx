@@ -134,7 +134,7 @@ int main(int argc, char *argv[]){
   vector<TString> cuts;
   if(!do_2l){
     powersk.push_back(1);  cuts.push_back("mt<=140&&mj<="+mjthresh); // R1
-    //powersk.push_back(-1); cuts.push_back("mt<=140&&mj>"+mjthresh);  // R2
+    powersk.push_back(-1); cuts.push_back("mt<=140&&mj>"+mjthresh);  // R2
     powersk.push_back(-1); cuts.push_back("mt>140&&mj<="+mjthresh);  // R3
     powersk.push_back(1);  cuts.push_back("mt>140&&mj>"+mjthresh);   // R4
   } else {
@@ -143,7 +143,7 @@ int main(int argc, char *argv[]){
   }
 
   powersn.push_back(-1);  
-  //powersn.push_back(1); 
+  powersn.push_back(1); 
   powersn.push_back(1); 
   //powersn.push_back(1);  
 

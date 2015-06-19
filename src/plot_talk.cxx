@@ -22,7 +22,7 @@ namespace {
   TString luminosity="10";
   TString plot_type=".pdf";
   TString plot_style="RA4";
-  int section(6);
+  int section(10);
 }
 
 using namespace std;
@@ -100,6 +100,7 @@ int main(){
       sam_files[ifile].ReplaceAll(folder, folder_ns);
     Samples.push_back(sfeats(sam_files, Samples[sam].label, Samples[sam].color, Samples[sam].style,
 			     Samples[sam].cut));
+    Samples.back().doStack = Samples[sam].doStack;
   } // Loop over samples
 
   // Other samples
@@ -187,26 +188,26 @@ int main(){
     vars.push_back(hfeats("njets",7,-0.5,6.5, ra4_sec6, "Number of jets",cuts+"&&njets<=6"));
     vars.push_back(hfeats("njets",6,6.5,12.5, ra4_sec6, "Number of jets",cuts+"&&njets>=7"));
 
-    vars.push_back(hfeats("mj",28,0,1400, ra4_sec6_bkg, "M_{J} [GeV]",cuts+"&&njets<=4", mjthresh.Atof(), "bkg"));
-    vars.push_back(hfeats("mj",28,0,1400, ra4_sec6_bkg, "M_{J} [GeV]",cuts+"&&njets>=5&&njets<=6", mjthresh.Atof(), "bkg"));
-    vars.push_back(hfeats("mj",28,0,1400, ra4_sec6_bkg, "M_{J} [GeV]",cuts+"&&njets>=7&&njets<=8", mjthresh.Atof(), "bkg"));
-    vars.push_back(hfeats("mj",28,0,1400, ra4_sec6_bkg, "M_{J} [GeV]",cuts+"&&njets>=9", mjthresh.Atof(), "bkg"));
+    // vars.push_back(hfeats("mj",28,0,1400, ra4_sec6_bkg, "M_{J} [GeV]",cuts+"&&njets<=4", mjthresh.Atof(), "bkg"));
+    // vars.push_back(hfeats("mj",28,0,1400, ra4_sec6_bkg, "M_{J} [GeV]",cuts+"&&njets>=5&&njets<=6", mjthresh.Atof(), "bkg"));
+    // vars.push_back(hfeats("mj",28,0,1400, ra4_sec6_bkg, "M_{J} [GeV]",cuts+"&&njets>=7&&njets<=8", mjthresh.Atof(), "bkg"));
+    // vars.push_back(hfeats("mj",28,0,1400, ra4_sec6_bkg, "M_{J} [GeV]",cuts+"&&njets>=9", mjthresh.Atof(), "bkg"));
 
-    vars.push_back(hfeats("njets",7,-0.5,6.5, ra4_sec6_bkg, "Number of jets",cuts+"&&njets<=6",-1, "bkg"));
-    vars.push_back(hfeats("njets",6,6.5,12.5, ra4_sec6_bkg, "Number of jets",cuts+"&&njets>=7",-1, "bkg"));
+    // vars.push_back(hfeats("njets",7,-0.5,6.5, ra4_sec6_bkg, "Number of jets",cuts+"&&njets<=6",-1, "bkg"));
+    // vars.push_back(hfeats("njets",6,6.5,12.5, ra4_sec6_bkg, "Number of jets",cuts+"&&njets>=7",-1, "bkg"));
 
-    vars.push_back(hfeats("mj",28,0,1400, ra4_sec6_bkgmtt, "M_{J} [GeV]",cuts+"&&njets<=4", mjthresh.Atof(), "bkgmtt"));
-    vars.push_back(hfeats("mj",28,0,1400, ra4_sec6_bkgmtt, "M_{J} [GeV]",cuts+"&&njets>=5&&njets<=6", mjthresh.Atof(), "bkgmtt"));
-    vars.push_back(hfeats("mj",28,0,1400, ra4_sec6_bkgmtt, "M_{J} [GeV]",cuts+"&&njets>=7&&njets<=8", mjthresh.Atof(), "bkgmtt"));
-    vars.push_back(hfeats("mj",28,0,1400, ra4_sec6_bkgmtt, "M_{J} [GeV]",cuts+"&&njets>=9", mjthresh.Atof(), "bkgmtt"));
+    // vars.push_back(hfeats("mj",28,0,1400, ra4_sec6_bkgmtt, "M_{J} [GeV]",cuts+"&&njets<=4", mjthresh.Atof(), "bkgmtt"));
+    // vars.push_back(hfeats("mj",28,0,1400, ra4_sec6_bkgmtt, "M_{J} [GeV]",cuts+"&&njets>=5&&njets<=6", mjthresh.Atof(), "bkgmtt"));
+    // vars.push_back(hfeats("mj",28,0,1400, ra4_sec6_bkgmtt, "M_{J} [GeV]",cuts+"&&njets>=7&&njets<=8", mjthresh.Atof(), "bkgmtt"));
+    // vars.push_back(hfeats("mj",28,0,1400, ra4_sec6_bkgmtt, "M_{J} [GeV]",cuts+"&&njets>=9", mjthresh.Atof(), "bkgmtt"));
 
-    vars.push_back(hfeats("njets",7,-0.5,6.5, ra4_sec6_bkgmtt, "Number of jets",cuts+"&&njets<=6",-1, "bkgmtt"));
-    vars.push_back(hfeats("njets",6,6.5,12.5, ra4_sec6_bkgmtt, "Number of jets",cuts+"&&njets>=7",-1, "bkgmtt"));
+    // vars.push_back(hfeats("njets",7,-0.5,6.5, ra4_sec6_bkgmtt, "Number of jets",cuts+"&&njets<=6",-1, "bkgmtt"));
+    // vars.push_back(hfeats("njets",6,6.5,12.5, ra4_sec6_bkgmtt, "Number of jets",cuts+"&&njets>=7",-1, "bkgmtt"));
 
-    vars.push_back(hfeats("njets",7,-0.5,6.5, ra4_sam, "Number of jets",cuts+"&&njets<=6&&mt<=140", -1, "components"));
-    vars.push_back(hfeats("njets",7,-0.5,6.5, ra4_sam, "Number of jets",cuts+"&&njets<=6&&mt>140", -1, "components"));
-    vars.push_back(hfeats("njets",6,6.5,12.5, ra4_sam, "Number of jets",cuts+"&&njets>=7&&mt<=140", -1, "components"));
-    vars.push_back(hfeats("njets",6,6.5,12.5, ra4_sam, "Number of jets",cuts+"&&njets>=7&&mt>140", -1, "components"));
+    // vars.push_back(hfeats("njets",7,-0.5,6.5, ra4_sam, "Number of jets",cuts+"&&njets<=6&&mt<=140", -1, "components"));
+    // vars.push_back(hfeats("njets",7,-0.5,6.5, ra4_sam, "Number of jets",cuts+"&&njets<=6&&mt>140", -1, "components"));
+    // vars.push_back(hfeats("njets",6,6.5,12.5, ra4_sam, "Number of jets",cuts+"&&njets>=7&&mt<=140", -1, "components"));
+    // vars.push_back(hfeats("njets",6,6.5,12.5, ra4_sam, "Number of jets",cuts+"&&njets>=7&&mt>140", -1, "components"));
 
     break;
   case 7: // HT distributions to compare MC stats with tt HT binning
@@ -224,7 +225,9 @@ int main(){
     vars.push_back(hfeats("fjets08_m[1]",12,0,300,  ra4_sam, "m(J_{2}) [GeV]",cuts));
     vars.back().maxYaxis = 6.7;
     vars.push_back(hfeats("fjets08_m[2]",12,0,300,  ra4_sam, "m(J_{3}) [GeV]",cuts));
+    vars.back().maxYaxis = 11;
     vars.push_back(hfeats("min_dphi_bb",8,0,3.2,  ra4_sam_ns, "Minimum #Delta#phi(b,b)",cuts));
+    vars.back().maxYaxis = 8.5;
    
     cuts = "(nmus+nels)==1&&ht>500&&met>400&&nbm>=2&&njets>=7&&mt>140&&mj>600";
     vars.push_back(hfeats("fjets08_m[0]",12,0,600,  ra4_sam, "m(J_{1}) [GeV]",cuts));
@@ -232,7 +235,9 @@ int main(){
     vars.push_back(hfeats("fjets08_m[1]",12,0,300,  ra4_sam, "m(J_{2}) [GeV]",cuts));
     vars.back().maxYaxis = 6.7;
     vars.push_back(hfeats("fjets08_m[2]",12,0,300,  ra4_sam, "m(J_{3}) [GeV]",cuts));
+    vars.back().maxYaxis = 11;
     vars.push_back(hfeats("min_dphi_bb",8,0,3.2,  ra4_sam_ns, "Minimum #Delta#phi(b,b)",cuts));
+    vars.back().maxYaxis = 8.5;
    
   default:
     break;
