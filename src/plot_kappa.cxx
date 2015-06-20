@@ -73,8 +73,6 @@ int main(int argc, char *argv[]){
 
   TString folder="/cms5r0/ald77/archive/"+ntuple_date+"/skim/";
   TString folder_ns="/cms5r0/ald77/archive/"+ntuple_date+"/";
-  folder="/afs/cern.ch/user/m/manuelf/work/ucsb/2015_05_25/skim/";
-  folder_ns="/afs/cern.ch/user/m/manuelf/work/ucsb/2015_05_25/skim/";
 
   vector<TString> s_tt;
   s_tt.push_back(folder+"*_TTJet*");

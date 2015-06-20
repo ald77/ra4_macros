@@ -81,7 +81,7 @@ int main(){
       k_poi = calcPoisson(entries, weights, powers, ek_poi);
       k_gam = calcKappa(entries, weights, powers, emk_gam, epk_gam, false, true);
 
-      int digits(2-log10(k_poi));
+      int digits(static_cast<int>(2-log10(k_poi)));
       if(digits<0) digits=0;
       cout<<setw(28)<<label<<"   &   $"<<setw(6)<<RoundNumber(k_poi,digits)<<"\\pm"
 	  <<RoundNumber(ek_poi,digits)<<"$ & "<<RoundNumber(ek_poi*100,1,k_poi)
