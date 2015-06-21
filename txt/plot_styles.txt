@@ -26,6 +26,30 @@
 [RA4_Digits_5]
     yTitleOffset    = 1.55
 
+[RA4long]
+    CanvasW	    = 1400
+    CanvasH	    = 600
+    LegendSize	    = 0.05
+    TitleSize	    = 0.047 
+    LabelSize	    = 0.06     
+    PadRightMargin  = 0.047
+    PadTopMargin    = 0.075
+    PadBottomMargin = 0.14
+    xTitleOffset    = 1.05     
+    PadLeftMargin   = 0.12
+    yTitleOffset    = 0.8
+
+[RA4long_Log]
+    yTitleOffset    = 1.
+[RA4long_Digits_2]
+    yTitleOffset    = 0.8
+[RA4long_Digits_3]
+    yTitleOffset    = 0.8
+[RA4long_Digits_4]
+    yTitleOffset    = 0.95
+[RA4long_Digits_5]
+    yTitleOffset    = 1.55
+
 [CMSPaper]
     CanvasW	    = 600
     CanvasH	    = 600

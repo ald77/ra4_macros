@@ -56,7 +56,7 @@ int main(int argc, char *argv[]){
   style.setDefaultStyle();
   
   string folder = "/cms5r0/ald77/archive/2015_05_25/skim/";
-  folder = "/afs/cern.ch/user/m/manuelf/work/ucsb/2015_05_25/skim/";
+  //folder = "/afs/cern.ch/user/m/manuelf/work/ucsb/2015_05_25/skim/";
   string sig_name = compressed ? "*T1tttt*1200*800*":"*T1tttt*1500*100*";
   small_tree_quick st_sig(folder+sig_name);
   small_tree_quick st_bkg(folder+"*TTJets*");
@@ -109,8 +109,8 @@ int main(int argc, char *argv[]){
   if(merge_ttbar){
     l.AddEntry(&g_bkg, GetLabel("ttbar",rho_bkg).c_str(), "p");
   }else{
-    l.AddEntry(&g_bkg1, GetLabel("ttbar (1l)",rho_bkg1).c_str(), "p");
-    l.AddEntry(&g_bkg2, GetLabel("ttbar (2l)",rho_bkg2).c_str(), "p");
+    l.AddEntry(&g_bkg1, GetLabel("t#bar{t} (1l)",rho_bkg1).c_str(), "p");
+    l.AddEntry(&g_bkg2, GetLabel("t#bar{t} (2l)",rho_bkg2).c_str(), "p");
   }
   if(!no_signal){
     l.AddEntry(&g_sig, GetLabel((compressed?"T1tttt(1200,800)":"T1tttt(1500,100)"),rho_sig).c_str(), "p");
@@ -232,7 +232,7 @@ void Process(small_tree_quick &st, TGraph &g, TGraph &g_full,
 string GetLabel(const string &str, double rho){
   ostringstream oss;
   oss.precision(2);
-  oss << str << ", #rho=" << rho << flush;
+  oss << str << ", #rho=" << RoundNumber(rho,2) << flush;
   return oss.str();
 }
 

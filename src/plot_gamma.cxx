@@ -64,78 +64,69 @@ int main(){
   vector<float> powers;
   vector<TString> cuts;
 
-  TString baseline("(nmus+nels)==1&&ht>500&&met>200&&njets>=7&&nbm>=2");
-  TString bincut("met>400"), totcut, lumi("10");
-  powers.push_back(-1);  cuts.push_back("mt<=140&&mj<=400"); // R1
-  powers.push_back(1);   cuts.push_back("mt>140&&mj<=400");  // R3
+  // TString baseline("(nmus+nels)==1&&ht>500&&met>200&&njets>=7&&nbm>=2");
+  // TString bincut("met>400"), totcut, lumi("10");
+  // powers.push_back(-1);  cuts.push_back("mt<=140&&mj<=400"); // R1
+  // powers.push_back(1);   cuts.push_back("mt>140&&mj<=400");  // R3
   
   
-  for(unsigned obs(0); obs < powers.size(); obs++) {
-    entries.push_back(vector<float>());
-    weights.push_back(vector<float>());
-    float yield_singlet(0);
-    for(unsigned sam(0); sam < ra4_sam.size(); sam++) {
-      totcut = (lumi+"*weight*("+baseline+"&&"+bincut+"&&"+cuts[obs]+
-		"&&"+Samples[ra4_sam[sam]].cut+")");
-      //cout << totcut<<endl;
-      double yield(0.), sigma(0.), avWeight(1.);
-      int Nentries(0);
-      Nentries = getYieldErr(*chain[ra4_sam[sam]], totcut, yield, sigma);
-      // Zero-ing out the single t, not adding its uncertainty
-      if(Samples[ra4_sam[sam]].label=="Single t"){
-	if(yield>0) yield_singlet = yield;
-	continue;
-      }
-      if(Samples[ra4_sam[sam]].label=="Other") yield += yield_singlet;
-      if(yield<=0) entries[obs].push_back(0);
-      //else entries[obs].push_back(yield*yield/pow(sigma,2));	    
-      else entries[obs].push_back(yield);	    
-      if(Nentries==0){ // If no entries, find averate weight in signal bin
-	totcut = (lumi+"*weight*("+baseline+"&&"+cuts[obs]+")");
-	Nentries = getYieldErr(*chain[ra4_sam[sam]], totcut, yield, sigma);
-	// If no entries, find averate weight in baseline region
-	if(Nentries==0){
-	  totcut = (lumi+"*weight*("+baseline+")");
-	  Nentries = getYieldErr(*chain[ra4_sam[sam]], totcut, yield, sigma);
-	}
-      }
-      avWeight = sigma*sigma/yield;
-      avWeight = 1;
-      weights[obs].push_back(avWeight);
-      //cout<<obs<<","<<sam<<": entries "<<entries[obs][sam]<<", weight "<<avWeight<<", yield "<<yield<<endl;
-    } // Loop over samples
-  } // Loop over number of observables going into kappa
+  // for(unsigned obs(0); obs < powers.size(); obs++) {
+  //   entries.push_back(vector<float>());
+  //   weights.push_back(vector<float>());
+  //   float yield_singlet(0);
+  //   for(unsigned sam(0); sam < ra4_sam.size(); sam++) {
+  //     totcut = (lumi+"*weight*("+baseline+"&&"+bincut+"&&"+cuts[obs]+
+  // 		"&&"+Samples[ra4_sam[sam]].cut+")");
+  //     //cout << totcut<<endl;
+  //     double yield(0.), sigma(0.), avWeight(1.);
+  //     int Nentries(0);
+  //     Nentries = getYieldErr(*chain[ra4_sam[sam]], totcut, yield, sigma);
+  //     // Zero-ing out the single t, not adding its uncertainty
+  //     if(Samples[ra4_sam[sam]].label=="Single t"){
+  // 	if(yield>0) yield_singlet = yield;
+  // 	continue;
+  //     }
+  //     if(Samples[ra4_sam[sam]].label=="Other") yield += yield_singlet;
+  //     if(yield<=0) entries[obs].push_back(0);
+  //     //else entries[obs].push_back(yield*yield/pow(sigma,2));	    
+  //     else entries[obs].push_back(yield);	    
+  //     if(Nentries==0){ // If no entries, find averate weight in signal bin
+  // 	totcut = (lumi+"*weight*("+baseline+"&&"+cuts[obs]+")");
+  // 	Nentries = getYieldErr(*chain[ra4_sam[sam]], totcut, yield, sigma);
+  // 	// If no entries, find averate weight in baseline region
+  // 	if(Nentries==0){
+  // 	  totcut = (lumi+"*weight*("+baseline+")");
+  // 	  Nentries = getYieldErr(*chain[ra4_sam[sam]], totcut, yield, sigma);
+  // 	}
+  //     }
+  //     avWeight = sigma*sigma/yield;
+  //     avWeight = 1;
+  //     weights[obs].push_back(avWeight);
+  //     //cout<<obs<<","<<sam<<": entries "<<entries[obs][sam]<<", weight "<<avWeight<<", yield "<<yield<<endl;
+  //   } // Loop over samples
+  // } // Loop over number of observables going into kappa
    
 
-  // entries.push_back(vector<float>());
-  // entries[0].push_back(170);
-  // entries.push_back(vector<float>());
-  // entries[1].push_back(69);
-  // entries.push_back(vector<float>());
-  // entries[2].push_back(12);
+  entries.push_back(vector<float>());
+  entries[0].push_back(4);
+  entries.push_back(vector<float>());
+  entries[1].push_back(5);
+  entries.push_back(vector<float>());
+  entries[2].push_back(0);
 
-  // entries.push_back(vector<float>());
-  // entries[0].push_back(29);
-  // entries.push_back(vector<float>());
-  // entries[1].push_back(34);
-  // entries.push_back(vector<float>());
-  // entries[2].push_back(3);
-  // entries.push_back(vector<float>());
-  // entries[3].push_back(33);
+  weights.push_back(vector<float>());
+  weights[0].push_back(1.);
+  weights.push_back(vector<float>());
+  weights[1].push_back(1.);
+  weights.push_back(vector<float>());
+  weights[2].push_back(1.);
+  weights.push_back(vector<float>());
+  weights[3].push_back(1.);
 
-  // weights.push_back(vector<float>());
-  // weights[0].push_back(1.);
-  // weights.push_back(vector<float>());
-  // weights[1].push_back(1.);
-  // weights.push_back(vector<float>());
-  // weights[2].push_back(1.);
-  // weights.push_back(vector<float>());
-  // weights[3].push_back(1.);
-
+  powers.push_back(-1.);
+  powers.push_back(1.);
+   powers.push_back(1.);
   // powers.push_back(-1.);
-  // powers.push_back(1.);
-  //  powers.push_back(1.);
-  // // powers.push_back(-1.);
 
 
   float mSigma, pSigma;
