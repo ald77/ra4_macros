@@ -21,7 +21,7 @@
 namespace  {
   TString ntuple_date("2015_05_25");
   TString lumi("10");
-  int method(2);
+  int method(1);
   int nrep = 10000;    // Fluctuations of Gamma distribution
   bool do_1ltt(false); // Kappa just for 1l ttbar
   bool do_2ltt(false); // Kappa just for 2l ttbar
@@ -116,7 +116,7 @@ int main(){
   njcuts.push_back("njets<=8");
   njcuts.push_back("njets>=9");
   // nbcuts.push_back("nbm==1");
-  if(method==1 || method==2) nbcuts.push_back("nbm>=2");
+  if(method==1 || method==2) nbcuts.push_back("nbm>=1");
   else { 
     nbcuts.push_back("nbm==2");
     nbcuts.push_back("nbm>=3");
@@ -131,20 +131,31 @@ int main(){
   }
 
   vector<sysfeats> syst;
-  // syst.push_back(sysfeats("nisr","ME ISR multiplicity"));
-  // syst.back().push_back("n_isr_me==0", 0.75);
-  // syst.back().push_back("n_isr_me==1", 1.);
-  // syst.back().push_back("n_isr_me==2", 1.25);
-  // syst.back().push_back("n_isr_me==3", 1.5);
+  syst.push_back(sysfeats("nisr","ME ISR multiplicity"));
+  syst.back().push_back("n_isr_me==0", 0.75);
+  syst.back().push_back("n_isr_me==1", 1.);
+  syst.back().push_back("n_isr_me==2", 1.25);
+  syst.back().push_back("n_isr_me==3", 1.5);
 
-  // syst.push_back(sysfeats("pt_isr","ISR pT"));
-  // syst.back().push_back("tru_tt_pt<=120", 1.);
-  // syst.back().push_back("120<tru_tt_pt&&tru_tt_pt<=200", 0.95);
-  // syst.back().push_back("200<tru_tt_pt&&tru_tt_pt<=300", 0.9);
-  // syst.back().push_back("300<tru_tt_pt&&tru_tt_pt<=500", 0.8);
-  // syst.back().push_back("500<tru_tt_pt&&tru_tt_pt<=650", 0.6);
-  // syst.back().push_back("650<tru_tt_pt&&tru_tt_pt<=800", 0.4);
-  // syst.back().push_back("800<tru_tt_pt&&tru_tt_pt", 0.2);
+  syst.push_back(sysfeats("pt_isr","ISR pT"));
+  syst.back().push_back("tru_tt_pt<=120", 1.);
+  syst.back().push_back("120<tru_tt_pt&&tru_tt_pt<=200", 0.95);
+  syst.back().push_back("200<tru_tt_pt&&tru_tt_pt<=300", 0.9);
+  syst.back().push_back("300<tru_tt_pt&&tru_tt_pt<=500", 0.8);
+  syst.back().push_back("500<tru_tt_pt&&tru_tt_pt<=650", 0.6);
+  syst.back().push_back("650<tru_tt_pt&&tru_tt_pt<=800", 0.4);
+  syst.back().push_back("800<tru_tt_pt&&tru_tt_pt", 0.2);
+
+  // syst.push_back(sysfeats("top_pt","top $p_T$"));
+  // syst.back().push_back("(trutop1_pt+trutop2_pt)<=300", exp(0.156-0.000685*200.));
+  // syst.back().push_back("300<(trutop1_pt+trutop2_pt)&&(trutop1_pt+trutop2_pt)<=500", exp(0.156-0.000685*400.));
+  // syst.back().push_back("500<(trutop1_pt+trutop2_pt)&&(trutop1_pt+trutop2_pt)<=700", exp(0.156-0.000685*600.));
+  // syst.back().push_back("700<(trutop1_pt+trutop2_pt)&&(trutop1_pt+trutop2_pt)<=900", exp(0.156-0.000685*800.));
+  // syst.back().push_back("900<(trutop1_pt+trutop2_pt)&&(trutop1_pt+trutop2_pt)<=1100", exp(0.156-0.000685*1000.));
+  // syst.back().push_back("1100<(trutop1_pt+trutop2_pt)&&(trutop1_pt+trutop2_pt)<=1300", exp(0.156-0.000685*1200.));
+  // syst.back().push_back("1300<(trutop1_pt+trutop2_pt)&&(trutop1_pt+trutop2_pt)<=1500", exp(0.156-0.000685*1400.));
+  // syst.back().push_back("1500<(trutop1_pt+trutop2_pt)", exp(0.156-0.000685*1500.));
+
 
   syst.push_back(sysfeats("dilep","2 $\\times$ dilep."));
   syst.back().push_back("((ntruleps==1&&mt<=140.)||ntruleps==2)", 1.);
@@ -241,13 +252,13 @@ int main(){
     }
   }
   pname += ".tex";
-  ifstream header("txt/header.tex");
-  ifstream footer("txt/footer.tex");
+  // ifstream header("txt/header.tex");
+  // ifstream footer("txt/footer.tex");
   ofstream file(pname);
-  file<<header.rdbuf();
+  // file<<header.rdbuf();
   /////////////////////// TABLE  ///////////////////////////
-  file << "{\\renewcommand{\\arraystretch}{1.4}"<<endl;
-  file << "\n\\begin{tabular}[tbp!]{ l | cccc}\\hline\\hline\n";
+  file << "\\renewcommand{\\arraystretch}{1.4}"<<endl;
+  file << "\\begin{tabular}[tbp!]{ l | cccc}\\hline\\hline\n";
   file << "& $n_{jets} \\leq 8$ & $n_{jets} \\leq 8$ & $n_{jets} > 8$ & $n_{jets} > 8$ \\\\"<<endl;
   file << "& MET $\\leq 400$ & MET $> 400$ & MET $\\leq 400$ & MET $> 400$ \\\\"<<endl;
   file << "\\hline\n";
@@ -272,7 +283,7 @@ int main(){
   } // Loop over systematics
 
   file<< "\\hline\\hline\n\\end{tabular}"<<endl<<endl;
-  file<<footer.rdbuf();
+  // file<<footer.rdbuf();
   file.close();
   cout<<endl<<"Written "<<pname<<endl;
 
@@ -403,7 +414,7 @@ double calcKappaRelUnc(vector<vector<vector<int> > > &entries, vector<vector<vec
   } // Loop over number of observables going into kappa
   stdRelShift -=1.;
   //if I want to pick up the mean instead:
-  stdRelShift = mean;
+  stdRelShift = median;
   cout<<"Standard rel. shift = "<<stdRelShift<<" median = "<<median<<endl;
   if(infStd) stdRelShift = median;
   else {
