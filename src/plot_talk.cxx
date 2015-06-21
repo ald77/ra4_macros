@@ -78,9 +78,9 @@ int main(){
   // Reading ntuples
   vector<sfeats> Samples; 
   Samples.push_back(sfeats(s_t1t, "T1tttt(1500,100)", ra4::c_t1tttt)); 
-  if(section==10) Samples.back().doStack = true;
+  //if(section==10) Samples.back().doStack = true;
   Samples.push_back(sfeats(s_t1tc, "T1tttt(1200,800)", ra4::c_t1tttt,2)); 
-  if(section==10) Samples.back().doStack = true;
+  //if(section==10) Samples.back().doStack = true;
   Samples.push_back(sfeats(s_tt, "t#bar{t}, 1 l", ra4::c_tt_1l, 1,"ntruleps==1"));
   Samples.push_back(sfeats(s_tt, "t#bar{t}, 2 l", ra4::c_tt_2l,1,"ntruleps>=2"));
   Samples.push_back(sfeats(s_wjets, "W+jets", ra4::c_wjets));
@@ -134,6 +134,12 @@ int main(){
   ra4_sec6.push_back(isec6+3);
   ra4_sec6_bkgmtt.push_back(isec6+4);
   ra4_sec6_bkgmtt.push_back(isec6+5);
+
+  vector<int> ra4_sec10;
+  ra4_sec10.push_back(0);
+  ra4_sec10.push_back(1);
+  ra4_sec10.push_back(2);
+  ra4_sec10.push_back(3);
 
   vector<int> ra4_tt_t1_noskim;
   ra4_tt_t1_noskim.push_back(nsam);
@@ -219,26 +225,31 @@ int main(){
 			  "(nmus+nels)==1&&met>200&&njets>=7&&nbm>=2&&mt>140&&njets>=9",500));
 
   case 10: // Corroborators
-    cuts = "(nmus+nels)==1&&ht>500&&met>200&&nbm>=2&&njets>=7&&mt>140&&mj>600";
+    cuts = "(nmus+nels)==1&&ht>500&&met>200&&njets>=7";
+    vars.push_back(hfeats("fjets08_m[0]",60,0,600,  ra4_sec10, "m(J_{1}) [GeV]",cuts));
+    vars.push_back(hfeats("fjets08_m[1]",60,0,300,  ra4_sec10, "m(J_{2}) [GeV]",cuts));
+    vars.push_back(hfeats("fjets08_m[2]",60,0,300,  ra4_sec10, "m(J_{3}) [GeV]",cuts));
+
+    cuts = "(nmus+nels)==1&&ht>500&&met>200&&nbm>=2&&njets>=7&&mt>140&&mj>400";
     vars.push_back(hfeats("fjets08_m[0]",12,0,600,  ra4_sam, "m(J_{1}) [GeV]",cuts));
-    vars.back().maxYaxis = 10.5;
+    vars.back().maxYaxis = 18;
     vars.push_back(hfeats("fjets08_m[1]",12,0,300,  ra4_sam, "m(J_{2}) [GeV]",cuts));
-    vars.back().maxYaxis = 6.7;
+    vars.back().maxYaxis = 20;
     vars.push_back(hfeats("fjets08_m[2]",12,0,300,  ra4_sam, "m(J_{3}) [GeV]",cuts));
-    vars.back().maxYaxis = 11;
+    vars.back().maxYaxis = 29;
     vars.push_back(hfeats("min_dphi_bb",8,0,3.2,  ra4_sam_ns, "Minimum #Delta#phi(b,b)",cuts));
-    vars.back().maxYaxis = 8.5;
+    vars.back().maxYaxis = 10.5;
    
-    cuts = "(nmus+nels)==1&&ht>500&&met>400&&nbm>=2&&njets>=7&&mt>140&&mj>600";
+    cuts = "(nmus+nels)==1&&ht>500&&met>400&&nbm>=2&&njets>=7&&mt>140&&mj>400";
     vars.push_back(hfeats("fjets08_m[0]",12,0,600,  ra4_sam, "m(J_{1}) [GeV]",cuts));
-    vars.back().maxYaxis = 10.5;
+    vars.back().maxYaxis = 18;
     vars.push_back(hfeats("fjets08_m[1]",12,0,300,  ra4_sam, "m(J_{2}) [GeV]",cuts));
-    vars.back().maxYaxis = 6.7;
+    vars.back().maxYaxis = 20;
     vars.push_back(hfeats("fjets08_m[2]",12,0,300,  ra4_sam, "m(J_{3}) [GeV]",cuts));
-    vars.back().maxYaxis = 11;
+    vars.back().maxYaxis = 29;
     vars.push_back(hfeats("min_dphi_bb",8,0,3.2,  ra4_sam_ns, "Minimum #Delta#phi(b,b)",cuts));
-    vars.back().maxYaxis = 8.5;
-   
+    vars.back().maxYaxis = 10.5;
+      
   default:
     break;
   }

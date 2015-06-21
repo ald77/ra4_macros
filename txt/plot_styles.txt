@@ -11,7 +11,7 @@
     PadRightMargin  = 0.047
     PadTopMargin    = 0.075
     PadBottomMargin = 0.14
-    xTitleOffset    = 1.1     
+    xTitleOffset    = 1.05     
     PadLeftMargin   = 0.175
     yTitleOffset    = 1.5
 
