@@ -20,6 +20,7 @@ namespace  {
   TString ntuple_date("2015_05_25");
   TString minjets("7"), midjets("8");
   TString mjthresh("600");
+  TString highmet("400");
   TString luminosity="10";
   bool do_1b=false;
   bool do_2l=false;
@@ -81,7 +82,7 @@ int main(){
   minjets_2l += (minjets.Atoi()-1); midjets_2l += (midjets.Atoi()-1); 
   TString fom("$Z_{\\rm bi}$");
   if(!do_zbi) fom = "S/B";
-  TString outname = "txt/yields_mj"+mjthresh+"_njets"+minjets+midjets+"_lumi"+luminosity+"_"+ntuple_date+".tex";
+  TString outname = "txt/yields_mj"+mjthresh+"_met"+highmet+"_njets"+minjets+midjets+"_lumi"+luminosity+"_"+ntuple_date+".tex";
   if(do_1b) outname.ReplaceAll("yields","yields_1b");
   if(do_2l) outname.ReplaceAll("yields","yields_2l");
   if(do_zbi) outname.ReplaceAll("yields","yields_zbi");
@@ -133,8 +134,8 @@ int main(){
   TString lownj_2l("$n_j\\leq "+midjets_2l+"$");
   TString higjets_2l(""); higjets_2l += (midjets_2l.Atoi()+1);
   TString hignj_2l("$n_j\\geq "+higjets_2l+"$");
-  TString lowmet("$\\text{MET}\\leq 400$");
-  TString higmet("$\\text{MET}> 400$");
+  TString lowmet("$\\text{MET}\\leq "+highmet+"$");
+  TString higmet("$\\text{MET}> "+highmet+"$");
   TString letter("R"); 
   if(do_1b) letter = "B"; 
   if(do_2l) letter = "D";
@@ -148,14 +149,14 @@ int main(){
     file << YieldsCut(regions[0]+": $m_T  \\leq 140,M_J\\leq "+mjthresh+"$", mjcut+"&&"+mtcut+"&&"+cuts_1l, chain, Samples, nsig);
     file <<"\\hline\n";
     if(!do_nb_binning){
-      file << YieldsCut(indent+lownj+", "+lowmet, mjcut+"&&"+mtcut+"&&njets<="+midjets+"&&met<=400&&"+cuts_1l, chain, Samples, nsig);
-      file << YieldsCut(indent+lownj+", "+higmet, mjcut+"&&"+mtcut+"&&njets<="+midjets+"&&met>400&&" +cuts_1l, chain, Samples, nsig);
-      file << YieldsCut(indent+hignj+", "+lowmet, mjcut+"&&"+mtcut+"&&njets>"+midjets+"&&met<=400&&" +cuts_1l, chain, Samples, nsig);
-      file << YieldsCut(indent+hignj+", "+higmet, mjcut+"&&"+mtcut+"&&njets>"+midjets+"&&met>400&&"  +cuts_1l, chain, Samples, nsig);
+      file << YieldsCut(indent+lownj+", "+lowmet, mjcut+"&&"+mtcut+"&&njets<="+midjets+"&&met<="+highmet+"&&"+cuts_1l, chain, Samples, nsig);
+      file << YieldsCut(indent+lownj+", "+higmet, mjcut+"&&"+mtcut+"&&njets<="+midjets+"&&met>"+highmet+"&&" +cuts_1l, chain, Samples, nsig);
+      file << YieldsCut(indent+hignj+", "+lowmet, mjcut+"&&"+mtcut+"&&njets>"+midjets+"&&met<="+highmet+"&&" +cuts_1l, chain, Samples, nsig);
+      file << YieldsCut(indent+hignj+", "+higmet, mjcut+"&&"+mtcut+"&&njets>"+midjets+"&&met>"+highmet+"&&"  +cuts_1l, chain, Samples, nsig);
     } else {
-      file << YieldsCut(indent+lowmet+", $n_b=2$", mjcut+"&&"+mtcut+"&&met<=400&&nbm==2&&"+cuts_1l, chain, Samples, nsig);
-      file << YieldsCut(indent+lowmet+", $n_b\\geq 3$", mjcut+"&&"+mtcut+"&&met<=400&&nbm>=3&&"+cuts_1l, chain, Samples, nsig);
-      file << YieldsCut(indent+higmet, mjcut+"&&"+mtcut+"&&met>400&&" +cuts_1l, chain, Samples, nsig);
+      file << YieldsCut(indent+lowmet+", $n_b=2$", mjcut+"&&"+mtcut+"&&met<="+highmet+"&&nbm==2&&"+cuts_1l, chain, Samples, nsig);
+      file << YieldsCut(indent+lowmet+", $n_b\\geq 3$", mjcut+"&&"+mtcut+"&&met<="+highmet+"&&nbm>=3&&"+cuts_1l, chain, Samples, nsig);
+      file << YieldsCut(indent+higmet, mjcut+"&&"+mtcut+"&&met>"+highmet+"&&" +cuts_1l, chain, Samples, nsig);
     }
     file <<"\\hline\n";
 
@@ -164,17 +165,17 @@ int main(){
     file <<"\\hline\n";
 
     if(!do_nb_binning){
-      file << YieldsCut(indent+lownj+", "+lowmet, mjcut+"&&"+mtcut+"&&njets<="+midjets+"&&met<=400&&"+cuts_1l, chain, Samples, nsig);
-      file << YieldsCut(indent+lownj+", "+higmet, mjcut+"&&"+mtcut+"&&njets<="+midjets+"&&met>400&&" +cuts_1l, chain, Samples, nsig);
-      file << YieldsCut(indent+hignj+", "+lowmet, mjcut+"&&"+mtcut+"&&njets>"+midjets+"&&met<=400&&" +cuts_1l, chain, Samples, nsig);
-      file << YieldsCut(indent+hignj+", "+higmet, mjcut+"&&"+mtcut+"&&njets>"+midjets+"&&met>400&&"  +cuts_1l, chain, Samples, nsig);
+      file << YieldsCut(indent+lownj+", "+lowmet, mjcut+"&&"+mtcut+"&&njets<="+midjets+"&&met<="+highmet+"&&"+cuts_1l, chain, Samples, nsig);
+      file << YieldsCut(indent+lownj+", "+higmet, mjcut+"&&"+mtcut+"&&njets<="+midjets+"&&met>"+highmet+"&&" +cuts_1l, chain, Samples, nsig);
+      file << YieldsCut(indent+hignj+", "+lowmet, mjcut+"&&"+mtcut+"&&njets>"+midjets+"&&met<="+highmet+"&&" +cuts_1l, chain, Samples, nsig);
+      file << YieldsCut(indent+hignj+", "+higmet, mjcut+"&&"+mtcut+"&&njets>"+midjets+"&&met>"+highmet+"&&"  +cuts_1l, chain, Samples, nsig);
     } else {
-      file << YieldsCut(indent+lownj+", "+lowmet+", $n_b=2$", mjcut+"&&"+mtcut+"&&njets<="+midjets+"&&met<=400&&nbm==2&&"+cuts_1l, chain, Samples, nsig);
-      file << YieldsCut(indent+lownj+", "+lowmet+", $n_b\\geq 3$", mjcut+"&&"+mtcut+"&&njets<="+midjets+"&&met<=400&&nbm>=3&&"+cuts_1l, chain, Samples, nsig);
-      file << YieldsCut(indent+lownj+", "+higmet, mjcut+"&&"+mtcut+"&&njets<="+midjets+"&&met>400&&" +cuts_1l, chain, Samples, nsig);
-      file << YieldsCut(indent+hignj+", "+lowmet+", $n_b=2$", mjcut+"&&"+mtcut+"&&njets>"+midjets+"&&met<=400&&nbm==2&&" +cuts_1l, chain, Samples, nsig);
-      file << YieldsCut(indent+hignj+", "+lowmet+", $n_b\\geq 3$", mjcut+"&&"+mtcut+"&&njets>"+midjets+"&&met<=400&&nbm>=3&&" +cuts_1l, chain, Samples, nsig);
-      file << YieldsCut(indent+hignj+", "+higmet, mjcut+"&&"+mtcut+"&&njets>"+midjets+"&&met>400&&"  +cuts_1l, chain, Samples, nsig);
+      file << YieldsCut(indent+lownj+", "+lowmet+", $n_b=2$", mjcut+"&&"+mtcut+"&&njets<="+midjets+"&&met<="+highmet+"&&nbm==2&&"+cuts_1l, chain, Samples, nsig);
+      file << YieldsCut(indent+lownj+", "+lowmet+", $n_b\\geq 3$", mjcut+"&&"+mtcut+"&&njets<="+midjets+"&&met<="+highmet+"&&nbm>=3&&"+cuts_1l, chain, Samples, nsig);
+      file << YieldsCut(indent+lownj+", "+higmet, mjcut+"&&"+mtcut+"&&njets<="+midjets+"&&met>"+highmet+"&&" +cuts_1l, chain, Samples, nsig);
+      file << YieldsCut(indent+hignj+", "+lowmet+", $n_b=2$", mjcut+"&&"+mtcut+"&&njets>"+midjets+"&&met<="+highmet+"&&nbm==2&&" +cuts_1l, chain, Samples, nsig);
+      file << YieldsCut(indent+hignj+", "+lowmet+", $n_b\\geq 3$", mjcut+"&&"+mtcut+"&&njets>"+midjets+"&&met<="+highmet+"&&nbm>=3&&" +cuts_1l, chain, Samples, nsig);
+      file << YieldsCut(indent+hignj+", "+higmet, mjcut+"&&"+mtcut+"&&njets>"+midjets+"&&met>"+highmet+"&&"  +cuts_1l, chain, Samples, nsig);
     }
     file <<"\\hline\n";
 
@@ -183,14 +184,14 @@ int main(){
     file <<"\\hline\n";
 
     if(!do_nb_binning){
-      file << YieldsCut(indent+lownj+", "+lowmet, mjcut+"&&"+mtcut+"&&njets<="+midjets+"&&met<=400&&"+cuts_1l, chain, Samples, nsig);
-      file << YieldsCut(indent+lownj+", "+higmet, mjcut+"&&"+mtcut+"&&njets<="+midjets+"&&met>400&&" +cuts_1l, chain, Samples, nsig);
-      file << YieldsCut(indent+hignj+", "+lowmet, mjcut+"&&"+mtcut+"&&njets>"+midjets+"&&met<=400&&" +cuts_1l, chain, Samples, nsig);
-      file << YieldsCut(indent+hignj+", "+higmet, mjcut+"&&"+mtcut+"&&njets>"+midjets+"&&met>400&&"  +cuts_1l, chain, Samples, nsig);
+      file << YieldsCut(indent+lownj+", "+lowmet, mjcut+"&&"+mtcut+"&&njets<="+midjets+"&&met<="+highmet+"&&"+cuts_1l, chain, Samples, nsig);
+      file << YieldsCut(indent+lownj+", "+higmet, mjcut+"&&"+mtcut+"&&njets<="+midjets+"&&met>"+highmet+"&&" +cuts_1l, chain, Samples, nsig);
+      file << YieldsCut(indent+hignj+", "+lowmet, mjcut+"&&"+mtcut+"&&njets>"+midjets+"&&met<="+highmet+"&&" +cuts_1l, chain, Samples, nsig);
+      file << YieldsCut(indent+hignj+", "+higmet, mjcut+"&&"+mtcut+"&&njets>"+midjets+"&&met>"+highmet+"&&"  +cuts_1l, chain, Samples, nsig);
     } else {
-      file << YieldsCut(indent+lowmet+", $n_b=2$", mjcut+"&&"+mtcut+"&&met<=400&&nbm==2&&"+cuts_1l, chain, Samples, nsig);
-      file << YieldsCut(indent+lowmet+", $n_b\\geq 3$", mjcut+"&&"+mtcut+"&&met<=400&&nbm>=3&&"+cuts_1l, chain, Samples, nsig);
-      file << YieldsCut(indent+higmet, mjcut+"&&"+mtcut+"&&met>400&&" +cuts_1l, chain, Samples, nsig);
+      file << YieldsCut(indent+lowmet+", $n_b=2$", mjcut+"&&"+mtcut+"&&met<="+highmet+"&&nbm==2&&"+cuts_1l, chain, Samples, nsig);
+      file << YieldsCut(indent+lowmet+", $n_b\\geq 3$", mjcut+"&&"+mtcut+"&&met<="+highmet+"&&nbm>=3&&"+cuts_1l, chain, Samples, nsig);
+      file << YieldsCut(indent+higmet, mjcut+"&&"+mtcut+"&&met>"+highmet+"&&" +cuts_1l, chain, Samples, nsig);
     }
     file <<"\\hline\n";
     file <<"\\hline\n";
@@ -201,17 +202,17 @@ int main(){
     file <<"\\hline\n";
 
     if(!do_nb_binning){
-      file << YieldsCut(binnames[0]+lownj+", "+lowmet, mjcut+"&&"+mtcut+"&&njets<="+midjets+"&&met<=400&&"+cuts_1l, chain, Samples, nsig);
-      file << YieldsCut(binnames[1]+lownj+", "+higmet, mjcut+"&&"+mtcut+"&&njets<="+midjets+"&&met>400&&" +cuts_1l, chain, Samples, nsig);
-      file << YieldsCut(binnames[2]+hignj+", "+lowmet, mjcut+"&&"+mtcut+"&&njets>"+midjets+"&&met<=400&&" +cuts_1l, chain, Samples, nsig);
-      file << YieldsCut(binnames[3]+hignj+", "+higmet, mjcut+"&&"+mtcut+"&&njets>"+midjets+"&&met>400&&"  +cuts_1l, chain, Samples, nsig);
+      file << YieldsCut(binnames[0]+lownj+", "+lowmet, mjcut+"&&"+mtcut+"&&njets<="+midjets+"&&met<="+highmet+"&&"+cuts_1l, chain, Samples, nsig);
+      file << YieldsCut(binnames[1]+lownj+", "+higmet, mjcut+"&&"+mtcut+"&&njets<="+midjets+"&&met>"+highmet+"&&" +cuts_1l, chain, Samples, nsig);
+      file << YieldsCut(binnames[2]+hignj+", "+lowmet, mjcut+"&&"+mtcut+"&&njets>"+midjets+"&&met<="+highmet+"&&" +cuts_1l, chain, Samples, nsig);
+      file << YieldsCut(binnames[3]+hignj+", "+higmet, mjcut+"&&"+mtcut+"&&njets>"+midjets+"&&met>"+highmet+"&&"  +cuts_1l, chain, Samples, nsig);
     } else {
-      file << YieldsCut(binnames[0]+lownj+", "+lowmet+", $n_b=2$", mjcut+"&&"+mtcut+"&&njets<="+midjets+"&&met<=400&&nbm==2&&"+cuts_1l, chain, Samples, nsig);
-      file << YieldsCut(binnames[1]+lownj+", "+lowmet+", $n_b\\geq 3$", mjcut+"&&"+mtcut+"&&njets<="+midjets+"&&met<=400&&nbm>=3&&"+cuts_1l, chain, Samples, nsig);
-      file << YieldsCut(binnames[2]+lownj+", "+higmet, mjcut+"&&"+mtcut+"&&njets<="+midjets+"&&met>400&&" +cuts_1l, chain, Samples, nsig);
-      file << YieldsCut(binnames[3]+hignj+", "+lowmet+", $n_b=2$", mjcut+"&&"+mtcut+"&&njets>"+midjets+"&&met<=400&&nbm==2&&" +cuts_1l, chain, Samples, nsig);
-      file << YieldsCut(binnames[4]+hignj+", "+lowmet+", $n_b\\geq 3$", mjcut+"&&"+mtcut+"&&njets>"+midjets+"&&met<=400&&nbm>=3&&" +cuts_1l, chain, Samples, nsig);
-      file << YieldsCut(binnames[5]+hignj+", "+higmet, mjcut+"&&"+mtcut+"&&njets>"+midjets+"&&met>400&&"  +cuts_1l, chain, Samples, nsig);
+      file << YieldsCut(binnames[0]+lownj+", "+lowmet+", $n_b=2$", mjcut+"&&"+mtcut+"&&njets<="+midjets+"&&met<="+highmet+"&&nbm==2&&"+cuts_1l, chain, Samples, nsig);
+      file << YieldsCut(binnames[1]+lownj+", "+lowmet+", $n_b\\geq 3$", mjcut+"&&"+mtcut+"&&njets<="+midjets+"&&met<="+highmet+"&&nbm>=3&&"+cuts_1l, chain, Samples, nsig);
+      file << YieldsCut(binnames[2]+lownj+", "+higmet, mjcut+"&&"+mtcut+"&&njets<="+midjets+"&&met>"+highmet+"&&" +cuts_1l, chain, Samples, nsig);
+      file << YieldsCut(binnames[3]+hignj+", "+lowmet+", $n_b=2$", mjcut+"&&"+mtcut+"&&njets>"+midjets+"&&met<="+highmet+"&&nbm==2&&" +cuts_1l, chain, Samples, nsig);
+      file << YieldsCut(binnames[4]+hignj+", "+lowmet+", $n_b\\geq 3$", mjcut+"&&"+mtcut+"&&njets>"+midjets+"&&met<="+highmet+"&&nbm>=3&&" +cuts_1l, chain, Samples, nsig);
+      file << YieldsCut(binnames[5]+hignj+", "+higmet, mjcut+"&&"+mtcut+"&&njets>"+midjets+"&&met>"+highmet+"&&"  +cuts_1l, chain, Samples, nsig);
     }
     file <<"\\hline\n";
 
@@ -222,20 +223,20 @@ int main(){
     mjcut="mj<="+mjthresh; 
     file << YieldsCut(regions[2]+": $M_J \\leq "+mjthresh+"$", "mj <= "+mjthresh+"&&"+cuts_2l, chain, Samples, nsig);
     file <<"\\hline\n";
-    file << YieldsCut(indent+lownj_2l+", "+lowmet, mjcut+"&&njets<="+midjets_2l+"&&met<=400&&"+cuts_2l, chain, Samples, nsig);
-    file << YieldsCut(indent+lownj_2l+", "+higmet, mjcut+"&&njets<="+midjets_2l+"&&met>400&&" +cuts_2l, chain, Samples, nsig);
-    file << YieldsCut(indent+hignj_2l+", "+lowmet, mjcut+"&&njets>"+midjets_2l+"&&met<=400&&" +cuts_2l, chain, Samples, nsig);
-    file << YieldsCut(indent+hignj_2l+", "+higmet, mjcut+"&&njets>"+midjets_2l+"&&met>400&&"  +cuts_2l, chain, Samples, nsig);
+    file << YieldsCut(indent+lownj_2l+", "+lowmet, mjcut+"&&njets<="+midjets_2l+"&&met<="+highmet+"&&"+cuts_2l, chain, Samples, nsig);
+    file << YieldsCut(indent+lownj_2l+", "+higmet, mjcut+"&&njets<="+midjets_2l+"&&met>"+highmet+"&&" +cuts_2l, chain, Samples, nsig);
+    file << YieldsCut(indent+hignj_2l+", "+lowmet, mjcut+"&&njets>"+midjets_2l+"&&met<="+highmet+"&&" +cuts_2l, chain, Samples, nsig);
+    file << YieldsCut(indent+hignj_2l+", "+higmet, mjcut+"&&njets>"+midjets_2l+"&&met>"+highmet+"&&"  +cuts_2l, chain, Samples, nsig);
     file <<"\\hline\n";
 
 
     mjcut="mj>"+mjthresh; 
     file << YieldsCut(regions[3]+": $M_J > "+mjthresh+"$", "mj>"+mjthresh+"&&"+cuts_2l, chain, Samples, nsig);
     file <<"\\hline\n";
-    file << YieldsCut(indent+lownj_2l+", "+lowmet, mjcut+"&&njets<="+midjets_2l+"&&met<=400&&"+cuts_2l, chain, Samples, nsig);
-    file << YieldsCut(indent+lownj_2l+", "+higmet, mjcut+"&&njets<="+midjets_2l+"&&met>400&&" +cuts_2l, chain, Samples, nsig);
-    file << YieldsCut(indent+hignj_2l+", "+lowmet, mjcut+"&&njets>"+midjets_2l+"&&met<=400&&" +cuts_2l, chain, Samples, nsig);
-    file << YieldsCut(indent+hignj_2l+", "+higmet, mjcut+"&&njets>"+midjets_2l+"&&met>400&&"  +cuts_2l, chain, Samples, nsig);
+    file << YieldsCut(indent+lownj_2l+", "+lowmet, mjcut+"&&njets<="+midjets_2l+"&&met<="+highmet+"&&"+cuts_2l, chain, Samples, nsig);
+    file << YieldsCut(indent+lownj_2l+", "+higmet, mjcut+"&&njets<="+midjets_2l+"&&met>"+highmet+"&&" +cuts_2l, chain, Samples, nsig);
+    file << YieldsCut(indent+hignj_2l+", "+lowmet, mjcut+"&&njets>"+midjets_2l+"&&met<="+highmet+"&&" +cuts_2l, chain, Samples, nsig);
+    file << YieldsCut(indent+hignj_2l+", "+higmet, mjcut+"&&njets>"+midjets_2l+"&&met>"+highmet+"&&"  +cuts_2l, chain, Samples, nsig);
 
     file << "\\hline \\hline\\multicolumn{"<< Samples.size()+1<<"}{c}{"
 	 << cuts_2lbbtex<<"} \\\\ \\hline \\hline\n";
@@ -243,19 +244,19 @@ int main(){
     mjcut="mj<="+mjthresh; 
     file << YieldsCut(regions[2]+": $M_J \\leq "+mjthresh+"$", "mj<="+mjthresh+"&&"+cuts_2lbb, chain, Samples, nsig);
     file <<"\\hline\n";
-    file << YieldsCut(indent+lownj_2l+", "+lowmet, mjcut+"&&njets<="+midjets_2l+"&&met<=400&&"+cuts_2lbb, chain, Samples, nsig);
-    file << YieldsCut(indent+lownj_2l+", "+higmet, mjcut+"&&njets<="+midjets_2l+"&&met>400&&" +cuts_2lbb, chain, Samples, nsig);
-    file << YieldsCut(indent+hignj_2l+", "+lowmet, mjcut+"&&njets>"+midjets_2l+"&&met<=400&&" +cuts_2lbb, chain, Samples, nsig);
-    file << YieldsCut(indent+hignj_2l+", "+higmet, mjcut+"&&njets>"+midjets_2l+"&&met>400&&"  +cuts_2lbb, chain, Samples, nsig);
+    file << YieldsCut(indent+lownj_2l+", "+lowmet, mjcut+"&&njets<="+midjets_2l+"&&met<="+highmet+"&&"+cuts_2lbb, chain, Samples, nsig);
+    file << YieldsCut(indent+lownj_2l+", "+higmet, mjcut+"&&njets<="+midjets_2l+"&&met>"+highmet+"&&" +cuts_2lbb, chain, Samples, nsig);
+    file << YieldsCut(indent+hignj_2l+", "+lowmet, mjcut+"&&njets>"+midjets_2l+"&&met<="+highmet+"&&" +cuts_2lbb, chain, Samples, nsig);
+    file << YieldsCut(indent+hignj_2l+", "+higmet, mjcut+"&&njets>"+midjets_2l+"&&met>"+highmet+"&&"  +cuts_2lbb, chain, Samples, nsig);
     file <<"\\hline\n";
 
     mjcut="mj>"+mjthresh; 
     file << YieldsCut(regions[3]+": $M_J > "+mjthresh+"$", "mj>"+mjthresh+"&&"+cuts_2lbb, chain, Samples, nsig);
     file <<"\\hline\n";
-    file << YieldsCut(indent+lownj_2l+", "+lowmet, mjcut+"&&njets<="+midjets_2l+"&&met<=400&&"+cuts_2lbb, chain, Samples, nsig);
-    file << YieldsCut(indent+lownj_2l+", "+higmet, mjcut+"&&njets<="+midjets_2l+"&&met>400&&" +cuts_2lbb, chain, Samples, nsig);
-    file << YieldsCut(indent+hignj_2l+", "+lowmet, mjcut+"&&njets>"+midjets_2l+"&&met<=400&&" +cuts_2lbb, chain, Samples, nsig);
-    file << YieldsCut(indent+hignj_2l+", "+higmet, mjcut+"&&njets>"+midjets_2l+"&&met>400&&"  +cuts_2lbb, chain, Samples, nsig);
+    file << YieldsCut(indent+lownj_2l+", "+lowmet, mjcut+"&&njets<="+midjets_2l+"&&met<="+highmet+"&&"+cuts_2lbb, chain, Samples, nsig);
+    file << YieldsCut(indent+lownj_2l+", "+higmet, mjcut+"&&njets<="+midjets_2l+"&&met>"+highmet+"&&" +cuts_2lbb, chain, Samples, nsig);
+    file << YieldsCut(indent+hignj_2l+", "+lowmet, mjcut+"&&njets>"+midjets_2l+"&&met<="+highmet+"&&" +cuts_2lbb, chain, Samples, nsig);
+    file << YieldsCut(indent+hignj_2l+", "+higmet, mjcut+"&&njets>"+midjets_2l+"&&met>"+highmet+"&&"  +cuts_2lbb, chain, Samples, nsig);
   }
 
   file << "\\hline\\multicolumn{1}{c|}{} ";
