@@ -30,7 +30,7 @@
 using namespace std;
 
 void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString luminosity, 
-			TString filetype, TString namestyle){
+			TString filetype, TString namestyle, TString dir){
   styles style(namestyle); style.setDefaultStyle();
   TCanvas can;
   TPad *pad = static_cast<TPad *>(can.cd());
@@ -189,8 +189,8 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
       histo[0][var][firstplotted]->Draw("axis same");
       if(vars[var].cut>0) line.DrawLine(vars[var].cut, 0, vars[var].cut, maxhisto);
       can.SetLogy(1);
-      pname = "plots/1d/log_lumi_"+vars[var].tag+plot_tag;
-      can.SaveAs(pname);
+      pname = "plots/"+dir+"/log_lumi_"+vars[var].tag+plot_tag;
+      if(!vars[var].skiplog) can.SaveAs(pname);
       can.SetLogy(0);
       float maxpad(maxhisto + fracLeg*(maxhisto-minLog)/(1-fracLeg));
       if(vars[var].maxYaxis > 0) maxpad = vars[var].maxYaxis;
@@ -198,7 +198,7 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
       histo[0][var][firstplotted]->SetMaximum(maxpad);
       pad = static_cast<TPad *>(can.cd(1));
       style.moveYAxisLabel(histo[0][var][firstplotted], maxpad, false);
-      pname = "plots/1d/lumi_"+vars[var].tag+plot_tag;
+      pname = "plots/"+dir+"/lumi_"+vars[var].tag+plot_tag;
       can.SaveAs(pname);
     }
     //////////// Plotting area-normalized distributions ////////////
@@ -224,13 +224,19 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
 	else histo[1][var][sam]->Draw("e1 x0 same");
       }
       leghisto = Samples[isam].label;
-      if(namestyle!="CMSPaper") {
+      unsigned ileg = (Nsam<=3?0:legcount>=(Nsam+1)/2);
+      if(vars[var].nevents.at(sam)<0 && namestyle!="CMSPaper") {
 	leghisto += " [#mu=";
 	int digits(0);
 	if(histo[1][var][sam]->GetMean()<30) digits = 1;
 	leghisto += RoundNumber(histo[1][var][sam]->GetMean(),digits) + "]";
       }
-      unsigned ileg = (Nsam<=3?0:legcount>=(Nsam+1)/2);
+      else{
+	leg[ileg].SetX1NDC(0.24); leg[ileg].SetX2NDC(0.7);
+	leg[ileg].SetTextSize(0.75*style.LegendSize);
+	leghisto +=  "[N_{tks} = " + RoundNumber(nentries[sam],1) + ", from N_{events} = "+RoundNumber(vars[var].nevents.at(sam),1)+"]";
+      }
+      
       if(Samples[isam].style>0) leg[ileg].AddEntry(histo[1][var][sam], leghisto, "l");
       else leg[ileg].AddEntry(histo[1][var][sam], leghisto, "p");
       legcount++;
@@ -242,14 +248,14 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
     histo[1][var][0]->Draw("axis same");
     style.moveYAxisLabel(histo[1][var][0], maxpad, false);
     can.SetLogy(0);
-    pname = "plots/1d/shapes_"+vars[var].tag+plot_tag;
+    pname = "plots/"+dir+"/shapes_"+vars[var].tag+plot_tag;
     can.SaveAs(pname);
     float maxpadLog = maxhisto*exp(fracLeg*log(maxhisto/minLog)/(1-fracLeg));
     histo[1][var][0]->SetMaximum(maxpadLog);
     style.moveYAxisLabel(histo[1][var][0], maxpadLog, true);
     can.SetLogy(1);
-    pname = "plots/1d/log_shapes_"+vars[var].tag+plot_tag;
-    can.SaveAs(pname);
+    pname = "plots/"+dir+"/log_shapes_"+vars[var].tag+plot_tag;
+    if(!vars[var].skiplog) can.SaveAs(pname);
   }// Loop over variables
 
   for(unsigned his(0); his < 2; his++){
@@ -307,7 +313,7 @@ pfeats::pfeats(const vector<int> &isamples, const TString &icut, const TString &
   }
 
 hfeats::hfeats(TString ivarname, int inbins, float iminx, float imaxx, vector<int> isamples,
-               TString ititle, TString icuts, float icut, TString itagname):
+               TString ititle, TString icuts, float icut, TString itagname,bool iskiplog, vector<double> inevents):
   title(ititle),
   varname(ivarname),
   cuts(icuts),
@@ -320,13 +326,19 @@ hfeats::hfeats(TString ivarname, int inbins, float iminx, float imaxx, vector<in
   format_tag();
   unit = "";
   maxYaxis = -1.;
+  skiplog=iskiplog;
+  if(inevents.at(0)<0) nevents = vector<double>(isamples.size(),-1);
+  else nevents = inevents;
+  if(nevents.size() != samples.size() ) cout<<"hfeats samples/nevents size mismatch: "<<ititle<<endl;
+  
+  
   string ctitle(title.Data()); // Needed because effing TString can't handle square brackets
   if(!(ctitle.find("GeV")==std::string::npos)) unit = "GeV";
   if(!(ctitle.find("phi")==std::string::npos)) unit = "rad";
   }
 
 hfeats::hfeats(TString ivarname, int inbins, float *ibinning, vector<int> isamples,
-               TString ititle, TString icuts, float icut, TString itagname):
+               TString ititle, TString icuts, float icut, TString itagname,bool iskiplog, vector<double> inevents):
   title(ititle),
   varname(ivarname),
   cuts(icuts),
@@ -339,6 +351,11 @@ hfeats::hfeats(TString ivarname, int inbins, float *ibinning, vector<int> isampl
   format_tag();
   unit = "";
   maxYaxis = -1.;
+  skiplog =iskiplog;
+  if(inevents.at(0)<0) nevents = vector<double>(isamples.size(),-1);
+  else nevents = inevents;
+  if(nevents.size() != samples.size() ) cout<<"hfeats samples/nevents size mismatch: "<<ititle<<endl;
+  
   string ctitle(title.Data()); // Needed because effing TString can't handle square brackets
   if(!(ctitle.find("GeV")==std::string::npos)) unit = "GeV";
   if(!(ctitle.find("phi")==std::string::npos)) unit = "rad";
@@ -358,6 +375,18 @@ void hfeats::format_tag(){
   tag.ReplaceAll("+",""); tag.ReplaceAll("&","");
   tag.ReplaceAll("!","not");
   tag.ReplaceAll("#",""); tag.ReplaceAll("{",""); tag.ReplaceAll("}","");
+
+  tag.ReplaceAll("tks_ptmintks_mini_netks_mini_ch,tks_r02_netks_r02_ch","abs_mini_iso_chgneu");
+  tag.ReplaceAll("tks_pttks_mini_netks_mini_ch","abs_untruncated_mini_iso_chgneu");
+  tag.ReplaceAll("mintks_mini_netks_mini_ch,tks_r02_netks_r02_ch","rel_mini_iso_chgneu");
+  tag.ReplaceAll("tks_mini_netks_mini_ch","rel_untruncated_mini_iso_chgneu");
+  
+  tag.ReplaceAll("tks_ptmintks_mini_ch,tks_r02_netks_r02_ch","abs_mini_iso_chg");
+  tag.ReplaceAll("tks_pttks_mini_ch","abs_untruncated_mini_iso_chg");
+  tag.ReplaceAll("mintks_mini_ch,tks_r02_netks_r02_ch","rel_mini_iso_chg");
+  tag.ReplaceAll("tks_mini_ch","rel_untruncated_mini_iso_chg");
+  
+  
 }
 
 TString format_tag(TString tag){
@@ -476,7 +505,6 @@ long getYieldErr(TChain& tree, TString cut, double& yield, double& uncertainty){
   yield = temp.IntegralAndError(0,2,uncertainty);
   return entries;
 }
-
 
 namespace  ra4 {
   TColor ucsb_blue(1000, 1/255.,57/255.,166/255.);

@@ -36,9 +36,9 @@ struct pfeats{
 class hfeats {
 public:
   hfeats(TString ivarname, int inbins, float iminx, float imaxx, std::vector<int> isamples,
-         TString ititle="", TString icuts="1", float icut=-1, TString itagname="");
+         TString ititle="", TString icuts="1", float icut=-1, TString itagname="",bool iskiplog=false, std::vector<double> inevents= std::vector<double>(1,-1.));
   hfeats(TString ivarname, int inbins, float* ibinning, std::vector<int> isamples,
-         TString ititle="", TString icuts="1", float icut=-1, TString itagname="");
+         TString ititle="", TString icuts="1", float icut=-1, TString itagname="",bool iskiplog=false, std::vector<double> inevents= std::vector<double>(1,-1.));
   TString title, varname, tag, cuts, unit;
   int nbins;
   float *binning;
@@ -46,6 +46,8 @@ public:
   std::vector<int> samples;
   TString tagname;
   void format_tag();
+  std::vector<double> nevents; //Added for track veto study. Useful to display number of events when hist is filled N times per event
+  bool skiplog;
 };
 
 class sfeats {
@@ -72,12 +74,13 @@ public:
   unsigned size();
 };
 
+
 void calc_chi2_diff(TH1D *histo1, TH1D *histo2, float &chi2, int &ndof, float &pvalue, float *average);
 void calc_chi2(TH1D *histo, float &chi2, int &ndof, float &pvalue, float &average);
 long getYieldErr(TChain& tree, TString cut, double& yield, double& uncertainty);
 
 void plot_distributions(std::vector<sfeats> Samples, std::vector<hfeats> vars, TString luminosity="10", 
-			TString filetype=".eps", TString namestyle="LargeLabels");
+			TString filetype=".eps", TString namestyle="LargeLabels", TString dir = "1d");
 TString cuts2title(TString title);
 TString invertcut(TString cut);
 TString format_tag(TString tag);
