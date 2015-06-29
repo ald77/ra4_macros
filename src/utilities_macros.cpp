@@ -376,14 +376,28 @@ void hfeats::format_tag(){
   tag.ReplaceAll("!","not");
   tag.ReplaceAll("#",""); tag.ReplaceAll("{",""); tag.ReplaceAll("}","");
 
+  tag.ReplaceAll("htg500_metg200_nbmge1_mtg140_njetsge7_nmusnels1_","baseline1B_");
+  tag.ReplaceAll("htg500_metg200_nbmge1_mtg140_njetsge7_nmusnels1_","baseline_");
+
+  tag.ReplaceAll("tks_idlep_chargeg0_nottks_is_primary_tks_idtks_id121_","os_els_");
+  tag.ReplaceAll("tks_idlep_chargeg0_nottks_is_primary_tks_idtks_id169_","os_mus_");
+  tag.ReplaceAll("tks_idlep_charges0_nottks_is_primary_nottks_idtks_id169_tks_idtks_id121_","os_had_");
+
+  tag.ReplaceAll("nottks_from_w_","fakes_");
+  tag.ReplaceAll("tks_from_w_","prompt_");
+
   tag.ReplaceAll("tks_ptmintks_mini_netks_mini_ch,tks_r02_netks_r02_ch","abs_mini_iso_chgneu");
+  tag.ReplaceAll("tks_ptmintks_mini_netks_mini_ch,tks_r05_netks_r05_ch","abs_r_05_mini_iso_chgneu");
   tag.ReplaceAll("tks_pttks_mini_netks_mini_ch","abs_untruncated_mini_iso_chgneu");
-  tag.ReplaceAll("mintks_mini_netks_mini_ch,tks_r02_netks_r02_ch","rel_mini_iso_chgneu");
+  tag.ReplaceAll("mintks_mini_netks_mini_ch,tks_r02_netks_r02_ch","rel_02_mini_iso_chgneu");
+  tag.ReplaceAll("mintks_mini_netks_mini_ch,tks_r05_netks_r05_ch","rel_05_mini_iso_chgneu");
   tag.ReplaceAll("tks_mini_netks_mini_ch","rel_untruncated_mini_iso_chgneu");
   
-  tag.ReplaceAll("tks_ptmintks_mini_ch,tks_r02_netks_r02_ch","abs_mini_iso_chg");
+  tag.ReplaceAll("tks_ptmintks_mini_ch,tks_r02_ch","abs_mini_iso_chg");
+  tag.ReplaceAll("tks_ptmintks_mini_ch,tks_r05_ch","abs_r05_mini_iso_chg");
   tag.ReplaceAll("tks_pttks_mini_ch","abs_untruncated_mini_iso_chg");
-  tag.ReplaceAll("mintks_mini_ch,tks_r02_netks_r02_ch","rel_mini_iso_chg");
+  tag.ReplaceAll("mintks_mini_ch,tks_r02_ch","rel_02_mini_iso_chg");
+  tag.ReplaceAll("mintks_mini_ch,tks_r05_ch","rel_05_mini_iso_chg");
   tag.ReplaceAll("tks_mini_ch","rel_untruncated_mini_iso_chg");
   
   

@@ -23,7 +23,7 @@ vector<double> GetNEvents(vector<sfeats> AllSamples, vector<int> RelevantSamples
 
 int main(){ 
   styles style("RA4"); style.setDefaultStyle();
-  vector<hfeats> vars;
+  vector< vector<hfeats> > allvars;
   TString luminosity = "10";
   TCanvas can;
   TString folder="/cms5r0/ald77/archive/2015_06_05/skim/skim_tight/";
@@ -90,9 +90,9 @@ int main(){
  
   vector<TString> selections;
   //selections.push_back("ht>500&&mj>400&&met>400&&nbm>=2&&mt>140&&njets>=7&&(nmus+nels)==1");
-  selections.push_back("ht>500&&mj>300&&met>200&&nbm>=1&&mt>140&&njets>=7&&(nmus+nels)==1");
-  selections.push_back("ht>500&&mj>500&&met>200&&nbm>=1&&mt>140&&njets>=7&&(nmus+nels)==1");
-  selections.push_back("ht>500&&mj>300&&met>400&&nbm>=1&&mt>140&&njets>=7&&(nmus+nels)==1");
+  selections.push_back("mj>300&&ht>500&&met>200&&nbm>=1&&mt>140&&njets>=7&&(nmus+nels)==1");
+  selections.push_back("mj>400&&ht>500&&met>200&&nbm>=1&&mt>140&&njets>=7&&(nmus+nels)==1");
+  selections.push_back("mj>300&&ht>500&&met>400&&nbm>=1&&mt>140&&njets>=7&&(nmus+nels)==1");
 
   vector< vector<double> > ra4_tt2l_t1_yields;
   for(unsigned int isel=0; isel<selections.size(); isel++){
@@ -138,8 +138,23 @@ int main(){
 
   vector<TString> isotypes;
   vector<TString> isonames;
+  vector<TString> relisotypes;
+  vector<TString> relisonames;
   isonames.push_back("abs chg+neu mini isolation");  isotypes.push_back("(tks_pt)*min((tks_mini_ne+tks_mini_ch),(tks_r02_ne+tks_r02_ch))");
+  isonames.push_back("abs chg+neu R=0.5 mini isolation");  isotypes.push_back("(tks_pt)*min((tks_mini_ne+tks_mini_ch),(tks_r05_ne+tks_r05_ch))");
   isonames.push_back("abs chg+neu untruncated mini isolation"); isotypes.push_back("(tks_pt)*(tks_mini_ne+tks_mini_ch)");
+
+  isonames.push_back("abs chg mini isolation");  isotypes.push_back("(tks_pt)*min((tks_mini_ch),(tks_r02_ch))");
+  isonames.push_back("abs chg R=0.5 mini isolation");  isotypes.push_back("(tks_pt)*min((tks_mini_ch),(tks_r05_ch))");
+  isonames.push_back("abs chg untruncated mini isolation"); isotypes.push_back("(tks_pt)*(tks_mini_ch)");
+
+  relisonames.push_back("rel chg+neu mini isolation");  relisotypes.push_back("min((tks_mini_ne+tks_mini_ch),(tks_r02_ne+tks_r02_ch))");
+  relisonames.push_back("rel chg+neu R=0.5 mini isolation");  relisotypes.push_back("min((tks_mini_ne+tks_mini_ch),(tks_r05_ne+tks_r05_ch))");
+  relisonames.push_back("rel chg+neu untruncated mini isolation"); relisotypes.push_back("(tks_mini_ne+tks_mini_ch)");
+
+  relisonames.push_back("rel chg mini isolation");  relisotypes.push_back("min((tks_mini_ch),(tks_r02_ch))");
+  relisonames.push_back("rel chg R=0.5 mini isolation");  relisotypes.push_back("min((tks_mini_ch),(tks_r05_ch))");
+  relisonames.push_back("rel chg untruncated mini isolation"); relisotypes.push_back("(tks_mini_ch)");
   
   
   TString prompt = "&&tks_from_w";
@@ -147,28 +162,38 @@ int main(){
   
   vector<TString> tracktype;
   tracktype.push_back( "&&((tks_id*lep_charge)>0)&&(!tks_is_primary)&&tks_id*tks_id==121");
-  tracktype.push_back( "&&tks_pt<=20&&((tks_id*lep_charge)>0)&&(!tks_is_primary)&&tks_id*tks_id==121");
-  tracktype.push_back( "&&tks_pt>20&&((tks_id*lep_charge)>0)&&(!tks_is_primary)&&tks_id*tks_id==121");
+  //tracktype.push_back( "&&tks_pt<=20&&((tks_id*lep_charge)>0)&&(!tks_is_primary)&&tks_id*tks_id==121");
+  //tracktype.push_back( "&&tks_pt>20&&((tks_id*lep_charge)>0)&&(!tks_is_primary)&&tks_id*tks_id==121");
   tracktype.push_back( "&&((tks_id*lep_charge)>0)&&(!tks_is_primary)&&tks_id*tks_id==169");
   tracktype.push_back( "&&((tks_id*lep_charge)<0)&&(!tks_is_primary)&&!(tks_id*tks_id==169||tks_id*tks_id==121)");
   vector<TString> tracknames;
   tracknames.push_back("electron tracks");
-  tracknames.push_back("electron tracks, p_{T} < 20");
-  tracknames.push_back("electron tracks, p_{T} > 20");
+  //  tracknames.push_back("electron tracks, p_{T} < 20");
+  //tracknames.push_back("electron tracks, p_{T} > 20");
   tracknames.push_back("muon tracks");
   tracknames.push_back("hadronic tracks");
 
   for(int itrack=0;itrack<3;itrack++){
+    vector<hfeats> vars;
     for(int isel=0; isel<1; isel++){
       if(itrack==0) {
 	vars.push_back(hfeats("tks_pt",30,0,150,ra4_tt2l_t1,"track p_{T}, "+tracknames[itrack],selections[isel]+tracktype[itrack]+prompt,-1,"",true,ra4_tt2l_t1_yields[isel]));
 	vars.push_back(hfeats("tks_pt",30,0,150,ra4_tt2l_t1,"track p_{T}, "+tracknames[itrack],selections[isel]+tracktype[itrack]+nonprompt,-1,"",true,ra4_tt2l_t1_yields[isel]));
+
+
       }
-      for(int iiso=0;iiso<2;iiso++){
+
+	vars.push_back(hfeats("tks_mt",28,0,280,ra4_tt2l_t1,"track m_{T}, "+tracknames[itrack],selections[isel]+tracktype[itrack]+prompt,-1,"",true,ra4_tt2l_t1_yields[isel]));
+	vars.push_back(hfeats("tks_mt",28,0,280,ra4_tt2l_t1,"track m_{T}, "+tracknames[itrack],selections[isel]+tracktype[itrack]+nonprompt,-1,"",true,ra4_tt2l_t1_yields[isel]));
+
+      for(int iiso=0;iiso<6;iiso++){
 	vars.push_back(hfeats(isotypes[iiso],40,0,100,ra4_tt2l_t1,isonames[iiso]+", "+tracknames[itrack],selections[isel]+tracktype[itrack]+prompt,-1,"",true,ra4_tt2l_t1_yields[isel]));
 	vars.push_back(hfeats(isotypes[iiso],40,0,100,ra4_tt2l_t1,isonames[iiso]+", "+tracknames[itrack],selections[isel]+tracktype[itrack]+nonprompt,-1,"",true,ra4_tt2l_t1_yields[isel]));
+	vars.push_back(hfeats(relisotypes[iiso],60,0,6,ra4_tt2l_t1,relisonames[iiso]+", "+tracknames[itrack],selections[isel]+tracktype[itrack]+prompt,-1,"",true,ra4_tt2l_t1_yields[isel]));
+	vars.push_back(hfeats(relisotypes[iiso],60,0,6,ra4_tt2l_t1,relisonames[iiso]+", "+tracknames[itrack],selections[isel]+tracktype[itrack]+nonprompt,-1,"",true,ra4_tt2l_t1_yields[isel]));
       }
     }
+    allvars.push_back(vars);
   }
 
   //absolute charge + neutral isolation, baseline study region
@@ -277,7 +302,9 @@ int main(){
       
   */
     
-  plot_distributions(Samples, vars, luminosity, ".pdf", "RA4","veto");
+  plot_distributions(Samples, allvars.at(0), luminosity, ".pdf", "RA4","veto/els");
+  plot_distributions(Samples, allvars.at(1), luminosity, ".pdf", "RA4","veto/mus");
+  plot_distributions(Samples, allvars.at(2), luminosity, ".pdf", "RA4","veto/had");
 
 }
 
