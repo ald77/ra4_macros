@@ -11,6 +11,7 @@
 #include "TH1D.h"
 #include "TRandom3.h"
 #include "TChain.h"
+#include "small_tree_full.hpp"
 
 namespace ra4{
   // Had to define the TColor objects in the cpp
@@ -77,6 +78,7 @@ public:
 
 void calc_chi2_diff(TH1D *histo1, TH1D *histo2, float &chi2, int &ndof, float &pvalue, float *average);
 void calc_chi2(TH1D *histo, float &chi2, int &ndof, float &pvalue, float &average);
+void dump_event(small_tree_full &tree, int entry);
 long getYieldErr(TChain& tree, TString cut, double& yield, double& uncertainty);
 
 void plot_distributions(std::vector<sfeats> Samples, std::vector<hfeats> vars, TString luminosity="10", 

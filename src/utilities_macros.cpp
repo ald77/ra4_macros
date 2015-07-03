@@ -520,6 +520,23 @@ long getYieldErr(TChain& tree, TString cut, double& yield, double& uncertainty){
   return entries;
 }
 
+void dump_event(small_tree_full &tree, int entry){
+
+  tree.GetEntry(entry);
+
+  cout<<Form("event num: %i",tree.event())<<endl;
+  cout<<Form("ntruleps: %i, ntrumus: %i, ntruels: %i, ntrutaush: %i, ntrutausl: %i",tree.ntruleps(),tree.ntrumus(),tree.ntruels(),tree.ntrutaush(),tree.ntrutausl())<<endl;
+  cout<<"print MC doc: "<<endl;     
+  for(unsigned int igen = 0; igen<tree.mc_pt().size();igen++){
+    cout<<Form("%i: ID= %i \tpT=%.1f \teta=%.1f \tphi=%.1f \tmom= %i",igen,tree.mc_id().at(igen),tree.mc_pt().at(igen),tree.mc_eta().at(igen),tree.mc_phi().at(igen),static_cast<int>(tree.mc_mom().at(igen)))<<endl;
+  }
+
+  cout<<"Dumping Tracks"<<endl;
+   for(unsigned int itks = 0; itks<tree.tks_pt().size();itks++){
+     cout<<Form("%i: ID= %i \tpT=%.1f \teta=%.1f \tphi=%.1f \tisPrimary= %i \tfrom W= %i \ttruID = %i",itks,tree.tks_id().at(itks),tree.tks_pt().at(itks),tree.tks_eta().at(itks),tree.tks_phi().at(itks),static_cast<int>(tree.tks_is_primary().at(itks)),static_cast<int>(tree.tks_from_w().at(itks)),tree.tks_tru_id().at(itks))<<endl;
+  }
+}
+
 namespace  ra4 {
   TColor ucsb_blue(1000, 1/255.,57/255.,166/255.);
   TColor ucsb_gold(1001, 255/255.,200/255.,47/255);

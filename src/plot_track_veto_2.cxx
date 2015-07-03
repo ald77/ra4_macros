@@ -106,32 +106,11 @@ int main(){
   //VERY IMPORTANT (tks_id*lep_charge)<0   selects OS tracks for hadronic tracks
   // (tks_id*lep_charge)>0 selects OS tracks for leptonic tracks
 
-
-
   
   //different binnings are generally relevant for different kinds of tracks
 
   //absolute isolation is just relative isolation * pT
 
-
-
-  //The number of events in a region are printed in the legend by using the first three histograms put in "vars" (mT from each region).
-  //The code finds the correct number by looking at your cuts for these strings:
-  //mj>300&&met>200   or     mj>500&&met>200    or    mj>300&&met>40
-  //So preserve the order of these cuts if you want them to be found.
-
-
-  
-  
-  //primary lepton mt plot used later to get region normalization for other plots (just to throw on legend)- DO NOT delete or move
-  /*vars.push_back(hfeats("mt",50,0,200, ra4_tt2l_t1, "m_{T} (GeV)",
-			"ht>500&&mj>300&&met>200&&nbm>=1&&mt>140&&njets>=7&&(nmus+nels)==1",-1,"",true,nevents));
-
-  vars.push_back(hfeats("mt",50,0,200, ra4_tt2l_t1, "m_{T} (GeV)",
-			"ht>500&&mj>500&&met>200&&nbm>=1&&mt>140&&njets>=7&&(nmus+nels)==1",-1,"",true,nevents));
-
-  vars.push_back(hfeats("mt",50,0,200, ra4_tt2l_t1, "m_{T} (GeV)",
-  "ht>500&&mj>300&&met>400&&nbm>=1&&mt>140&&njets>=7&&(nmus+nels)==1",-1,"",true,nevents));*/
 
 
   
