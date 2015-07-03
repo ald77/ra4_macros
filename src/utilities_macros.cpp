@@ -31,7 +31,9 @@ using namespace std;
 
 void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString luminosity, 
 			TString filetype, TString namestyle, TString dir){
-  styles style(namestyle); style.setDefaultStyle();
+  styles style(namestyle);
+  if(namestyle=="CMSPaper") style.nDivisions = 706;
+  style.setDefaultStyle();
   TCanvas can;
   TPad *pad = static_cast<TPad *>(can.cd());
 
@@ -40,8 +42,10 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
   vector<TChain *> chain;
   for(unsigned sam(0); sam < Samples.size(); sam++){
     chain.push_back(new TChain("tree"));
-    for(unsigned insam(0); insam < Samples[sam].file.size(); insam++)
+    for(unsigned insam(0); insam < Samples[sam].file.size(); insam++){
+      //cout<<"Reading "<<Samples[sam].file[insam]<<endl;
       chain[sam]->Add(Samples[sam].file[insam]);
+    }
   }
 
 
@@ -95,7 +99,7 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
     int nbkg(0);
     for(unsigned sam(Nsam-1); sam < Nsam; sam--){
       int isam = vars[var].samples[sam];
-      if(!Samples[isam].isSig) nbkg++;
+      if(!Samples[isam].isSig && !Samples[isam].isData) nbkg++;
       samVariable = Samples[isam].samVariable;
       totCut = Samples[isam].factor+"*"+luminosity+"*weight*("+vars[var].cuts+"&&"+Samples[isam].cut+")"; 
       //cout<<totCut<<endl;
@@ -108,11 +112,11 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
       nentries[sam] = histo[0][var][sam]->Integral(1,vars[var].nbins);
       if(nentries[sam]<0) nentries[sam]=0;
       if(namestyle!="CMSPaper") {
-	ytitle = "Entries for "+luminosity+" fb^{-1}";
+	ytitle = "Events for "+luminosity+" fb^{-1}";
 	lumilabel = "";
 	cmslabel = "";
       } else {
-	ytitle = "Entries";
+	ytitle = "Events";
 	lumilabel = luminosity+" fb^{-1} (13 TeV)";
 	cmslabel = "#font[62]{CMS}";
       }
@@ -125,17 +129,21 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
       histo[0][var][sam]->SetYTitle(ytitle);
       // Cloning histos for later
       for(int bin(0); bin<=histo[0][var][sam]->GetNbinsX()+1; bin++){
-	histo[1][var][sam]->SetBinContent(bin, histo[0][var][sam]->GetBinContent(bin));
+	double val(histo[0][var][sam]->GetBinContent(bin));
+	histo[1][var][sam]->SetBinContent(bin, val);
+	if(Samples[isam].isData) histo[0][var][sam]->SetBinError(bin, sqrt(val));
 	histo[1][var][sam]->SetBinError(bin, histo[0][var][sam]->GetBinError(bin));
       }
     }
-    if(nbkg>0){
+    
+    if(nbkg>0 && (vars[var].whichPlots.Contains("0") || vars[var].whichPlots.Contains("1") 
+		  || vars[var].whichPlots.Contains("2"))){
       //// Plotting lumi-weighted distributions in histo[0], and then area-normalized in histo[1] ///
       int bkgind(-1);
       for(unsigned sam(Nsam-1); sam < Nsam; sam--){
 	int isam = vars[var].samples[sam];
-	bool isSig = Samples[isam].isSig;
-	if(!isSig){ // Adding previous bkg histos
+	bool noStack = Samples[isam].isSig || Samples[isam].isData;
+	if(!noStack){ // Adding previous bkg histos
 	  for(unsigned bsam(sam+1); bsam < Nsam; bsam++){
 	    histo[0][var][sam]->Add(histo[0][var][bsam]);
 	    break;
@@ -147,11 +155,19 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
 	  bkgind = sam;
 	} else {
 	  histo[0][var][sam]->SetLineColor(Samples[isam].color);
-	  histo[0][var][sam]->SetLineStyle(abs(Samples[isam].style));
-	  histo[0][var][sam]->SetLineWidth(6);
+	  if(Samples[isam].isData){
+	    histo[0][var][sam]->SetMarkerStyle(20);
+	    histo[0][var][sam]->SetMarkerSize(1.2);	    
+	    histo[0][var][sam]->SetLineWidth(2);
+	  } else {
+	    histo[0][var][sam]->SetLineWidth(6);
+	    histo[0][var][sam]->SetLineStyle(abs(Samples[isam].style));
+	  }
 	  if(Samples[isam].doStack)  histo[0][var][sam]->Add(histo[0][var][bkgind]);
 	}
-	if(maxhisto < histo[0][var][sam]->GetMaximum()) maxhisto = histo[0][var][sam]->GetMaximum();
+	double maxval(histo[0][var][sam]->GetMaximum());
+	if(maxhisto < maxval) maxhisto = maxval;
+	if(Samples[isam].isData) maxhisto = maxval+sqrt(maxval);
       } // First loop over samples
       for(int ileg(0); ileg<nLegs; ileg++) leg[ileg].Clear();
       unsigned legcount(0);
@@ -160,9 +176,9 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
 	int isam = vars[var].samples[sam];
 	leghisto = Samples[isam].label;
 	if(namestyle!="CMSPaper") leghisto += " [N=" + RoundNumber(nentries[sam],0) + "]";
-	bool isSig = Samples[isam].isSig;
+	bool noStack = Samples[isam].isSig || Samples[isam].isData;
 	unsigned ileg = (Nsam<=3?0:legcount>=(Nsam+1)/2);
-	if(!isSig){
+	if(!noStack){
 	  leg[ileg].AddEntry(histo[0][var][sam], leghisto,"f");
 	  legcount++;
 	  if(firstplotted < 0) {
@@ -171,14 +187,15 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
 	    style.setTitles(histo[0][var][sam],vars[var].title, ytitle, cmslabel, lumilabel);
 	  } else histo[0][var][sam]->Draw("hist same");
 	} else {
-	  leg[ileg].AddEntry(histo[0][var][sam], leghisto,"l");
+	  if(Samples[isam].isSig) leg[ileg].AddEntry(histo[0][var][sam], leghisto,"l");
+	  else leg[ileg].AddEntry(histo[0][var][sam], leghisto,"elp");
 	  legcount++;
 	}
-      }    
+      }
       for(int sam(Nsam-1); sam >= 0; sam--){
 	int isam = vars[var].samples[sam];
-	bool isSig = Samples[isam].isSig;
-	if(isSig) histo[0][var][sam]->Draw("hist same");
+	if(Samples[isam].isSig) histo[0][var][sam]->Draw("hist same");
+	if(Samples[isam].isData) histo[0][var][sam]->Draw("e1 same");
       }
       for(int ileg(0); ileg<nLegs; ileg++) leg[ileg].Draw(); 
       if(histo[0][var][firstplotted]->GetMinimum() > minLog) histo[0][var][firstplotted]->SetMinimum(minLog);
@@ -190,7 +207,8 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
       if(vars[var].cut>0) line.DrawLine(vars[var].cut, 0, vars[var].cut, maxhisto);
       can.SetLogy(1);
       pname = "plots/"+dir+"/log_lumi_"+vars[var].tag+plot_tag;
-      if(!vars[var].skiplog) can.SaveAs(pname);
+      if(!vars[var].skiplog && (vars[var].whichPlots.Contains("0") || vars[var].whichPlots.Contains("1"))) 
+	can.SaveAs(pname);
       can.SetLogy(0);
       float maxpad(maxhisto + fracLeg*(maxhisto-minLog)/(1-fracLeg));
       if(vars[var].maxYaxis > 0) maxpad = vars[var].maxYaxis;
@@ -199,8 +217,10 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
       pad = static_cast<TPad *>(can.cd(1));
       style.moveYAxisLabel(histo[0][var][firstplotted], maxpad, false);
       pname = "plots/"+dir+"/lumi_"+vars[var].tag+plot_tag;
-      can.SaveAs(pname);
-    }
+      if(vars[var].whichPlots.Contains("0") || vars[var].whichPlots.Contains("2")) can.SaveAs(pname);
+    } // Lumi plots
+
+
     //////////// Plotting area-normalized distributions ////////////
     maxhisto = -999;
     for(int ileg(0); ileg<nLegs; ileg++) leg[ileg].Clear();
@@ -225,16 +245,18 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
       }
       leghisto = Samples[isam].label;
       unsigned ileg = (Nsam<=3?0:legcount>=(Nsam+1)/2);
-      if(vars[var].nevents.at(sam)<0 && namestyle!="CMSPaper") {
-	leghisto += " [#mu=";
-	int digits(0);
-	if(histo[1][var][sam]->GetMean()<30) digits = 1;
-	leghisto += RoundNumber(histo[1][var][sam]->GetMean(),digits) + "]";
-      }
-      else{
-	leg[ileg].SetX1NDC(0.24); leg[ileg].SetX2NDC(0.7);
-	leg[ileg].SetTextSize(0.75*style.LegendSize);
-	leghisto +=  "[N_{tks} = " + RoundNumber(nentries[sam],1) + ", from N_{events} = "+RoundNumber(vars[var].nevents.at(sam),1)+"]";
+      if(namestyle!="CMSPaper"){
+	if(vars[var].nevents.at(sam)<0){
+	  leghisto += " [#mu=";
+	  int digits(0);
+	  if(histo[1][var][sam]->GetMean()<30) digits = 1;
+	  leghisto += RoundNumber(histo[1][var][sam]->GetMean(),digits) + "]";
+	} else{
+	  leg[ileg].SetX1NDC(0.24); leg[ileg].SetX2NDC(0.7);
+	  leg[ileg].SetTextSize(0.75*style.LegendSize);
+	  leghisto +=  "[N_{tks} = " + RoundNumber(nentries[sam],1) + ", from N_{events} = "
+	    +RoundNumber(vars[var].nevents.at(sam),1)+"]";
+	}
       }
       
       if(Samples[isam].style>0) leg[ileg].AddEntry(histo[1][var][sam], leghisto, "l");
@@ -249,13 +271,14 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
     style.moveYAxisLabel(histo[1][var][0], maxpad, false);
     can.SetLogy(0);
     pname = "plots/"+dir+"/shapes_"+vars[var].tag+plot_tag;
-    can.SaveAs(pname);
+    if(vars[var].whichPlots.Contains("0") || vars[var].whichPlots.Contains("3")) can.SaveAs(pname);
     float maxpadLog = maxhisto*exp(fracLeg*log(maxhisto/minLog)/(1-fracLeg));
     histo[1][var][0]->SetMaximum(maxpadLog);
     style.moveYAxisLabel(histo[1][var][0], maxpadLog, true);
     can.SetLogy(1);
     pname = "plots/"+dir+"/log_shapes_"+vars[var].tag+plot_tag;
-    if(!vars[var].skiplog) can.SaveAs(pname);
+    if(!vars[var].skiplog && (vars[var].whichPlots.Contains("0") || vars[var].whichPlots.Contains("4"))) 
+      can.SaveAs(pname);
   }// Loop over variables
 
   for(unsigned his(0); his < 2; his++){
@@ -330,7 +353,7 @@ hfeats::hfeats(TString ivarname, int inbins, float iminx, float imaxx, vector<in
   if(inevents.at(0)<0) nevents = vector<double>(isamples.size(),-1);
   else nevents = inevents;
   if(nevents.size() != samples.size() ) cout<<"hfeats samples/nevents size mismatch: "<<ititle<<endl;
-  
+  whichPlots = "0"; // Make all 4 [log_]lumi and [log_]shapes plots
   
   string ctitle(title.Data()); // Needed because effing TString can't handle square brackets
   if(!(ctitle.find("GeV")==std::string::npos)) unit = "GeV";
@@ -355,6 +378,7 @@ hfeats::hfeats(TString ivarname, int inbins, float *ibinning, vector<int> isampl
   if(inevents.at(0)<0) nevents = vector<double>(isamples.size(),-1);
   else nevents = inevents;
   if(nevents.size() != samples.size() ) cout<<"hfeats samples/nevents size mismatch: "<<ititle<<endl;
+  whichPlots = "0"; // Make all 4 [log_]lumi and [log_]shapes plots
   
   string ctitle(title.Data()); // Needed because effing TString can't handle square brackets
   if(!(ctitle.find("GeV")==std::string::npos)) unit = "GeV";
@@ -428,7 +452,7 @@ sfeats::sfeats(vector<TString> ifile, TString ilabel, int icolor, int istyle, TS
   tag = label;
   tag.ReplaceAll("(",""); tag.ReplaceAll(",","_");  tag.ReplaceAll(")","");
   tag.ReplaceAll("{",""); tag.ReplaceAll("#,","");  tag.ReplaceAll("}","");
-  doStack = false;
+  doStack = false; isData = false;
 }
 
 sysfeats::sysfeats(TString iname, TString ititle):

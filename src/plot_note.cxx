@@ -22,7 +22,7 @@ namespace {
   TString luminosity="10";
   TString plot_type=".pdf";
   TString plot_style="RA4";
-  int section(6);
+  int section(11);
 }
 
 using namespace std;
@@ -32,8 +32,8 @@ using std::endl;
 int main(){ 
   TString folder="/cms5r0/ald77/archive/"+ntuple_date+"/skim/";
   TString folder_ns="/cms5r0/ald77/archive/"+ntuple_date+"/";
-  folder="/afs/cern.ch/user/m/manuelf/work/ucsb/2015_05_25/skim/";
-  folder_ns="/afs/cern.ch/user/m/manuelf/work/ucsb/2015_05_25/skim/";
+  // folder="/afs/cern.ch/user/m/manuelf/work/ucsb/2015_05_25/skim/";
+  // folder_ns="/afs/cern.ch/user/m/manuelf/work/ucsb/2015_05_25/skim/";
 
 
   vector<TString> s_t1t;
@@ -55,6 +55,16 @@ int main(){
   s_other.push_back(folder+"*DY*");
   s_other.push_back(folder+"*WH_HToBB*");
   s_other.push_back(folder+"*_TTJet*");
+  vector<TString> s_allbkg;
+  s_allbkg.push_back(folder+"*QCD_HT*");
+  s_allbkg.push_back(folder+"*_ZJet*");
+  s_allbkg.push_back(folder+"*DY*");
+  s_allbkg.push_back(folder+"*WH_HToBB*");
+  s_allbkg.push_back(folder+"*_TTJet*");
+  s_allbkg.push_back(folder+"*TTW*");
+  s_allbkg.push_back(folder+"*TTZ*");
+  s_allbkg.push_back(folder+"*_T*channel*");
+  s_allbkg.push_back(folder+"*_WJets*");
 
   // Reading ntuples
   vector<sfeats> Samples; 
@@ -93,7 +103,13 @@ int main(){
   Samples.push_back(sfeats(s_tt, "t#bar{t} 2l, m_{T} #leq 140", 2, -1,"ntruleps>=2&&mt<=140"));
   Samples.push_back(sfeats(s_tt, "t#bar{t} 2l, m_{T} > 140", 4, -1,"ntruleps>=2&&mt>140"));
 
-  
+  unsigned isec11 = Samples.size();
+  vector<TString> s_allbkg_ns = s_allbkg;
+  for(unsigned ifile(0); ifile < s_allbkg_ns.size(); ifile++)
+    s_allbkg_ns[ifile].ReplaceAll(folder, folder_ns);
+  Samples.push_back(sfeats(s_allbkg, "Exp. data", 1, -1)); Samples.back().isData = true;
+  Samples.push_back(sfeats(s_allbkg_ns, "Exp. data", 1, -1)); Samples.back().isData = true;
+
   vector<int> ra4_sec1;
   ra4_sec1.push_back(isec1);
   ra4_sec1.push_back(isec1+1);
@@ -104,6 +120,13 @@ int main(){
   //ra4_sec6.push_back(isec6+1);
   ra4_sec6.push_back(isec6+2);
   ra4_sec6.push_back(isec6+3);
+
+  //vector<int> ra4_sec11(ra4_sam), ra4_sec11_ns(ra4_sam_ns);
+  vector<int> ra4_sec11, ra4_sec11_ns;
+  ra4_sec11.push_back(isec11);
+  ra4_sec11_ns.push_back(isec11+1);
+  for(unsigned ind(0); ind<ra4_sam.size(); ind++) ra4_sec11.push_back(ra4_sam[ind]);
+  for(unsigned ind(0); ind<ra4_sam_ns.size(); ind++) ra4_sec11_ns.push_back(ra4_sam_ns[ind]);
 
   vector<int> ra4_tt_t1_noskim;
   ra4_tt_t1_noskim.push_back(nsam);
@@ -162,6 +185,29 @@ int main(){
     vars.push_back(hfeats("njets",7,-0.5,6.5, ra4_sec6, "Number of jets",cuts+"&&njets<=6"));
     vars.push_back(hfeats("njets",6,6.5,12.5, ra4_sec6, "Number of jets",cuts+"&&njets>=7"));
 
+    break;
+  case 11: // Commissioning
+    vars.push_back(hfeats("ht",17,0,3400, ra4_sec11_ns, "H_{T} [GeV]",
+    			  "(nmus+nels)==1&&met>200&&njets>="+minjets+"&&nbm>=2",500));
+    vars.back().whichPlots = "12";
+    vars.push_back(hfeats("met",20,0,800, ra4_sec11_ns, "MET [GeV]",
+    			  "(nmus+nels)==1&&ht>500&&njets>="+minjets+"&&nbm>=2",200));
+    vars.back().whichPlots = "12";
+    vars.push_back(hfeats("njets",18,-0.5,17.5, ra4_sec11, "Number of jets",
+    			  "(nmus+nels)==1&&ht>500&&met>200&&nbm>=2",6.5));
+    vars.back().whichPlots = "12";
+    vars.push_back(hfeats("nbm",7,-0.5,6.5, ra4_sec11, "Number of b-tags (CSVM)",
+    			  "(nmus+nels)==1&&ht>500&&met>200&&njets>="+minjets,1.5));
+    vars.back().whichPlots = "12";
+    cuts += "&&ht>500&&met>200&&njets>="+minjets+"&&nbm>=2";
+    vars.push_back(hfeats("mt",25,0,500, ra4_sec11, "m_{T} [GeV]",cuts,140));
+    vars.back().whichPlots = "12";
+    cuts += "&&mt>140";
+    vars.push_back(hfeats("mj",16,0,1600, ra4_sec11, "M_{J} [GeV]",cuts,mjthresh.Atof()));
+    vars.back().whichPlots = "12";
+
+    luminosity = "1";
+    plot_style = "CMSPaper";
     break;
   default:
     break;

@@ -16,13 +16,19 @@
 #include "utilities.hpp"
 #include "utilities_macros.hpp"
 
+namespace {
+  TString ntuple_date("2015_05_25");
+  TString plot_type=".eps";
+  TString plot_style="RA4";
+}
+
 using namespace std;
 
 int main(){
-  styles style("RA4");
+  styles style(plot_style);
   style.setDefaultStyle();
 
-  TString folder="/cms5r0/rohan/2015_05_25/skim_met100/";
+  TString folder="/cms5r0/ald77/archive/"+ntuple_date+"/skim/";
   //TString folder="archive/current/";
   vector<TString> s_tt;
   s_tt.push_back(folder+"*_TTJet*");
@@ -199,19 +205,19 @@ void DrawPie(const pfeats &pfeat, const vector<sfeats> &samples, const vector<TC
   c.SetFillColorAlpha(0, 0.);
   c.SetFillStyle(4000);
   l.Draw();
-  c.Print("plots/pies/legen_"+name+".pdf");
+  c.Print("plots/pies/legen_"+name+plot_type);
   TPie pie("", "", pfeat.samples.size(), &counts.at(0), &colors.at(0), &labels.at(0));
   pie.SetCircle(0.5, 0.5, 0.3);
   pie.Draw();
-  c.Print("plots/pies/label_"+name+".pdf");
+  c.Print("plots/pies/label_"+name+plot_type);
   pie.SetLabelFormat("%val");
   pie.SetValueFormat("%0.1f");
   pie.Draw();
-  c.Print("plots/pies/count_"+name+".pdf");
+  c.Print("plots/pies/count_"+name+plot_type);
   pie.SetLabelFormat("");
   pie.SetCircle(0.5, 0.5, 0.49);
   pie.Draw();
-  c.Print("plots/pies/plain_"+name+".pdf");
+  c.Print("plots/pies/plain_"+name+plot_type);
 }
 
 TString FormatName(TString name){

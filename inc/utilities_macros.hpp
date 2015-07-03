@@ -49,6 +49,7 @@ public:
   void format_tag();
   std::vector<double> nevents; //Added for track veto study. Useful to display number of events when hist is filled N times per event
   bool skiplog;
+  TString whichPlots; // String that determines which of the [log_]lumi and [log_]shapes plots to make
 };
 
 class sfeats {
@@ -58,8 +59,8 @@ public:
   std::vector<TString> file;
   TString label, cut, factor,tag;
   int color, style;
-  bool isSig, doStack;
-  TString samVariable;
+  bool isSig, doStack, isData;
+  TString samVariable; // Used to plot different variables in the same histogram
 };
 
 class sysfeats {
