@@ -26,7 +26,7 @@ int main(){
   vector< vector<hfeats> > allvars;
   TString luminosity = "10";
   TCanvas can;
-  TString folder="/cms5r0/ald77/archive/2015_06_05/skim/skim_tight/";
+  TString folder="/Users/heller/code/skim_tight/";
   TString folder_noskim="archive/15-05-02//";
   vector<TString> s_tt;
   s_tt.push_back(folder+"*_TTJet*");
@@ -155,21 +155,20 @@ int main(){
   for(int itrack=0;itrack<3;itrack++){
     vector<hfeats> vars;
     for(int isel=0; isel<1; isel++){
-      if(itrack==0) {
+      
 	vars.push_back(hfeats("tks_pt",30,0,150,ra4_tt2l_t1,"track p_{T}, "+tracknames[itrack],selections[isel]+tracktype[itrack]+prompt,-1,"",true,ra4_tt2l_t1_yields[isel]));
 	vars.push_back(hfeats("tks_pt",30,0,150,ra4_tt2l_t1,"track p_{T}, "+tracknames[itrack],selections[isel]+tracktype[itrack]+nonprompt,-1,"",true,ra4_tt2l_t1_yields[isel]));
 
 
-      }
 
 	vars.push_back(hfeats("tks_mt",28,0,280,ra4_tt2l_t1,"track m_{T}, "+tracknames[itrack],selections[isel]+tracktype[itrack]+prompt,-1,"",true,ra4_tt2l_t1_yields[isel]));
 	vars.push_back(hfeats("tks_mt",28,0,280,ra4_tt2l_t1,"track m_{T}, "+tracknames[itrack],selections[isel]+tracktype[itrack]+nonprompt,-1,"",true,ra4_tt2l_t1_yields[isel]));
 
       for(int iiso=0;iiso<6;iiso++){
-	vars.push_back(hfeats(isotypes[iiso],40,0,100,ra4_tt2l_t1,isonames[iiso]+", "+tracknames[itrack],selections[isel]+tracktype[itrack]+prompt,-1,"",true,ra4_tt2l_t1_yields[isel]));
-	vars.push_back(hfeats(isotypes[iiso],40,0,100,ra4_tt2l_t1,isonames[iiso]+", "+tracknames[itrack],selections[isel]+tracktype[itrack]+nonprompt,-1,"",true,ra4_tt2l_t1_yields[isel]));
-	vars.push_back(hfeats(relisotypes[iiso],60,0,6,ra4_tt2l_t1,relisonames[iiso]+", "+tracknames[itrack],selections[isel]+tracktype[itrack]+prompt,-1,"",true,ra4_tt2l_t1_yields[isel]));
-	vars.push_back(hfeats(relisotypes[iiso],60,0,6,ra4_tt2l_t1,relisonames[iiso]+", "+tracknames[itrack],selections[isel]+tracktype[itrack]+nonprompt,-1,"",true,ra4_tt2l_t1_yields[isel]));
+	vars.push_back(hfeats(isotypes[iiso],50,0,25,ra4_tt2l_t1,isonames[iiso]+", "+tracknames[itrack],selections[isel]+tracktype[itrack]+prompt,-1,"",true,ra4_tt2l_t1_yields[isel]));
+	vars.push_back(hfeats(isotypes[iiso],50,0,25,ra4_tt2l_t1,isonames[iiso]+", "+tracknames[itrack],selections[isel]+tracktype[itrack]+nonprompt,-1,"",true,ra4_tt2l_t1_yields[isel]));
+	vars.push_back(hfeats(relisotypes[iiso],60,0,3,ra4_tt2l_t1,relisonames[iiso]+", "+tracknames[itrack],selections[isel]+tracktype[itrack]+prompt,-1,"",true,ra4_tt2l_t1_yields[isel]));
+	vars.push_back(hfeats(relisotypes[iiso],60,0,3,ra4_tt2l_t1,relisonames[iiso]+", "+tracknames[itrack],selections[isel]+tracktype[itrack]+nonprompt,-1,"",true,ra4_tt2l_t1_yields[isel]));
       }
     }
     allvars.push_back(vars);
