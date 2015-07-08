@@ -33,7 +33,7 @@ TString YieldsCut(TString title, TString event_cuts, TString track_cuts, vector<
 int main(){
 
   // Reading ntuples
-  TString folder="/Users/heller/code/skim_tight/";
+  TString folder="/cms5r0/ald77/archive/2015_06_05/skim/skim_tight/";
   
   vector<TString> s_tt;
   s_tt.push_back(folder+"*_TTJet*");
@@ -150,8 +150,8 @@ int main(){
   
   vector<int> finaliso;
   vector<TString> finalcut;
+  finaliso.push_back(6); finalcut.push_back("0.05");
   finaliso.push_back(6); finalcut.push_back("0.1");
-  finaliso.push_back(6); finalcut.push_back("0.2");
   finaliso.push_back(9); finalcut.push_back("0.05");
 
   vector<TString> tracknames;
@@ -173,7 +173,7 @@ int main(){
   TString fastveto_nonprompt = "&&Sum$("+os+elec+notp+"&&!tks_from_w&&(tks_pt)*min((tks_mini_ne+tks_mini_ch),(tks_r02_ne+tks_r02_ch))<2.5"+mtc[1]+")>0";
   
   //////////////////////////////////// Lepton veto study //////////////////////////////////
-  TString sumname = "txt/summary_veto_lumi_"+luminosity+".tex";
+  TString sumname = "txt/summary2_veto_lumi_"+luminosity+".tex";
  ifstream sumheader("txt/header.tex");
   ifstream sumfooter("txt/footer.tex");
   ofstream sumfile(sumname);

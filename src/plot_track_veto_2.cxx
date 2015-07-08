@@ -26,7 +26,7 @@ int main(){
   vector< vector<hfeats> > allvars;
   TString luminosity = "10";
   TCanvas can;
-  TString folder="/Users/heller/code/skim_tight/";
+  TString folder="/cms5r0/ald77/archive/2015_06_05/skim/skim_tight/";
   TString folder_noskim="archive/15-05-02//";
   vector<TString> s_tt;
   s_tt.push_back(folder+"*_TTJet*");
@@ -145,14 +145,16 @@ int main(){
   //tracktype.push_back( "&&tks_pt>20&&((tks_id*lep_charge)>0)&&(!tks_is_primary)&&tks_id*tks_id==121");
   tracktype.push_back( "&&((tks_id*lep_charge)>0)&&(!tks_is_primary)&&tks_id*tks_id==169");
   tracktype.push_back( "&&((tks_id*lep_charge)<0)&&(!tks_is_primary)&&!(tks_id*tks_id==169||tks_id*tks_id==121)");
+  tracktype.push_back( "&&tks_pt>15&&((tks_id*lep_charge)<0)&&(!tks_is_primary)&&!(tks_id*tks_id==169||tks_id*tks_id==121)");
   vector<TString> tracknames;
   tracknames.push_back("electron tracks");
   //  tracknames.push_back("electron tracks, p_{T} < 20");
   //tracknames.push_back("electron tracks, p_{T} > 20");
   tracknames.push_back("muon tracks");
   tracknames.push_back("hadronic tracks");
+  tracknames.push_back("hadronic tracks, p_{T} > 15");
 
-  for(int itrack=0;itrack<3;itrack++){
+  for(int itrack=0;itrack<4;itrack++){
     vector<hfeats> vars;
     for(int isel=0; isel<1; isel++){
       
@@ -283,6 +285,7 @@ int main(){
   plot_distributions(Samples, allvars.at(0), luminosity, ".pdf", "RA4","veto/els");
   plot_distributions(Samples, allvars.at(1), luminosity, ".pdf", "RA4","veto/mus");
   plot_distributions(Samples, allvars.at(2), luminosity, ".pdf", "RA4","veto/had");
+  plot_distributions(Samples, allvars.at(3), luminosity, ".pdf", "RA4","veto/had2");
 
 }
 
