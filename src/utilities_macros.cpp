@@ -101,7 +101,8 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
       int isam = vars[var].samples[sam];
       if(!Samples[isam].isSig && !Samples[isam].isData) nbkg++;
       samVariable = Samples[isam].samVariable;
-      totCut = Samples[isam].factor+"*"+luminosity+"*weight*("+vars[var].cuts+"&&"+Samples[isam].cut+")"; 
+      totCut = Samples[isam].factor+"*"+luminosity+"*weight*("+vars[var].cuts+"&&"+Samples[isam].cut+")";
+      if(Samples[isam].isData) totCut= vars[var].cuts+"&&"+Samples[isam].cut;
       //cout<<totCut<<endl;
       histo[0][var][sam]->Sumw2();
       if(samVariable=="noPlot") chain[isam]->Project(histo[0][var][sam]->GetName(), variable, totCut);
@@ -165,6 +166,8 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
 	  }
 	  if(Samples[isam].doStack)  histo[0][var][sam]->Add(histo[0][var][bkgind]);
 	}
+	if(Samples[isam].mcerr){ histo[0][var][sam]->SetLineWidth(2);  histo[0][var][sam]->SetMarkerStyle(20);
+	    histo[0][var][sam]->SetMarkerSize(1.2);}
 	double maxval(histo[0][var][sam]->GetMaximum());
 	if(maxhisto < maxval) maxhisto = maxval;
 	if(Samples[isam].isData) maxhisto = maxval+sqrt(maxval);
@@ -182,10 +185,14 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
 	  leg[ileg].AddEntry(histo[0][var][sam], leghisto,"f");
 	  legcount++;
 	  if(firstplotted < 0) {
-	    histo[0][var][sam]->Draw("hist");
+	    if(!Samples[isam].mcerr) histo[0][var][sam]->Draw("hist");
+	    else histo[0][var][sam]->Draw("ELP");
 	    firstplotted = sam;
 	    style.setTitles(histo[0][var][sam],vars[var].title, ytitle, cmslabel, lumilabel);
-	  } else histo[0][var][sam]->Draw("hist same");
+	  } else {
+	    if(!Samples[isam].mcerr) histo[0][var][sam]->Draw("hist same");
+	    else histo[0][var][sam]->Draw("ELP same");
+	  }
 	} else {
 	  if(Samples[isam].isSig) leg[ileg].AddEntry(histo[0][var][sam], leghisto,"l");
 	  else leg[ileg].AddEntry(histo[0][var][sam], leghisto,"elp");
@@ -194,7 +201,7 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
       }
       for(int sam(Nsam-1); sam >= 0; sam--){
 	int isam = vars[var].samples[sam];
-	if(Samples[isam].isSig) histo[0][var][sam]->Draw("hist same");
+	if(Samples[isam].isSig){if(!Samples[isam].mcerr) histo[0][var][sam]->Draw("hist same"); else histo[0][var][sam]->Draw("EP same"); }
 	if(Samples[isam].isData) histo[0][var][sam]->Draw("e1 same");
       }
       for(int ileg(0); ileg<nLegs; ileg++) leg[ileg].Draw(); 
@@ -291,6 +298,7 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
 
 TString cuts2title(TString title){
   if(title=="1") title = "";
+  title.ReplaceAll("1==1", "Full Sample");
   title.ReplaceAll("Sum$(abs(mc_id)==11)","n^{true}_{e}");
   title.ReplaceAll("Sum$(abs(mc_id)==13)","n^{true}_{#mu}");
   title.ReplaceAll("Sum$(genels_pt>0)", "n^{true}_{e}");
@@ -312,6 +320,7 @@ TString cuts2title(TString title){
   title.ReplaceAll("nleps==1", "1 lepton");  title.ReplaceAll("nbm","n_{b}"); title.ReplaceAll("==", " = "); 
   title.ReplaceAll("nbl[1]","n_{b,l}");
   title.ReplaceAll("mj", " M_{J}");
+  
 
   return title;
 }
@@ -390,6 +399,7 @@ void hfeats::format_tag(){
   if(cuts!="1")   tag+="_"+cuts;
   if(tagname!="") tag+="_"+tagname;
 
+  tag.ReplaceAll("1==1", "full_sample");
   tag.ReplaceAll(".","");
   tag.ReplaceAll("(",""); tag.ReplaceAll("$","");  tag.ReplaceAll(")","");
   tag.ReplaceAll("[",""); tag.ReplaceAll("]",""); tag.ReplaceAll("||","_");
@@ -407,8 +417,8 @@ void hfeats::format_tag(){
   tag.ReplaceAll("tks_idlep_chargeg0_nottks_is_primary_tks_idtks_id169_","os_mus_");
   tag.ReplaceAll("tks_idlep_charges0_nottks_is_primary_nottks_idtks_id169_tks_idtks_id121_","os_had_");
 
-  tag.ReplaceAll("nottks_from_w_","fakes_");
-  tag.ReplaceAll("tks_from_w_","prompt_");
+  tag.ReplaceAll("nottks_from_w","fakes");
+  tag.ReplaceAll("tks_from_w","prompt");
 
   tag.ReplaceAll("tks_ptmintks_mini_netks_mini_ch,tks_r02_netks_r02_ch","abs_mini_iso_chgneu");
   tag.ReplaceAll("tks_ptmintks_mini_netks_mini_ch,tks_r05_netks_r05_ch","abs_r_05_mini_iso_chgneu");
@@ -452,7 +462,7 @@ sfeats::sfeats(vector<TString> ifile, TString ilabel, int icolor, int istyle, TS
   tag = label;
   tag.ReplaceAll("(",""); tag.ReplaceAll(",","_");  tag.ReplaceAll(")","");
   tag.ReplaceAll("{",""); tag.ReplaceAll("#,","");  tag.ReplaceAll("}","");
-  doStack = false; isData = false;
+  doStack = false; isData = false; mcerr=false;
 }
 
 sysfeats::sysfeats(TString iname, TString ititle):
