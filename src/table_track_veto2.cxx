@@ -33,7 +33,8 @@ TString YieldsCut(TString title, TString event_cuts, TString track_cuts, vector<
 int main(){
 
   // Reading ntuples
-  TString folder="/cms5r0/ald77/archive/2015_06_05/skim/skim_tight/";
+  TString folder="/cms7r0/heller/code/susy_cfa/out/skim/";
+  //  TString folder="/cms5r0/ald77/archive/2015_06_05/skim/skim_tight/";
   
   vector<TString> s_tt;
   s_tt.push_back(folder+"*_TTJet*");
@@ -95,11 +96,7 @@ int main(){
   TString muon("&&tks_id*tks_id==169");
   TString had("&&!(tks_id*tks_id==121||tks_id*tks_id==169)");
 
-  vector<TString> trackdefs;
-  trackdefs.push_back(os+notp+elec);
-  trackdefs.push_back(os+notp+muon);
-  trackdefs.push_back(os_had+notp+had);
-  trackdefs.push_back(os_had+notp+"&&tks_pt>15"+had);
+  
   //abs iso for e (2 options), abs iso for mu (2 options), then charge iso for hadrons (2 options)
   //TString iso[6] = {"&&(tks_pt*(tks_mini_ne+tks_mini_ch))<10","&&(tks_pt*(tks_mini_ne+tks_mini_ch))<20","&&(tks_pt*(tks_mini_ne+tks_mini_ch))<30","&&(tks_pt*(tks_mini_ne+tks_mini_ch))<50","&&(tks_pt*(tks_mini_ch))<2.5","&&tks_mini_ch<0.05"};
   // absolute iso = pt*(rel iso) 
@@ -125,12 +122,32 @@ int main(){
   isonames.push_back("rel chg mini isolation");  isotypes.push_back("min((tks_mini_ch),(tks_r02_ch))");
   isonames.push_back("rel chg R=0.5 mini isolation");  isotypes.push_back("min((tks_mini_ch),(tks_r05_ch))");
   isonames.push_back("rel chg untruncated mini isolation"); isotypes.push_back("(tks_mini_ch)");
+
+  vector<TString> trackdefs;
+  trackdefs.push_back(os+notp+elec+"&&"+isotypes[6]+"<0.1&&tks_dz<0.01");
+  trackdefs.push_back(os+notp+muon+"&&"+isotypes[6]+"<0.2&&tks_dz<0.01");
+  trackdefs.push_back(os_had+notp+had+"&&"+isotypes[9]+"<0.05");
+  trackdefs.push_back(os_had+notp+"&&tks_pt>15"+had+"&&"+isotypes[9]+"<0.05");
+
   
   vector<int> eliso,muiso,hadiso;
   vector<TString> elcut,mucut,hadcut;
   vector< vector<int> > alliso;
   vector< vector<TString> > allcut;
-  eliso.push_back(0); elcut.push_back("1.0");
+
+  elcut.push_back("tks_dz<0.008");
+  elcut.push_back("tks_dz<0.01");
+  elcut.push_back("tks_dz<0.015");
+  elcut.push_back("tks_dz<0.02");
+
+  mucut.push_back("tks_dz<0.008");
+  mucut.push_back("tks_dz<0.01");
+  mucut.push_back("tks_dz<0.015");
+  mucut.push_back("tks_dz<0.02");
+
+  hadcut.push_back("1==1");
+  
+  /* eliso.push_back(0); elcut.push_back("1.0");
   eliso.push_back(0); elcut.push_back("2.5");
   eliso.push_back(6); elcut.push_back("0.1");
 
@@ -143,15 +160,15 @@ int main(){
   hadiso.push_back(3); hadcut.push_back("2.5");
   hadiso.push_back(3); hadcut.push_back("5.0");
   hadiso.push_back(9); hadcut.push_back("0.05");
-  hadiso.push_back(9); hadcut.push_back("0.1");
+  hadiso.push_back(9); hadcut.push_back("0.1");*/
   
-  alliso.push_back(eliso);  alliso.push_back(muiso);  alliso.push_back(hadiso);  alliso.push_back(hadiso);
-  allcut.push_back(elcut);  allcut.push_back(mucut);  allcut.push_back(hadcut);  allcut.push_back(hadcut);
+  //alliso.push_back(eliso);  alliso.push_back(muiso);  alliso.push_back(hadiso);  alliso.push_back(hadiso);
+   allcut.push_back(elcut);  allcut.push_back(mucut);  allcut.push_back(hadcut);  allcut.push_back(hadcut);
   
   vector<int> finaliso;
   vector<TString> finalcut;
-  finaliso.push_back(6); finalcut.push_back("0.05");
   finaliso.push_back(6); finalcut.push_back("0.1");
+  finaliso.push_back(6); finalcut.push_back("0.2");
   finaliso.push_back(9); finalcut.push_back("0.05");
 
   vector<TString> tracknames;
@@ -161,10 +178,10 @@ int main(){
   tracknames.push_back("had2");
 
  vector<TString> tracknames2;
-  tracknames2.push_back("el");
-  tracknames2.push_back("mu");
-  tracknames2.push_back("had");  
-  tracknames2.push_back("had, p$_{T} > 15$ "); 
+  tracknames2.push_back("el, rel chg+neu mini iso < 0.1");
+  tracknames2.push_back("mu, rel chg+neu mini iso < 0.2");
+  tracknames2.push_back("had, rel chg mini iso < 0.05");  
+  tracknames2.push_back("had, p$_{T} > 15$, rel chg mini iso < 0.05"); 
 
 
   
@@ -202,19 +219,19 @@ sumfile << YieldsCut("$MJ>300$", cuts, "",
 		    chain, Samples, nsig);
   sumfile << "\\hline \n ";
 
-TString eveto ="Sum$("+trackdefs.at(0)+"&&"+isotypes.at(finaliso.at(0))+"<"+finalcut.at(0)+mtc[2]+")>0";
+TString eveto ="Sum$("+trackdefs.at(0)+mtc[2]+")>0";
   
- sumfile << YieldsCut("has e, " + isonames.at(finaliso.at(0)) + " $<$ " + finalcut.at(0) + " ", cuts,"&&"+eveto, 
+ sumfile << YieldsCut("has "+tracknames2[0], cuts,"&&"+eveto, 
   		    chain, Samples, nsig);
 
-TString muveto ="Sum$("+trackdefs.at(1)+"&&"+isotypes.at(finaliso.at(1))+"<"+finalcut.at(1)+mtc[2]+")>0";
+TString muveto ="Sum$("+trackdefs.at(1)+mtc[2]+")>0";
   
- sumfile << YieldsCut("has mu, " + isonames.at(finaliso.at(1)) + " $<$ " + finalcut.at(1) + " ", cuts,"&&"+muveto, 
+ sumfile << YieldsCut("has "+tracknames2[1], cuts,"&&"+muveto, 
   		    chain, Samples, nsig);
 
-TString hadveto ="Sum$("+trackdefs.at(3)+"&&"+isotypes.at(finaliso.at(2))+"<"+finalcut.at(2)+mtc[2]+")>0";
+TString hadveto ="Sum$("+trackdefs.at(3)+mtc[2]+")>0";
   
- sumfile << YieldsCut("has hadron p$_{T}$ $>$ 15, " + isonames.at(finaliso.at(2)) + " $<$ " + finalcut.at(2) + " ", cuts,"&&"+hadveto, 
+ sumfile << YieldsCut("has "+tracknames2[3], cuts,"&&"+hadveto, 
   		    chain, Samples, nsig);
 
   sumfile << "\\hline \n ";
@@ -261,17 +278,17 @@ sumfile<< "\\hfill \\break \n";
 
   //TString eveto ="Sum$("+trackdefs.at(0)+isotypes.at(finaliso.at(0))+"<"+finalcut.at(0)+mtc[2]+")>0";
   
- sumfile << YieldsCut("has e, " + isonames.at(finaliso.at(0)) + " $<$ " + finalcut.at(0) + " ", cuts+"&&met>400","&&"+eveto, 
+ sumfile << YieldsCut("has "+tracknames2[0], cuts+"&&met>400","&&"+eveto, 
   		    chain, Samples, nsig);
 
  //TString muveto ="Sum$("+trackdefs.at(1)+isotypes.at(finaliso.at(1))+"<"+finalcut.at(1)+mtc[2]+")>0";
   
- sumfile << YieldsCut("has mu, " + isonames.at(finaliso.at(1)) + " $<$ " + finalcut.at(1) + " ", cuts+"&&met>400","&&"+muveto, 
+ sumfile << YieldsCut("has "+tracknames2[1], cuts+"&&met>400","&&"+muveto, 
   		    chain, Samples, nsig);
 
  //TString hadveto ="Sum$("+trackdefs.at(3)+isotypes.at(finaliso.at(3))+"<"+finalcut.at(3)+mtc[2]+")>0";
   
- sumfile << YieldsCut("has hadron p$_{T}$ $>$ 15, " + isonames.at(finaliso.at(2)) + " $<$ " + finalcut.at(2) + " ", cuts+"&&met>400","&&"+hadveto, 
+ sumfile << YieldsCut("has "+tracknames2[3], cuts+"&&met>400","&&"+hadveto, 
   		    chain, Samples, nsig);
 
   sumfile << "\\hline \n ";
@@ -331,13 +348,13 @@ sumfile<< "\\hfill \\break \n";
 file << YieldsCut("$MJ>300$", cuts, "",
 		    chain, Samples, nsig);
   file << "\\hline \n ";
-  for(unsigned int iiso=0;iiso<alliso.at(itrack).size(); iiso++){
-    TString veto_prompt ="&&Sum$("+trackdefs.at(itrack)+"&&tks_from_w&&"+isotypes.at(alliso.at(itrack).at(iiso))+"<"+allcut.at(itrack).at(iiso)+mtc[2]+")>0";
-    TString veto_nonprompt ="&&Sum$("+trackdefs.at(itrack)+"&&!tks_from_w&&"+isotypes.at(alliso.at(itrack).at(iiso))+"<"+allcut.at(itrack).at(iiso)+mtc[2]+")>0";
+  for(unsigned int icut=0;icut<allcut.at(itrack).size(); icut++){
+    TString veto_prompt ="&&Sum$("+trackdefs.at(itrack)+"&&tks_from_w&&"+allcut.at(itrack).at(icut)+mtc[2]+")>0";
+    TString veto_nonprompt ="&&Sum$("+trackdefs.at(itrack)+"&&!tks_from_w&&"+allcut.at(itrack).at(icut)+mtc[2]+")>0";
 
- file << YieldsCut("have prompt "+tracknames2.at(itrack)+", " + isonames.at(alliso.at(itrack).at(iiso)) + " $<$ " + allcut.at(itrack).at(iiso) + " ", cuts,veto_prompt, 
+ file << YieldsCut("have prompt "+tracknames2.at(itrack)+" "+ allcut.at(itrack).at(icut) + " ", cuts,veto_prompt, 
   		    chain, Samples, nsig);
- file << YieldsCut("have fake "+tracknames2.at(itrack)+" " + isonames.at(alliso.at(itrack).at(iiso)) + " $<$ " + allcut.at(itrack).at(iiso) + " ", cuts,veto_nonprompt, 
+ file << YieldsCut("have fake "+tracknames2.at(itrack)+" "+ allcut.at(itrack).at(icut) + " ", cuts,veto_nonprompt, 
   		    chain, Samples, nsig);
   file << "\\hline \n ";
   }
@@ -376,14 +393,13 @@ file<< "\\hfill \\break \n";
 		    chain, Samples, nsig);
   file << "\\hline \n ";
 
-  for(unsigned int iiso=0;iiso<alliso.at(itrack).size(); iiso++){
-    TString veto_prompt ="&&Sum$("+trackdefs.at(itrack)+"&&tks_from_w&&"+isotypes.at(alliso.at(itrack).at(iiso))+"<"+allcut.at(itrack).at(iiso)+mtc[2]+")>0";
-    TString veto_nonprompt ="&&Sum$("+trackdefs.at(itrack)+"&&!tks_from_w&&"+isotypes.at(alliso.at(itrack).at(iiso))+"<"+allcut.at(itrack).at(iiso)+mtc[2]+")>0";
+  for(unsigned int icut=0;icut<allcut.at(itrack).size(); icut++){
+      TString veto_prompt ="&&Sum$("+trackdefs.at(itrack)+"&&tks_from_w&&"+allcut.at(itrack).at(icut)+mtc[2]+")>0";
+    TString veto_nonprompt ="&&Sum$("+trackdefs.at(itrack)+"&&!tks_from_w&&"+allcut.at(itrack).at(icut)+mtc[2]+")>0";
 
-
- file << YieldsCut("have prompt "+tracknames2.at(itrack)+", " + isonames.at(alliso.at(itrack).at(iiso)) + " $<$ " + allcut.at(itrack).at(iiso) + " ", cuts+"&&met>400",veto_prompt, 
+ file << YieldsCut("have prompt "+tracknames2.at(itrack)+" "+ allcut.at(itrack).at(icut) + " ", cuts+"&&met>400",veto_prompt, 
   		    chain, Samples, nsig);
- file << YieldsCut("have fake "+tracknames2.at(itrack)+" " + isonames.at(alliso.at(itrack).at(iiso)) + " $<$ " + allcut.at(itrack).at(iiso) + " ", cuts+"&&met>400",veto_nonprompt, 
+ file << YieldsCut("have fake "+tracknames2.at(itrack)+" "+ allcut.at(itrack).at(icut) + " ", cuts+"&&met>400",veto_nonprompt, 
   		    chain, Samples, nsig);
   file << "\\hline \n ";
   }

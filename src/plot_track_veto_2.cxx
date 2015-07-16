@@ -26,7 +26,9 @@ int main(){
   vector< vector<hfeats> > allvars;
   TString luminosity = "10";
   TCanvas can;
-  TString folder="/cms5r0/ald77/archive/2015_06_05/skim/skim_tight/";
+
+  TString folder = "/cms7r0/heller/code/susy_cfa/out/skim/";
+  //TString folder="/cms5r0/ald77/archive/2015_06_05/skim/skim_tight/";
   TString folder_noskim="archive/15-05-02//";
   vector<TString> s_tt;
   s_tt.push_back(folder+"*_TTJet*");
@@ -120,25 +122,27 @@ int main(){
   vector<TString> relisotypes;
   vector<TString> relisonames;
   isonames.push_back("abs chg+neu mini isolation");  isotypes.push_back("(tks_pt)*min((tks_mini_ne+tks_mini_ch),(tks_r02_ne+tks_r02_ch))");
+  isonames.push_back("abs chg mini isolation");  isotypes.push_back("(tks_pt)*min((tks_mini_ch),(tks_r02_ch))");
+
   isonames.push_back("abs chg+neu R=0.5 mini isolation");  isotypes.push_back("(tks_pt)*min((tks_mini_ne+tks_mini_ch),(tks_r05_ne+tks_r05_ch))");
   isonames.push_back("abs chg+neu untruncated mini isolation"); isotypes.push_back("(tks_pt)*(tks_mini_ne+tks_mini_ch)");
-
-  isonames.push_back("abs chg mini isolation");  isotypes.push_back("(tks_pt)*min((tks_mini_ch),(tks_r02_ch))");
   isonames.push_back("abs chg R=0.5 mini isolation");  isotypes.push_back("(tks_pt)*min((tks_mini_ch),(tks_r05_ch))");
   isonames.push_back("abs chg untruncated mini isolation"); isotypes.push_back("(tks_pt)*(tks_mini_ch)");
 
   relisonames.push_back("rel chg+neu mini isolation");  relisotypes.push_back("min((tks_mini_ne+tks_mini_ch),(tks_r02_ne+tks_r02_ch))");
+  relisonames.push_back("rel chg mini isolation");  relisotypes.push_back("min((tks_mini_ch),(tks_r02_ch))");
+
   relisonames.push_back("rel chg+neu R=0.5 mini isolation");  relisotypes.push_back("min((tks_mini_ne+tks_mini_ch),(tks_r05_ne+tks_r05_ch))");
   relisonames.push_back("rel chg+neu untruncated mini isolation"); relisotypes.push_back("(tks_mini_ne+tks_mini_ch)");
-
-  relisonames.push_back("rel chg mini isolation");  relisotypes.push_back("min((tks_mini_ch),(tks_r02_ch))");
   relisonames.push_back("rel chg R=0.5 mini isolation");  relisotypes.push_back("min((tks_mini_ch),(tks_r05_ch))");
   relisonames.push_back("rel chg untruncated mini isolation"); relisotypes.push_back("(tks_mini_ch)");
   
   
   TString prompt = "&&tks_from_w";
   TString nonprompt = "&&!tks_from_w";
-  
+  TString fromPV = "&&tks_from_pv>=2";
+  TString notfromPV = "&&tks_from_pv<2";
+      
   vector<TString> tracktype;
   tracktype.push_back( "&&((tks_id*lep_charge)>0)&&(!tks_is_primary)&&tks_id*tks_id==121");
   //tracktype.push_back( "&&tks_pt<=20&&((tks_id*lep_charge)>0)&&(!tks_is_primary)&&tks_id*tks_id==121");
@@ -146,31 +150,59 @@ int main(){
   tracktype.push_back( "&&((tks_id*lep_charge)>0)&&(!tks_is_primary)&&tks_id*tks_id==169");
   tracktype.push_back( "&&((tks_id*lep_charge)<0)&&(!tks_is_primary)&&!(tks_id*tks_id==169||tks_id*tks_id==121)");
   tracktype.push_back( "&&tks_pt>15&&((tks_id*lep_charge)<0)&&(!tks_is_primary)&&!(tks_id*tks_id==169||tks_id*tks_id==121)");
-  vector<TString> tracknames;
-  tracknames.push_back("electron tracks");
+  vector<TString> faketracknames;
+  faketracknames.push_back("non-prompt electron tracks");
   //  tracknames.push_back("electron tracks, p_{T} < 20");
   //tracknames.push_back("electron tracks, p_{T} > 20");
-  tracknames.push_back("muon tracks");
-  tracknames.push_back("hadronic tracks");
-  tracknames.push_back("hadronic tracks, p_{T} > 15");
+  faketracknames.push_back("non-prompt muon tracks");
+  faketracknames.push_back("non-prompt hadronic tracks");
+  faketracknames.push_back("non-prompt hadronic tracks, p_{T} > 15");
+   vector<TString> prompttracknames;
+  prompttracknames.push_back("prompt electron tracks");
+  //  prompttracknames.push_back("electron tracks, p_{T} < 20");
+  //prompttracknames.push_back("electron tracks, p_{T} > 20");
+  prompttracknames.push_back("prompt muon tracks");
+  prompttracknames.push_back("prompt hadronic tracks");
+  prompttracknames.push_back("prompt hadronic tracks, p_{T} > 15");
+
 
   for(int itrack=0;itrack<4;itrack++){
     vector<hfeats> vars;
     for(int isel=0; isel<1; isel++){
       
-	vars.push_back(hfeats("tks_pt",30,0,150,ra4_tt2l_t1,"track p_{T}, "+tracknames[itrack],selections[isel]+tracktype[itrack]+prompt,-1,"",true,ra4_tt2l_t1_yields[isel]));
-	vars.push_back(hfeats("tks_pt",30,0,150,ra4_tt2l_t1,"track p_{T}, "+tracknames[itrack],selections[isel]+tracktype[itrack]+nonprompt,-1,"",true,ra4_tt2l_t1_yields[isel]));
+	vars.push_back(hfeats("tks_pt",30,0,150,ra4_tt2l_t1,"track p_{T}, "+prompttracknames[itrack],selections[isel]+tracktype[itrack]+prompt,-1,"",true,ra4_tt2l_t1_yields[isel]));
+	vars.push_back(hfeats("tks_pt",30,0,150,ra4_tt2l_t1,"track p_{T}, "+faketracknames[itrack],selections[isel]+tracktype[itrack]+nonprompt,-1,"",true,ra4_tt2l_t1_yields[isel]));
+
+	vars.push_back(hfeats("tks_mt",28,0,280,ra4_tt2l_t1,"track m_{T}, "+prompttracknames[itrack],selections[isel]+tracktype[itrack]+prompt,-1,"",true,ra4_tt2l_t1_yields[isel]));
+	vars.push_back(hfeats("tks_mt",28,0,280,ra4_tt2l_t1,"track m_{T}, "+faketracknames[itrack],selections[isel]+tracktype[itrack]+nonprompt,-1,"",true,ra4_tt2l_t1_yields[isel]));
+
+	vars.push_back(hfeats("tks_from_pv",6,-0.5,5.5,ra4_tt2l_t1,"track is from PV, "+prompttracknames[itrack],selections[isel]+tracktype[itrack]+prompt,-1,"",true,ra4_tt2l_t1_yields[isel]));
+	vars.push_back(hfeats("tks_from_pv",6,-0.5,5.5,ra4_tt2l_t1,"track is from PV, "+faketracknames[itrack],selections[isel]+tracktype[itrack]+nonprompt,-1,"",true,ra4_tt2l_t1_yields[isel]));
+
+	vars.push_back(hfeats("tks_dz",100,-0.2,0.2,ra4_tt2l_t1,"track dz, "+prompttracknames[itrack],selections[isel]+tracktype[itrack]+prompt,-1,"",true,ra4_tt2l_t1_yields[isel]));
+	vars.push_back(hfeats("tks_dz",100,-0.2,0.2,ra4_tt2l_t1,"track dz, "+faketracknames[itrack],selections[isel]+tracktype[itrack]+nonprompt,-1,"",true,ra4_tt2l_t1_yields[isel]));
+
+	vars.push_back(hfeats("tks_dz",100,-0.2,0.2,ra4_tt2l_t1,"track dz, "+prompttracknames[itrack],selections[isel]+tracktype[itrack]+prompt+fromPV,-1,"",true,ra4_tt2l_t1_yields[isel]));
+	vars.push_back(hfeats("tks_dz",100,-0.2,0.2,ra4_tt2l_t1,"track dz, "+faketracknames[itrack],selections[isel]+tracktype[itrack]+nonprompt+fromPV,-1,"",true,ra4_tt2l_t1_yields[isel]));
+
+	vars.push_back(hfeats("tks_dz",100,-0.2,0.2,ra4_tt2l_t1,"track dz, "+prompttracknames[itrack],selections[isel]+tracktype[itrack]+prompt+notfromPV,-1,"",true,ra4_tt2l_t1_yields[isel]));
+	vars.push_back(hfeats("tks_dz",100,-0.2,0.2,ra4_tt2l_t1,"track dz, "+faketracknames[itrack],selections[isel]+tracktype[itrack]+nonprompt+notfromPV,-1,"",true,ra4_tt2l_t1_yields[isel]));
+
+	vars.push_back(hfeats("tks_dxy",100,-0.2,0.2,ra4_tt2l_t1,"track dxy, "+prompttracknames[itrack],selections[isel]+tracktype[itrack]+prompt,-1,"",true,ra4_tt2l_t1_yields[isel]));
+	vars.push_back(hfeats("tks_dxy",100,-0.2,0.2,ra4_tt2l_t1,"track dxy, "+faketracknames[itrack],selections[isel]+tracktype[itrack]+nonprompt,-1,"",true,ra4_tt2l_t1_yields[isel]));
+
+	vars.push_back(hfeats("tks_dxy",100,-0.2,0.2,ra4_tt2l_t1,"track dxy, "+prompttracknames[itrack],selections[isel]+tracktype[itrack]+prompt+fromPV,-1,"",true,ra4_tt2l_t1_yields[isel]));
+	vars.push_back(hfeats("tks_dxy",100,-0.2,0.2,ra4_tt2l_t1,"track dxy, "+faketracknames[itrack],selections[isel]+tracktype[itrack]+nonprompt+fromPV,-1,"",true,ra4_tt2l_t1_yields[isel]));
+
+	vars.push_back(hfeats("tks_dxy",100,-0.2,0.2,ra4_tt2l_t1,"track dxy, "+prompttracknames[itrack],selections[isel]+tracktype[itrack]+prompt+notfromPV,-1,"",true,ra4_tt2l_t1_yields[isel]));
+	vars.push_back(hfeats("tks_dxy",100,-0.2,0.2,ra4_tt2l_t1,"track dxy, "+faketracknames[itrack],selections[isel]+tracktype[itrack]+nonprompt+notfromPV,-1,"",true,ra4_tt2l_t1_yields[isel]));
 
 
-
-	vars.push_back(hfeats("tks_mt",28,0,280,ra4_tt2l_t1,"track m_{T}, "+tracknames[itrack],selections[isel]+tracktype[itrack]+prompt,-1,"",true,ra4_tt2l_t1_yields[isel]));
-	vars.push_back(hfeats("tks_mt",28,0,280,ra4_tt2l_t1,"track m_{T}, "+tracknames[itrack],selections[isel]+tracktype[itrack]+nonprompt,-1,"",true,ra4_tt2l_t1_yields[isel]));
-
-      for(int iiso=0;iiso<6;iiso++){
-	vars.push_back(hfeats(isotypes[iiso],50,0,25,ra4_tt2l_t1,isonames[iiso]+", "+tracknames[itrack],selections[isel]+tracktype[itrack]+prompt,-1,"",true,ra4_tt2l_t1_yields[isel]));
-	vars.push_back(hfeats(isotypes[iiso],50,0,25,ra4_tt2l_t1,isonames[iiso]+", "+tracknames[itrack],selections[isel]+tracktype[itrack]+nonprompt,-1,"",true,ra4_tt2l_t1_yields[isel]));
-	vars.push_back(hfeats(relisotypes[iiso],60,0,3,ra4_tt2l_t1,relisonames[iiso]+", "+tracknames[itrack],selections[isel]+tracktype[itrack]+prompt,-1,"",true,ra4_tt2l_t1_yields[isel]));
-	vars.push_back(hfeats(relisotypes[iiso],60,0,3,ra4_tt2l_t1,relisonames[iiso]+", "+tracknames[itrack],selections[isel]+tracktype[itrack]+nonprompt,-1,"",true,ra4_tt2l_t1_yields[isel]));
+      for(int iiso=0;iiso<2;iiso++){
+	vars.push_back(hfeats(isotypes[iiso],50,0,25,ra4_tt2l_t1,isonames[iiso]+", "+prompttracknames[itrack],selections[isel]+tracktype[itrack]+prompt,-1,"",true,ra4_tt2l_t1_yields[isel]));
+	vars.push_back(hfeats(isotypes[iiso],50,0,25,ra4_tt2l_t1,isonames[iiso]+", "+faketracknames[itrack],selections[isel]+tracktype[itrack]+nonprompt,-1,"",true,ra4_tt2l_t1_yields[isel]));
+	vars.push_back(hfeats(relisotypes[iiso],60,0,3,ra4_tt2l_t1,relisonames[iiso]+", "+prompttracknames[itrack],selections[isel]+tracktype[itrack]+prompt,-1,"",true,ra4_tt2l_t1_yields[isel]));
+	vars.push_back(hfeats(relisotypes[iiso],60,0,3,ra4_tt2l_t1,relisonames[iiso]+", "+faketracknames[itrack],selections[isel]+tracktype[itrack]+nonprompt,-1,"",true,ra4_tt2l_t1_yields[isel]));
       }
     }
     allvars.push_back(vars);

@@ -102,6 +102,7 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
       if(!Samples[isam].isSig && !Samples[isam].isData) nbkg++;
       samVariable = Samples[isam].samVariable;
       totCut = Samples[isam].factor+"*"+luminosity+"*weight*("+vars[var].cuts+"&&"+Samples[isam].cut+")";
+
       if(Samples[isam].isData) totCut= vars[var].cuts+"&&"+Samples[isam].cut;
       //cout<<totCut<<endl;
       histo[0][var][sam]->Sumw2();
@@ -166,11 +167,15 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
 	  }
 	  if(Samples[isam].doStack)  histo[0][var][sam]->Add(histo[0][var][bkgind]);
 	}
-	if(Samples[isam].mcerr){ histo[0][var][sam]->SetLineWidth(2);  histo[0][var][sam]->SetMarkerStyle(20);
-	    histo[0][var][sam]->SetMarkerSize(1.2);}
+	if(Samples[isam].mcerr){ histo[0][var][sam]->SetLineWidth(4);  histo[0][var][sam]->SetMarkerStyle(20); 
+	  //histo[0][var][sam]->SetMarkerColor(Samples[isam].color);
+	  histo[0][var][sam]->SetMarkerSize(1.2);
+	  histo[0][var][sam]->SetLineStyle(abs(Samples[isam].style));
+	  histo[0][var][2]->SetFillColorAlpha(Samples[2].color, 0.5);
+	}
 	double maxval(histo[0][var][sam]->GetMaximum());
-	if(maxhisto < maxval) maxhisto = maxval;
-	if(Samples[isam].isData) maxhisto = maxval+sqrt(maxval);
+	if(maxhisto < maxval) {maxhisto = maxval;
+	  if(Samples[isam].isData) maxhisto = maxval+sqrt(maxval);}
       } // First loop over samples
       for(int ileg(0); ileg<nLegs; ileg++) leg[ileg].Clear();
       unsigned legcount(0);
