@@ -16,145 +16,171 @@
 #include "utilities_macros.hpp"
 
 using namespace std;
-using std::cout;
-using std::endl;
+
+void PlotTurnOn(TChain *data, TString var, int nbins, double minx, double maxx, TString xtitle, 
+		TString den, TString num, TString title="", TString ytitle="");
+void Efficiency(TChain *data, TString den, TString num);
 
 int main(){ 
 
-  TString folders[] ={"/net/cms2/cms2r0/manuelf/root/small/hlt/15-04-01/el15/",
-		      "/net/cms2/cms2r0/manuelf/root/small/hlt/15-04-01/mu15/"};
-  TString folder_offline="/cms5r0/ald77/archive/2015_05_10/";
-  TString leptag[] = {"electron", "muon"};
-  vector<TString> s_t1t[2], s_t1tc[2], s_tt[2], s_qcd[2], s_wjets[2];
-  vector<TString> s_t1t_offline;
-  s_t1t_offline.push_back(folder_offline+"*T1tttt*1500_*PU20*");
-  vector<TString> s_t1tc_offline;
-  s_t1tc_offline.push_back(folder_offline+"*T1tttt*1200_*PU20*");
-  vector<TString> s_tt_offline;
-  s_tt_offline.push_back(folder_offline+"*_TTJet*12.root");
-  s_tt_offline.push_back(folder_offline+"*_TTJet*11.root");
-
-  vector<sfeats> Samples; 
-  unsigned Nsam(0);
-  for(int lep(0); lep<2; lep++){
-    s_t1t[lep].push_back(folders[lep]+"*T1tttt*1500_*PU20*root");
-    s_t1tc[lep].push_back(folders[lep]+"*T1tttt*1200_*PU20*");
-    s_tt[lep].push_back(folders[lep]+"*TT_Tune*");
-    s_wjets[lep].push_back(folders[lep]+"*WTo*");
-    s_qcd[lep].push_back(folders[lep]+"*QCD_Pt*");
-
-    Samples.push_back(sfeats(s_t1t[lep], "T1tttt(1500,100)", ra4::c_t1tttt));
-    Samples.push_back(sfeats(s_t1tc[lep], "T1tttt(1200,800)", ra4::c_t1tttt,2));
-    Samples.push_back(sfeats(s_tt[lep], "t#bar{t}", ra4::c_tt_1l));
-    //Samples.push_back(sfeats(s_wjets[lep], "W+jets", ra4::c_singlet));
-    Samples.push_back(sfeats(s_qcd[lep], "QCD", 1));
-    if(lep==0) Nsam = Samples.size();
-  }
-  Samples.push_back(sfeats(s_t1t_offline, "T1tttt(1500,100)", ra4::c_t1tttt));
-  Samples.push_back(sfeats(s_t1tc_offline, "T1tttt(1200,800)", ra4::c_t1tttt,2));
-  Samples.push_back(sfeats(s_tt_offline, "t#bar{t}", ra4::c_tt_1l,1));
-
-  vector<int> all_sam[2], tt_t1[2], tt_t1_offline;
-  for(unsigned lep(0); lep<2; lep++){
-    for(unsigned iall(0); iall<Nsam; iall++) all_sam[lep].push_back(iall+lep*Nsam);
-    tt_t1[lep].push_back(0+lep*Nsam);
-    tt_t1[lep].push_back(1+lep*Nsam);
-    tt_t1[lep].push_back(2+lep*Nsam);
-  }
-  tt_t1_offline.push_back(2*Nsam+0);
-  tt_t1_offline.push_back(2*Nsam+1);
-  tt_t1_offline.push_back(2*Nsam+2);
-
-  /////////////////////////// Trigger variables ///////////////////////////
-  vector<hfeats> std_varis;
-  std_varis.push_back(hfeats("Max$(mus_pt)",60,0,300, tt_t1[1], "Leading #mu HLT p_{T} [GeV]",
-			"onht>350&&Sum$(genmus_pt>0)>=1",20,"muon"));
-  std_varis.push_back(hfeats("Max$(els_pt)",60,0,300, tt_t1[0], "Leading e HLT p_{T} [GeV]",
-			"onht>350&&Sum$(genels_pt>0)>=1",20,"electron"));
-  for(unsigned lep(0); lep<2; lep++){
-    std_varis.push_back(hfeats("onht",75,0,2500, all_sam[lep], "HLT H_{T} [GeV]",
-			  "1",350,leptag[lep]));
-    std_varis.push_back(hfeats("onmet",65,0,650, all_sam[lep], "HLT MET [GeV]",
-			  "1",-1,leptag[lep]));
-  }
-
-  std_varis.push_back(hfeats("Max$(mc_pt*(abs(mc_id)==13))",60,0,300, tt_t1_offline, "Leading gen #mu p_{T} (GeV)",
-			"ht>350&&Sum$(abs(mc_id)==13)>=1",20,"muon"));
-  std_varis.push_back(hfeats("Max$(mc_pt*(abs(mc_id)==11))",60,0,300, tt_t1_offline, "Leading gen e p_{T} (GeV)",
-			"ht>350&&Sum$(abs(mc_id)==11)>=1",20,"electron"));
-
-  TString filetype(".pdf"), namestyle("RA4");
-  plot_distributions(Samples, std_varis, "10", filetype, namestyle);
-
-
-  /////////////////////////// Turn on curves ///////////////////////////
-  styles style(namestyle); style.yTitleOffset = 1.;
+  TString namestyle("RA4");
+  styles style(namestyle); style.yTitleOffset = 1.2;
+  style.LabelSize = 0.05;
   style.setDefaultStyle();
+
+  TString htdir("/cms2r0/manuelf/root/july/htmht_met/");
+  TString alldir("/cms2r0/manuelf/root/july/all/");
+  TChain alldata("tree"), htdata("tree");
+  alldata.Add(alldir+"*.root");
+  htdata.Add(htdir+"*.root");
+
+  //////////////////////// Leptons ///////////////////////////
+  PlotTurnOn(&alldata, "Max$(mus_pt*(mus_sigid&&mus_miniso<0.2))", 19,10,200, "Max #mu_{reco} p_{T} [GeV]",
+  	     "(trig[0]||trig[12])&&json_dcs", "trig[1]||trig[2]","HT800 || HT350_MET100", 
+  	     "Mu15_(HT350_MET70 || HT600)");
+  PlotTurnOn(&alldata, "Max$(els_pt*(els_sigid&&els_miniso<0.1))", 19,10,200, "Max e_{reco} p_{T} [GeV]",
+  	     "(trig[0]||trig[12])&&json_dcs", "trig[5]||trig[6]","HT800 || HT350_MET100", 
+  	     "Ele15_(HT350_MET70 || HT600)");
+  PlotTurnOn(&alldata, "Max$(mus_pt*(mus_sigid&&mus_miniso<0.2))", 19,10,200, "Max #mu_{reco} p_{T} [GeV]",
+  	     "(trig[0]||trig[12])&&json_dcs", "trig[18]","HT800 || HT350_MET100", 
+  	     "IsoMu20");
+  PlotTurnOn(&alldata, "Max$(els_pt*(els_sigid&&els_miniso<0.1))", 19,10,200, "Max e_{reco} p_{T} [GeV]",
+  	     "(trig[0]||trig[12])&&json_dcs", "trig[22]","HT800 || HT350_MET100", 
+  	     "Ele27_eta2p1_WPLoose_Gsf");
+
+  cout<<endl<<"Efficiencies for leptons"<<endl;
+  Efficiency(&alldata, "Max$(mus_pt*(mus_sigid&&mus_miniso<0.2))>30&&(trig[0]||trig[12])&&json_dcs", 
+  	     "trig[1]||trig[2]");
+  Efficiency(&alldata, "Max$(els_pt*(els_sigid&&els_miniso<0.1))>30&&(trig[0]||trig[12])&&json_dcs", 
+  	     "trig[5]||trig[6]");
+  Efficiency(&alldata, "Max$(mus_pt*(mus_sigid&&mus_miniso<0.2))>30&&(trig[0]||trig[12])&&json_dcs", 
+  	     "trig[18]");
+  Efficiency(&alldata, "Max$(els_pt*(els_sigid&&els_miniso<0.1))>30&&(trig[0]||trig[12])&&json_dcs", 
+  	     "trig[22]");
+ 
+  //////////////////////// b-tagging ///////////////////////////
+  cout<<endl<<"Efficiencies for b-tagging in muon triggers"<<endl;
+  Efficiency(&alldata, "nbl>=1&&(trig[2])&&json_dcs", "trig[3]");
+  Efficiency(&alldata, "nbm>=1&&(trig[2])&&json_dcs", "trig[3]");
+  Efficiency(&alldata, "nbt>=1&&(trig[2])&&json_dcs", "trig[3]");
+  Efficiency(&alldata, "nbl>=2&&(trig[2])&&json_dcs", "trig[3]");
+  Efficiency(&alldata, "nbm>=2&&(trig[2])&&json_dcs", "trig[3]");
+  Efficiency(&alldata, "nbt>=2&&(trig[2])&&json_dcs", "trig[3]");
+
+  cout<<endl<<"Efficiencies for b-tagging in electron triggers"<<endl;
+  Efficiency(&alldata, "nbl>=1&&(trig[6])&&json_dcs", "trig[7]");
+  Efficiency(&alldata, "nbm>=1&&(trig[6])&&json_dcs", "trig[7]");
+  Efficiency(&alldata, "nbt>=1&&(trig[6])&&json_dcs", "trig[7]");
+  Efficiency(&alldata, "nbl>=2&&(trig[6])&&json_dcs", "trig[7]");
+  Efficiency(&alldata, "nbm>=2&&(trig[6])&&json_dcs", "trig[7]");
+  Efficiency(&alldata, "nbt>=2&&(trig[6])&&json_dcs", "trig[7]");
+
+
+  /////////////////////////// HT ///////////////////////////
+  PlotTurnOn(&alldata, "ht", 20,200,600, "Reco H_{T} [GeV]",
+   	     "json_dcs&&(trig[14])&&nmus>=1", "trig[1]","MET170 && n_{#mu,reco} #geq 1",
+	     "Mu15_HT350_MET70");
+  PlotTurnOn(&alldata, "ht", 20,200,600, "Reco H_{T} [GeV]",
+   	     "json_dcs&&(trig[14])&&nels>=1", "trig[5]","MET170 && n_{e,reco} #geq 1",
+	     "Ele15_HT350_MET70");
+  PlotTurnOn(&alldata, "ht", 20,200,600, "Reco H_{T} [GeV]",
+   	     "json_dcs&&(trig[14])", "trig[0]","MET170",
+	     "HT350_MET100");
+
+
+  //////////////////////// MET ///////////////////////////
+  PlotTurnOn(&alldata, "met", 15,0,300, "Reco MET [GeV]",
+  	     "json_dcs&&(trig[2]||trig[6])", "trig[1]||trig[5]","Mu15_HT600 || Ele15_HT600", 
+   	     "(Mu15 || Ele15)_HT350_MET70");
+  PlotTurnOn(&alldata, "met", 15,0,300, "Reco MET [GeV]",
+  	     "json_dcs&&(trig[2]||trig[6])", "trig[0]","Mu15_HT600 || Ele15_HT600", 
+   	     "HT350_MET100");
+
+  cout<<endl<<"Efficiencies for MET"<<endl;
+  Efficiency(&alldata, "met>150&&met<200&&(trig[2]||trig[6])&&json_dcs", "trig[1]||trig[5]");
+  Efficiency(&alldata, "met>200&&met<300&&(trig[2]||trig[6])&&json_dcs", "trig[1]||trig[5]");
+  Efficiency(&alldata, "met>150&&met<200&&(trig[2]||trig[6])&&json_dcs", "trig[0]");
+  Efficiency(&alldata, "met>200&&met<300&&(trig[2]||trig[6])&&json_dcs", "trig[0]");
+
+
+}
+
+TString format_tag(TString tag){
+  tag.ReplaceAll(".","");
+  tag.ReplaceAll("(",""); tag.ReplaceAll("$","");  tag.ReplaceAll(")","");
+  tag.ReplaceAll("[",""); tag.ReplaceAll("]",""); tag.ReplaceAll("||","_");
+  tag.ReplaceAll("/","_"); tag.ReplaceAll("*",""); tag.ReplaceAll("&&","_");
+  tag.ReplaceAll(">=","ge"); tag.ReplaceAll("<=","se");
+  tag.ReplaceAll(">","g"); tag.ReplaceAll("<","s"); tag.ReplaceAll("=","");
+  tag.ReplaceAll("+",""); tag.ReplaceAll("&","");
+  tag.ReplaceAll("!","not");
+  tag.ReplaceAll("#",""); tag.ReplaceAll("{",""); tag.ReplaceAll("}","");
+
+  return tag;
+}
+
+void PlotTurnOn(TChain *data, TString var, int nbins, double minx, double maxx, TString xtitle, 
+		TString den, TString num, TString title, TString ytitle){
   TCanvas can;
-  TChain *chain[2];
-  TH1D* histo[2][20];
-  TString title, hname, totCut, pname;
-  for(unsigned lep(0); lep<2; lep++) {
-    chain[lep] = new TChain("tree");
-    chain[lep]->Add(s_t1tc[lep][0]);
-  }
-  vector<hfeats> vars;
-  // vars.push_back(hfeats("Max$(genmus_pt)",20,25,35, tt_t1[1], "True muon max p_{T} [GeV]", 
-  // 			"Sum$(genmus_pt>0)>=1",30,"Max$(mus_pt)"));
-  vars.push_back(hfeats("genmet",40,0,400, tt_t1[1], "True MET [GeV]", "1",70,"onmet"));
-  vars.push_back(hfeats("genmet",40,0,400, tt_t1[1], "True MET [GeV]", "1",120,"onmet"));
-  vars.push_back(hfeats("genmet",40,0,400, tt_t1[1], "True MET [GeV]", "1",170,"onmet"));
-  vars.push_back(hfeats("genht",85,200,1050, tt_t1[1], "True H_{T} [GeV]", "1",350,"onht"));
-  vars.push_back(hfeats("genht",85,200,1050, tt_t1[1], "True H_{T} [GeV]", "1",400,"onht"));
-  vars.push_back(hfeats("genht",85,200,1050, tt_t1[1], "True H_{T} [GeV]", "1",600,"onht"));
-  for(unsigned var(0); var<vars.size(); var++){
-    title = cuts2title(vars[var].cuts); 
-    for(unsigned his(0); his < 2; his++){
-      hname = "histo"; hname += var; hname += his; 
-      totCut = vars[var].cuts; 
-      if(his==1) {
-	totCut += ("&&"+vars[var].tagname+">");
-	totCut += vars[var].cut;
-      }
-      histo[his][var] = new TH1D(hname, title, vars[var].nbins, vars[var].minx, vars[var].maxx);
-      //cout<<var<<": hname "<<hname<<", cuts "<<totCut<<endl;
-      chain[1]->Project(hname, vars[var].varname, totCut);
-    }
-  }
+  can.SetGrid();
+  TH1D* histo[2];
+  TString filetype(".eps"), hname, totCut, pname;
+  hname = "den"; totCut = den;
+  histo[0] = new TH1D(hname, "", nbins, minx, maxx);
+  data->Project(hname, var, totCut);
 
-  unsigned Ncurves(3);
-  double legY(style.PadBottomMargin+0.02), legSingle = 0.06;
-  double legW = 0.13, legH = legSingle*Ncurves;
-  double legX1 = 0.58;
-  TLegend leg[2]; int nLegs(2);
-  for(int ileg(0); ileg<nLegs; ileg++){
-    leg[ileg].SetX1NDC(legX1); leg[ileg].SetX2NDC(legX1+legW); 
-    leg[ileg].SetY1NDC(legY); leg[ileg].SetY2NDC(legY+legH); 
-    leg[ileg].SetTextSize(style.LegendSize); leg[ileg].SetFillColor(0); 
-    leg[ileg].SetFillStyle(0); leg[ileg].SetBorderSize(0);
-    leg[ileg].SetTextFont(style.nFont); 
-  }
-  int colors[] = {1,4,2};
-  TString labtag[] = {"HLT MET > ", "HLT H_{T} > "}, label;
-  TGraphAsymmErrors heff[20];
-  for(unsigned type(0); type<2; type++){
-    for(unsigned ivar(0); ivar<Ncurves; ivar++){
-      unsigned var = ivar+Ncurves*type;
-      heff[var] = TGraphAsymmErrors(histo[1][var], histo[0][var]);
-      heff[var].SetMarkerStyle(20); heff[var].SetMarkerSize(0.9);
-      heff[var].SetMarkerColor(colors[ivar]); heff[var].SetLineColor(colors[ivar]);
-      if(ivar==0) {
-	heff[var].GetXaxis()->SetTitle(vars[var].title);
-	heff[var].GetYaxis()->SetTitle("Efficiency");
-	heff[var].Draw("ap");
-      } else heff[var].Draw("p same");
-      label = labtag[type]; label += vars[var].cut; label += " GeV";
-      leg[type].AddEntry(&heff[var],label,"pl");
-    } // Loop over curves in a plot
-    leg[type].Draw();
-    pname = "plots/1d/turnon_"+vars[Ncurves*type].varname+filetype;
-    can.SaveAs(pname);
-  }
+  hname = "num"; totCut = "("+den+")&&("+num+")";
+  histo[1] = new TH1D(hname, "", nbins, minx, maxx);
+  data->Project(hname, var, totCut);
+   for(unsigned his(0); his<2; his++)
+     histo[his]->SetBinContent(nbins, histo[his]->GetBinContent(nbins)+histo[his]->GetBinContent(nbins+1));
 
+  TGraphAsymmErrors heff;
+  heff = TGraphAsymmErrors(histo[1], histo[0]);
+  heff.SetMarkerStyle(20); heff.SetMarkerSize(0.9);
+  heff.SetMarkerColor(2); heff.SetLineColor(2);
+  heff.SetTitle(title);
+  heff.GetXaxis()->SetTitle(xtitle);
+  heff.GetYaxis()->SetTitle("#epsilon ["+ytitle+"]");
+  heff.GetYaxis()->SetRangeUser(0,1.2);
+  heff.Draw("ap");
+
+  pname = "plots/turnon_"+format_tag(var)+"_"+format_tag(den)+"_"+format_tag(num)+filetype;
+  can.SaveAs(pname);
+  
+ cout<<"Error bin 1 is "<<"+"<<RoundNumber(heff.GetErrorYhigh(1)*100,1)
+     <<"-"<<RoundNumber(heff.GetErrorYlow(1)*100,1)
+     <<". Error bin n is "<<"+"<<RoundNumber(heff.GetErrorYhigh(nbins)*100,1)
+     <<"-"<<RoundNumber(heff.GetErrorYlow(nbins)*100,1)<<endl;
+  for(unsigned his(0); his<2; his++)
+    histo[his]->Delete();
+}
+
+void Efficiency(TChain *data, TString den, TString num){
+  TCanvas can;
+  can.SetGrid();
+  TH1D* histo[2];
+  TString filetype(".eps"), hname, totCut, pname;
+  hname = "den"; totCut = den;
+  histo[0] = new TH1D(hname, "", 1, 0, 1);
+  float denom(data->GetEntries(totCut));
+  histo[0]->SetBinContent(1,denom);
+
+  hname = "num"; totCut = "("+den+")&&("+num+")";
+  histo[1] = new TH1D(hname, "", 1, 0, 1);
+  float numer(data->GetEntries(totCut));
+  histo[1]->SetBinContent(1,numer);
+
+  TGraphAsymmErrors heff;
+  heff = TGraphAsymmErrors(histo[1], histo[0]);
+
+  den.ReplaceAll("&&json_dcs","");
+  if(denom) cout<<"Eff for "<<num<<" and "<<den<<" is "<<RoundNumber(numer*100,1,denom)
+		<<"+"<<RoundNumber(heff.GetErrorYhigh(1)*100,1)
+		<<"-"<<RoundNumber(heff.GetErrorYlow(1)*100,1)<<" with "<<denom<<" denominator"<<endl;
+  else cout<<"Denominator is zero"<<endl;
+
+  for(unsigned his(0); his<2; his++)
+    histo[his]->Delete();
 }
 
