@@ -73,7 +73,6 @@ int main(int argc, char *argv[]){
 
   TString folder="/cms5r0/ald77/archive/"+ntuple_date+"/skim/";
   TString folder_ns="/cms5r0/ald77/archive/"+ntuple_date+"/";
-  folder = "/tmp/rdisk/skim/";
   vector<TString> s_tt;
   s_tt.push_back(folder+"*_TTJet*");
   vector<TString> s_singlet;
