@@ -423,7 +423,7 @@ TString cuts2title(TString title){
 		   "80<m_{ll}<100");  
 
   title.ReplaceAll("njets30","n_{jets}^{30}"); 
-  title.ReplaceAll("els_pt","p^{e}_{T}");title.ReplaceAll("mus_pt","p^{#mu}_{T}");
+  title.ReplaceAll("els_pt","p^{e}_{T}");title.ReplaceAll("mus_pt","p^{#mu}_{T}");title.ReplaceAll("jets_pt","p^{jet}_{T}");
   title.ReplaceAll("mus_reliso","RelIso"); title.ReplaceAll("els_reliso","RelIso");
   title.ReplaceAll("mus_miniso_tr15","MiniIso"); title.ReplaceAll("els_miniso_tr15","MiniIso");
   title.ReplaceAll("njets","n_{jets}");title.ReplaceAll("abs(lep_id)==13&&","");
