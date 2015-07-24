@@ -27,6 +27,28 @@ namespace ra4{
 
 }
 
+namespace dps{
+  // Had to define the TColor objects in the cpp
+  enum {
+    //option 1
+    // c_tt_1l    = 1011, // ucsb_blue
+    // c_tt_2l    = 1012, // tar_heel_blue
+    // c_wjets    = 1013, // ucsb_gold
+    // c_singlet  = 1016,
+    // c_qcd    = 1015,
+    // c_other    = 1014
+
+    //option 2
+    c_tt_1l    = 1011, // ucsb_blue
+    c_tt_2l    = 1012, // tar_heel_blue
+    c_wjets    = 1020, // ucsb_gold
+    c_singlet  = 1015,
+    c_qcd    = 1018,
+    c_other    = 1019
+  };
+
+}
+
 struct pfeats{
   pfeats(const std::vector<int> &isamples, const TString &icut = "1", const TString &itagname="");
 
@@ -37,9 +59,11 @@ struct pfeats{
 class hfeats {
 public:
   hfeats(TString ivarname, int inbins, float iminx, float imaxx, std::vector<int> isamples,
-         TString ititle="", TString icuts="1", float icut=-1, TString itagname="",bool iskiplog=false, std::vector<double> inevents= std::vector<double>(1,-1.));
+         TString ititle="", TString icuts="1", float icut=-1, TString itagname="",bool iskiplog=false, 
+         std::vector<double> inevents= std::vector<double>(1,-1.));
   hfeats(TString ivarname, int inbins, float* ibinning, std::vector<int> isamples,
-         TString ititle="", TString icuts="1", float icut=-1, TString itagname="",bool iskiplog=false, std::vector<double> inevents= std::vector<double>(1,-1.));
+         TString ititle="", TString icuts="1", float icut=-1, TString itagname="",bool iskiplog=false, 
+         std::vector<double> inevents= std::vector<double>(1,-1.));
   TString title, varname, tag, cuts, unit;
   int nbins;
   float *binning;
@@ -84,7 +108,7 @@ void dump_event(small_tree_full &tree, int entry);
 long getYieldErr(TChain& tree, TString cut, double& yield, double& uncertainty);
 
 void plot_distributions(std::vector<sfeats> Samples, std::vector<hfeats> vars, TString luminosity="10", 
-			TString filetype=".eps", TString namestyle="LargeLabels", TString dir = "1d");
+			TString filetype=".eps", TString namestyle="LargeLabels", TString dir = "1d", bool doRatio=false);
 TString cuts2title(TString title);
 TString invertcut(TString cut);
 TString format_tag(TString tag);

@@ -17,6 +17,7 @@
 #include "TH1D.h"
 #include "TCanvas.h"
 #include "TLegend.h"
+#include "TLatex.h"
 #include "TLine.h"
 #include "TString.h"
 #include "TColor.h"
@@ -30,30 +31,53 @@
 using namespace std;
 
 void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString luminosity, 
-			TString filetype, TString namestyle, TString dir){
+                        TString filetype, TString namestyle, TString dir, bool doRatio){
+  if (doRatio) namestyle = "CMSPaper";
   styles style(namestyle);
-  if(namestyle=="CMSPaper") style.nDivisions = 706;
+  if(namestyle.Contains("CMSPaper")) style.nDivisions = 706;
+  if (doRatio){
+    style.LabelSize *=1.1;
+    style.LegendSize *=1.2;
+    style.TitleSize *=1.2;
+    style.yTitleOffset /=1.3;
+  }
   style.setDefaultStyle();
   TCanvas can;
-  TPad *pad = static_cast<TPad *>(can.cd());
-
+  can.cd();
+  TPad *pad(NULL), *bpad(NULL); //bpad (stands for bottom pad) is for ratio
+  if (doRatio){
+    float bpadHeight = 0.3;
+    pad = new TPad("tpad","tpad",0.,bpadHeight,1.,1.); // assign 
+    pad->SetBottomMargin(0.02);
+    pad->SetTopMargin(style.PadTopMargin+0.01);
+    pad->Draw();    
+    bpad = new TPad("bpad","bpad",0.,0.,1.,bpadHeight+0.005); // assign 
+    bpad->SetTopMargin(0.);
+    bpad->SetBottomMargin(2.35*style.PadBottomMargin);
+    bpad->SetFillStyle(4000);
+    bpad->Draw();
+  } else {
+    pad = static_cast<TPad *>(can.cd());
+  }
 
   // Reading ntuples
   vector<TChain *> chain;
   for(unsigned sam(0); sam < Samples.size(); sam++){
     chain.push_back(new TChain("tree"));
     for(unsigned insam(0); insam < Samples[sam].file.size(); insam++){
-      //cout<<"Reading "<<Samples[sam].file[insam]<<endl;
+      // cout<<"Reading "<<Samples[sam].file[insam]<<endl;
       chain[sam]->Add(Samples[sam].file[insam]);
+      // cout<<"Entries "<<chain[sam]->GetEntries()<<endl;
     }
   }
 
-
-  TString plot_tag("_lumi"+luminosity+filetype);
+  TString lumi_nodot = luminosity; lumi_nodot.ReplaceAll(".","p");
+  TString plot_tag("_lumi"+lumi_nodot+filetype);
   float minLog = 0.04, fracLeg = 0.36; // Fraction of the histo pad devoted to the legend
 
   double legLeft(style.PadLeftMargin+0.03), legRight(1-style.PadRightMargin-0.02);
   double legY(0.902), legSingle = 0.052;
+  if (doRatio) {legY=0.89; legSingle = 0.06;}
   double legW = 0.13, legH = legSingle*(vars[0].samples.size()+1)/2;
   double legX1[] = {legLeft, legLeft+(legRight-legLeft)/2.*1.15};
   TLegend leg[2]; int nLegs(2);
@@ -84,12 +108,12 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
     cout<<endl;
     // Generating vector of histograms
     title = cuts2title(vars[var].cuts); 
-    if(namestyle=="CMSPaper") title = "";
+    if(namestyle.Contains("CMSPaper")&& !doRatio) title = "";
     for(unsigned his(0); his < 2; his++){
       varhisto.resize(0);
       for(unsigned sam(0); sam < Nsam; sam++){
-	hname = "histo"; hname += var; hname += his; hname += sam;
-	varhisto.push_back(new TH1D(hname, title, vars[var].nbins, vars[var].minx, vars[var].maxx));
+        hname = "histo"; hname += var; hname += his; hname += sam;
+        varhisto.push_back(new TH1D(hname, title, vars[var].nbins, vars[var].minx, vars[var].maxx));
       }
       histo[his].push_back(varhisto);
     }
@@ -102,132 +126,188 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
       if(!Samples[isam].isSig && !Samples[isam].isData) nbkg++;
       samVariable = Samples[isam].samVariable;
       totCut = Samples[isam].factor+"*"+luminosity+"*weight*("+vars[var].cuts+"&&"+Samples[isam].cut+")";
-
       if(Samples[isam].isData) totCut= vars[var].cuts+"&&"+Samples[isam].cut;
       //cout<<totCut<<endl;
       histo[0][var][sam]->Sumw2();
       if(samVariable=="noPlot") chain[isam]->Project(histo[0][var][sam]->GetName(), variable, totCut);
       else chain[isam]->Project(histo[0][var][sam]->GetName(), samVariable, totCut);
       histo[0][var][sam]->SetBinContent(vars[var].nbins,
-					histo[0][var][sam]->GetBinContent(vars[var].nbins)+
-					histo[0][var][sam]->GetBinContent(vars[var].nbins+1));
+                                        histo[0][var][sam]->GetBinContent(vars[var].nbins)+
+                                        histo[0][var][sam]->GetBinContent(vars[var].nbins+1));
       nentries[sam] = histo[0][var][sam]->Integral(1,vars[var].nbins);
+      cout<<Samples[isam].tag<<" Nentries "<<nentries[sam]<<endl;
       if(nentries[sam]<0) nentries[sam]=0;
-      if(namestyle!="CMSPaper") {
-	ytitle = "Events for "+luminosity+" fb^{-1}";
-	lumilabel = "";
-	cmslabel = "";
+      ytitle = "Events";
+      if(!namestyle.Contains("CMSPaper") || doRatio) {
+        // ytitle = "Events for "+luminosity+" fb^{-1}";
+        lumilabel = "";
+        cmslabel = "";
       } else {
-	ytitle = "Events";
-	lumilabel = luminosity+" fb^{-1} (13 TeV)";
-	cmslabel = "#font[62]{CMS}";
+        lumilabel = luminosity+" fb^{-1} (13 TeV)";
+        cmslabel = "#font[62]{CMS}";
       }
       if(vars[var].unit!="") {
-	int digits(0);
-	float binwidth((vars[var].maxx-vars[var].minx)/static_cast<float>(vars[var].nbins));
-	if(binwidth<1) digits = 1;
-	ytitle += ("/("+RoundNumber(binwidth,digits) +" "+vars[var].unit+")");
+        int digits(0);
+        float binwidth((vars[var].maxx-vars[var].minx)/static_cast<float>(vars[var].nbins));
+        if(binwidth<1) digits = 1;
+        ytitle += ("/("+RoundNumber(binwidth,digits) +" "+vars[var].unit+")");
       }
       histo[0][var][sam]->SetYTitle(ytitle);
       // Cloning histos for later
       for(int bin(0); bin<=histo[0][var][sam]->GetNbinsX()+1; bin++){
-	double val(histo[0][var][sam]->GetBinContent(bin));
-	histo[1][var][sam]->SetBinContent(bin, val);
-	if(Samples[isam].isData) histo[0][var][sam]->SetBinError(bin, sqrt(val));
-	histo[1][var][sam]->SetBinError(bin, histo[0][var][sam]->GetBinError(bin));
+        double val(histo[0][var][sam]->GetBinContent(bin));
+        histo[1][var][sam]->SetBinContent(bin, val);
+        if(Samples[isam].isData) histo[0][var][sam]->SetBinError(bin, sqrt(val));
+        histo[1][var][sam]->SetBinError(bin, histo[0][var][sam]->GetBinError(bin));
       }
     }
     
     if(nbkg>0 && (vars[var].whichPlots.Contains("0") || vars[var].whichPlots.Contains("1") 
-		  || vars[var].whichPlots.Contains("2"))){
+                  || vars[var].whichPlots.Contains("2"))){
       //// Plotting lumi-weighted distributions in histo[0], and then area-normalized in histo[1] ///
       int bkgind(-1);
       for(unsigned sam(Nsam-1); sam < Nsam; sam--){
-	int isam = vars[var].samples[sam];
-	bool noStack = Samples[isam].isSig || Samples[isam].isData;
-	if(!noStack){ // Adding previous bkg histos
-	  for(unsigned bsam(sam+1); bsam < Nsam; bsam++){
-	    histo[0][var][sam]->Add(histo[0][var][bsam]);
-	    break;
-	  }
-	  histo[0][var][sam]->SetFillColor(Samples[isam].color);
-	  histo[0][var][sam]->SetFillStyle(1001);
-	  histo[0][var][sam]->SetLineColor(1);
-	  histo[0][var][sam]->SetLineWidth(1);
-	  bkgind = sam;
-	} else {
-	  histo[0][var][sam]->SetLineColor(Samples[isam].color);
-	  if(Samples[isam].isData){
-	    histo[0][var][sam]->SetMarkerStyle(20);
-	    histo[0][var][sam]->SetMarkerSize(1.2);	    
-	    histo[0][var][sam]->SetLineWidth(2);
-	  } else {
-	    histo[0][var][sam]->SetLineWidth(6);
-	    histo[0][var][sam]->SetLineStyle(abs(Samples[isam].style));
-	  }
-	  if(Samples[isam].doStack)  histo[0][var][sam]->Add(histo[0][var][bkgind]);
-	}
-	if(Samples[isam].mcerr){ histo[0][var][sam]->SetLineWidth(4);  histo[0][var][sam]->SetMarkerStyle(20); 
-	  //histo[0][var][sam]->SetMarkerColor(Samples[isam].color);
-	  histo[0][var][sam]->SetMarkerSize(1.2);
-	  histo[0][var][sam]->SetLineStyle(abs(Samples[isam].style));
-	  histo[0][var][2]->SetFillColorAlpha(Samples[2].color, 0.5);
-	}
-	double maxval(histo[0][var][sam]->GetMaximum());
-	if(maxhisto < maxval) {maxhisto = maxval;
-	  if(Samples[isam].isData) maxhisto = maxval+sqrt(maxval);}
+        int isam = vars[var].samples[sam];
+        bool noStack = Samples[isam].isSig || Samples[isam].isData;
+        if(!noStack){ // Adding previous bkg histos
+          for(unsigned bsam(sam+1); bsam < Nsam; bsam++){
+            histo[0][var][sam]->Add(histo[0][var][bsam]);
+            break;
+          }
+          histo[0][var][sam]->SetFillColor(Samples[isam].color);
+          histo[0][var][sam]->SetFillStyle(1001);
+          histo[0][var][sam]->SetLineColor(1);
+          histo[0][var][sam]->SetLineWidth(1);
+          bkgind = sam;
+        } else {
+          histo[0][var][sam]->SetLineColor(Samples[isam].color);
+          if(Samples[isam].isData){
+            histo[0][var][sam]->SetMarkerStyle(20);
+            histo[0][var][sam]->SetMarkerSize(1.2);         
+            histo[0][var][sam]->SetLineWidth(2);
+          } else {
+            histo[0][var][sam]->SetLineWidth(6);
+            histo[0][var][sam]->SetLineStyle(abs(Samples[isam].style));
+          }
+          if(Samples[isam].doStack)  histo[0][var][sam]->Add(histo[0][var][bkgind]);
+        }
+        if(Samples[isam].mcerr){ histo[0][var][sam]->SetLineWidth(4);  histo[0][var][sam]->SetMarkerStyle(20); 
+          //histo[0][var][sam]->SetMarkerColor(Samples[isam].color);
+          histo[0][var][sam]->SetMarkerSize(1.2);
+          histo[0][var][sam]->SetLineStyle(abs(Samples[isam].style));
+          histo[0][var][2]->SetFillColorAlpha(Samples[2].color, 0.5);
+        }
+        double maxval(histo[0][var][sam]->GetMaximum());
+        if(maxhisto < maxval) {maxhisto = maxval;
+          if(Samples[isam].isData) maxhisto = maxval+sqrt(maxval);}
       } // First loop over samples
+
+      pad->cd();
       for(int ileg(0); ileg<nLegs; ileg++) leg[ileg].Clear();
       unsigned legcount(0);
       int firstplotted(-1);
       for(unsigned sam(0); sam < Nsam; sam++){
-	int isam = vars[var].samples[sam];
-	leghisto = Samples[isam].label;
-	if(namestyle!="CMSPaper") leghisto += " [N=" + RoundNumber(nentries[sam],0) + "]";
-	bool noStack = Samples[isam].isSig || Samples[isam].isData;
-	unsigned ileg = (Nsam<=3?0:legcount>=(Nsam+1)/2);
-	if(!noStack){
-	  leg[ileg].AddEntry(histo[0][var][sam], leghisto,"f");
-	  legcount++;
-	  if(firstplotted < 0) {
-	    if(!Samples[isam].mcerr) histo[0][var][sam]->Draw("hist");
-	    else histo[0][var][sam]->Draw("ELP");
-	    firstplotted = sam;
-	    style.setTitles(histo[0][var][sam],vars[var].title, ytitle, cmslabel, lumilabel);
-	  } else {
-	    if(!Samples[isam].mcerr) histo[0][var][sam]->Draw("hist same");
-	    else histo[0][var][sam]->Draw("ELP same");
-	  }
-	} else {
-	  if(Samples[isam].isSig) leg[ileg].AddEntry(histo[0][var][sam], leghisto,"l");
-	  else leg[ileg].AddEntry(histo[0][var][sam], leghisto,"elp");
-	  legcount++;
-	}
+        int isam = vars[var].samples[sam];
+        leghisto = Samples[isam].label;
+        // if(!namestyle.Contains("CMSPaper")) leghisto += " [N=" + RoundNumber(nentries[sam],0) + "]";
+        leghisto += " [N=" + RoundNumber(nentries[sam],0) + "]";
+        bool noStack = Samples[isam].isSig || Samples[isam].isData;
+        unsigned ileg = (Nsam<=3?0:legcount>=(Nsam+1)/2);
+        if(!noStack){
+          leg[ileg].AddEntry(histo[0][var][sam], leghisto,"f");
+          legcount++;
+          if(firstplotted < 0) {
+            if(!Samples[isam].mcerr) histo[0][var][sam]->Draw("hist");
+            else histo[0][var][sam]->Draw("ELP");
+            firstplotted = sam;
+            style.setTitles(histo[0][var][sam],vars[var].title, ytitle, cmslabel, lumilabel);
+          } else {
+            if(!Samples[isam].mcerr) histo[0][var][sam]->Draw("hist same");
+            else histo[0][var][sam]->Draw("ELP same");
+          }
+        } else {
+          if(Samples[isam].isSig) leg[ileg].AddEntry(histo[0][var][sam], leghisto,"l");
+          else leg[ileg].AddEntry(histo[0][var][sam], leghisto,"elp");
+          legcount++;
+        }
       }
       for(int sam(Nsam-1); sam >= 0; sam--){
-	int isam = vars[var].samples[sam];
-	if(Samples[isam].isSig){if(!Samples[isam].mcerr) histo[0][var][sam]->Draw("hist same"); else histo[0][var][sam]->Draw("EP same"); }
-	if(Samples[isam].isData) histo[0][var][sam]->Draw("e1 same");
+        int isam = vars[var].samples[sam];
+        if(Samples[isam].isSig){if(!Samples[isam].mcerr) histo[0][var][sam]->Draw("hist same"); else histo[0][var][sam]->Draw("EP same"); }
+        if(Samples[isam].isData) histo[0][var][sam]->Draw("e1 same");
       }
       for(int ileg(0); ileg<nLegs; ileg++) leg[ileg].Draw(); 
       if(histo[0][var][firstplotted]->GetMinimum() > minLog) histo[0][var][firstplotted]->SetMinimum(minLog);
       float maxpadLog(maxhisto*exp(fracLeg*log(maxhisto/minLog)/(1-fracLeg)));
       histo[0][var][firstplotted]->SetMinimum(minLog);
       histo[0][var][firstplotted]->SetMaximum(maxpadLog);
-      style.moveYAxisLabel(histo[0][var][firstplotted], maxpadLog, true);
+      if (!doRatio) style.moveYAxisLabel(histo[0][var][firstplotted], maxpadLog, true);
       histo[0][var][firstplotted]->Draw("axis same");
       if(vars[var].cut>0) line.DrawLine(vars[var].cut, 0, vars[var].cut, maxhisto);
-      can.SetLogy(1);
+
+      //ratio
+      TH1D* hratio_data(NULL);
+      TLine* l1(NULL);
+      if (doRatio){
+        // TH1D* hratio_mc = static_cast<TH1D*>(histo[0][var][firstplotted]->Clone());
+        TH1D* hdata(NULL);
+        unsigned ndatasam(0);
+        for(unsigned sam(Nsam-1); sam < Nsam; sam--) {
+          int isam = vars[var].samples[sam];
+          if (Samples[isam].isData) {
+            cout<<"Adding sample "<<Samples[isam].tag<<endl; 
+            if (ndatasam==0) hdata = static_cast<TH1D*>(histo[0][var][sam]->Clone());
+            else hdata->Add(histo[0][var][sam]); //in case the different PDs are put in as separate samples
+            ndatasam++;
+          }
+        }        
+        if (ndatasam) {
+          hratio_data = static_cast<TH1D*>(hdata->Clone());
+          hratio_data->SetTitle("");
+          hratio_data->Divide(histo[0][var][firstplotted]);
+          hratio_data->GetYaxis()->SetRangeUser(0.1,1.9);
+          hratio_data->GetXaxis()->SetLabelSize(style.LabelSize*2.2);
+          hratio_data->GetYaxis()->SetLabelSize(style.LabelSize*2.1);
+          hratio_data->GetYaxis()->SetTitle("Data / MC ");
+          hratio_data->GetXaxis()->SetTitle(histo[0][var][firstplotted]->GetXaxis()->GetTitle());
+          hratio_data->GetYaxis()->SetTitleSize(style.TitleSize*3);
+          hratio_data->GetYaxis()->SetTitleOffset(0.5); //can't use relative size, since somehow it changes between plots...
+          hratio_data->GetXaxis()->SetTitleSize(style.TitleSize*3);
+          hratio_data->GetXaxis()->SetTitleOffset(style.xTitleOffset*0.9);
+          //move  the labels ou tof the way
+          histo[0][var][firstplotted]->GetXaxis()->SetLabelOffset(2.);
+          //line at 1
+          bpad->cd();
+          hratio_data->Draw();
+          l1 = new TLine(histo[0][var][firstplotted]->GetXaxis()->GetXmin(), 1., histo[0][var][firstplotted]->GetXaxis()->GetXmax(), 1.);
+          l1->SetLineStyle(2);
+          l1->Draw("same");
+        } else {
+          cerr<<"ERROR: Ratio plots currently only supported for plots with data."<<endl;
+          exit(1);
+        }
+        delete hdata;
+      }
+
+      //label lumi
+      pad->cd();
+      TString lumilbl = TString::Format("L = %1.f",luminosity.Atof()*1000.)+" pb^{-1}, 13 TeV";
+      TLatex llbl;
+      llbl.SetTextSize(style.LegendSize); 
+      llbl.SetNDC();
+      llbl.DrawLatex(0.57,0.57,lumilbl);
+      //save canvas
+      pad->SetLogy(1);
       pname = "plots/"+dir+"/log_lumi_"+vars[var].tag+plot_tag;
       if(!vars[var].skiplog && (vars[var].whichPlots.Contains("0") || vars[var].whichPlots.Contains("1"))) 
-	can.SaveAs(pname);
-      can.SetLogy(0);
+        can.SaveAs(pname);
+      pad->SetLogy(0);
       float maxpad(maxhisto + fracLeg*(maxhisto-minLog)/(1-fracLeg));
       if(vars[var].maxYaxis > 0) maxpad = vars[var].maxYaxis;
       histo[0][var][firstplotted]->SetMinimum(0);
       histo[0][var][firstplotted]->SetMaximum(maxpad);
-      pad = static_cast<TPad *>(can.cd(1));
-      style.moveYAxisLabel(histo[0][var][firstplotted], maxpad, false);
+      // pad = static_cast<TPad *>(can.cd(1));
+      if (!doRatio) style.moveYAxisLabel(histo[0][var][firstplotted], maxpad, false);
       pname = "plots/"+dir+"/lumi_"+vars[var].tag+plot_tag;
       if(vars[var].whichPlots.Contains("0") || vars[var].whichPlots.Contains("2")) can.SaveAs(pname);
     } // Lumi plots
@@ -247,28 +327,28 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
       if(nentries[sam]) histo[1][var][sam]->Scale(100./nentries[sam]);
       if(maxhisto < histo[1][var][sam]->GetMaximum()) maxhisto = histo[1][var][sam]->GetMaximum();
       if(sam==0){
-	histo[1][var][sam]->SetXTitle(vars[var].title);
-	histo[1][var][sam]->SetYTitle("Entries (%)");
-	if(Samples[isam].style>0) histo[1][var][sam]->Draw("hist");
-	else histo[1][var][sam]->Draw("e1 x0");
+        histo[1][var][sam]->SetXTitle(vars[var].title);
+        histo[1][var][sam]->SetYTitle("Entries (%)");
+        if(Samples[isam].style>0) histo[1][var][sam]->Draw("hist");
+        else histo[1][var][sam]->Draw("e1 x0");
       } else {
-	if(Samples[isam].style>0) histo[1][var][sam]->Draw("hist same");
-	else histo[1][var][sam]->Draw("e1 x0 same");
+        if(Samples[isam].style>0) histo[1][var][sam]->Draw("hist same");
+        else histo[1][var][sam]->Draw("e1 x0 same");
       }
       leghisto = Samples[isam].label;
       unsigned ileg = (Nsam<=3?0:legcount>=(Nsam+1)/2);
-      if(namestyle!="CMSPaper"){
-	if(vars[var].nevents.at(sam)<0){
-	  leghisto += " [#mu=";
-	  int digits(0);
-	  if(histo[1][var][sam]->GetMean()<30) digits = 1;
-	  leghisto += RoundNumber(histo[1][var][sam]->GetMean(),digits) + "]";
-	} else{
-	  leg[ileg].SetX1NDC(0.24); leg[ileg].SetX2NDC(0.7);
-	  leg[ileg].SetTextSize(0.75*style.LegendSize);
-	  leghisto +=  "[N_{tks} = " + RoundNumber(nentries[sam],1) + ", from N_{events} = "
-	    +RoundNumber(vars[var].nevents.at(sam),1)+"]";
-	}
+      if(!namestyle.Contains("CMSPaper")){
+        if(vars[var].nevents.at(sam)<0){
+          leghisto += " [#mu=";
+          int digits(0);
+          if(histo[1][var][sam]->GetMean()<30) digits = 1;
+          leghisto += RoundNumber(histo[1][var][sam]->GetMean(),digits) + "]";
+        } else{
+          leg[ileg].SetX1NDC(0.24); leg[ileg].SetX2NDC(0.7);
+          leg[ileg].SetTextSize(0.75*style.LegendSize);
+          leghisto +=  "[N_{tks} = " + RoundNumber(nentries[sam],1) + ", from N_{events} = "
+            +RoundNumber(vars[var].nevents.at(sam),1)+"]";
+        }
       }
       
       if(Samples[isam].style>0) leg[ileg].AddEntry(histo[1][var][sam], leghisto, "l");
@@ -296,7 +376,7 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
   for(unsigned his(0); his < 2; his++){
     for(unsigned var(0); var<vars.size(); var++){
       for(unsigned sam(0); sam < vars[var].samples.size(); sam++)
-	if(histo[his][var][sam]) histo[his][var][sam]->Delete();
+        if(histo[his][var][sam]) histo[his][var][sam]->Delete();
     }
   }
 }
@@ -309,10 +389,12 @@ TString cuts2title(TString title){
   title.ReplaceAll("Sum$(genels_pt>0)", "n^{true}_{e}");
   title.ReplaceAll("Sum$(genmus_pt>0)", "n^{true}_{#mu}");
   title.ReplaceAll("ntruleps", "n^{true}_{l}");
-  title.ReplaceAll("onmet", "MET"); title.ReplaceAll("onht", "H_{T}");  
+  title.ReplaceAll("onmet", "MET^{on}"); title.ReplaceAll("onht", "H_{T}^{on}");  
   title.ReplaceAll("nvmus==1&&nmus==1&&nvels==0","1 #mu");
   title.ReplaceAll("nvmus10==0&&nvels10==0", "0 leptons");  
-  title.ReplaceAll("(nmus+nels)", "n_{lep}");  title.ReplaceAll("njets30","n_{jets}^{30}"); 
+  title.ReplaceAll("(nmus+nels)", "n_{lep}");  
+  title.ReplaceAll("(nvmus+nvels)", "n^{veto}_{lep}");  
+  title.ReplaceAll("njets30","n_{jets}^{30}"); 
   title.ReplaceAll("els_pt","p^{e}_{T}");title.ReplaceAll("mus_pt","p^{#mu}_{T}");
   title.ReplaceAll("mus_reliso","RelIso"); title.ReplaceAll("els_reliso","RelIso");
   title.ReplaceAll("mus_miniso_tr15","MiniIso"); title.ReplaceAll("els_miniso_tr15","MiniIso");
@@ -458,12 +540,13 @@ TString format_tag(TString tag){
 }
 
 sfeats::sfeats(vector<TString> ifile, TString ilabel, int icolor, int istyle, TString icut, 
-	       TString isamVariable){
+               TString isamVariable){
   file = ifile; label = ilabel; cut = icut;
   color = icolor; style = istyle;
   isSig = ifile[0].Contains("T1tttt");
   samVariable = isamVariable;
   factor = "1";
+  if (ifile.size() && ifile[0].Contains("ST_")) factor = "0.4";
   tag = label;
   tag.ReplaceAll("(",""); tag.ReplaceAll(",","_");  tag.ReplaceAll(")","");
   tag.ReplaceAll("{",""); tag.ReplaceAll("#,","");  tag.ReplaceAll("}","");
@@ -589,6 +672,34 @@ namespace  ra4 {
   TColor seal_brown(1010, 89/255.,38/255.,11/255.);
 }
 
+namespace dps{
+  //option 1
+  // TColor light_blue(1011, 200/255.,230/255.,255/255.);
+  // TColor med_blue(1012, 100/255.,150/255.,255/255.);
+  // TColor yellow(1013, 255/255.,255/255.,135/255.);
+  // TColor green(1014, 130/255.,255/255.,120/255.);
+  // TColor red(1015, 255/255.,140/255.,140/255.);
+  // TColor violet(1016, 170/255.,130/255.,255/255.);
+  // TColor tan(1017, 255/255.,240/255.,210/255.);
+
+  //option 2
+  // TColor light_blue(1011, 173/255.,230/255.,255/255.);
+  // TColor med_blue(1012, 1/255.,148/255.,218/255.);
+  // TColor red(1015, 250/255.,96/255.,1/255.);
+  // TColor skype_green(1018,9/255.,186/255.,1/255.);
+  // TColor purple(1019, 183/255.,66/255.,176/255.);
+  // TColor ucsb_gold(1020, 254/255.,234/255.,51/255);
+
+  TColor light_blue(1011, 153/255.,220/255.,255/255.);
+  TColor med_blue(1012, 1/255.,148/255.,218/255.);
+  TColor red(1015, 250/255.,96/255.,1/255.);
+  TColor skype_green(1018,9/255.,186/255.,1/255.);
+  // TColor purple(1019, 172/255.,46/255.,135/255.);
+  TColor purple(1019, 183/255.,66/255.,176/255.);
+  TColor ucsb_gold(1020, 255/255.,200/255.,47/255);
+
+}
+
 double intGaus(double mean, double sigma, double minX, double maxX){
   return (TMath::Erf((maxX-mean)/sigma/sqrt(2.))-TMath::Erf((minX-mean)/sigma/sqrt(2.)))/2.;
 }
@@ -631,8 +742,8 @@ double gsl_ran_gamma(const double a, const double b, TRandom3 &rand){
 // weights[Nobs][Nsam] has the average weight of each observable for each sample
 // powers[Nobs] defines kappa = Product_obs{ Sum_sam{yields[sam][obs]*weights[sam][obs]}^powers[obs] }
 double calcKappa(vector<vector<float> > &entries, vector<vector<float> > &weights,
-		 vector<float> &powers, float &mSigma, float &pSigma, bool do_data,
-		 bool verbose, bool do_plot, int nrep){
+                 vector<float> &powers, float &mSigma, float &pSigma, bool do_data,
+                 bool verbose, bool do_plot, int nrep){
   TRandom3 rand(1234);
   styles style("RA4"); style.setDefaultStyle();
   int nbadk(0);
@@ -646,10 +757,10 @@ double calcKappa(vector<vector<float> > &entries, vector<vector<float> > &weight
     for(unsigned obs(0); obs < powers.size(); obs++) {
       float observed(0.);
       for(unsigned sam(0); sam < entries[obs].size(); sam++) {
-	// With a flat prior, the expected average of the Poisson with N observed is Gamma(N+1,1)
-	// Rounding the expected yield for data stats
-	if(do_data) observed += entries[obs][sam]*weights[obs][sam];
-	else observed += gsl_ran_gamma(entries[obs][sam]+1,1,rand)*weights[obs][sam];
+        // With a flat prior, the expected average of the Poisson with N observed is Gamma(N+1,1)
+        // Rounding the expected yield for data stats
+        if(do_data) observed += entries[obs][sam]*weights[obs][sam];
+        else observed += gsl_ran_gamma(entries[obs][sam]+1,1,rand)*weights[obs][sam];
       } // Loop over samples
       //if(do_data) observed = gsl_ran_gamma(static_cast<int>(0.5+observed)+1,1,rand);
       if(do_data) observed = gsl_ran_gamma(observed+1,1,rand);
@@ -683,8 +794,8 @@ double calcKappa(vector<vector<float> > &entries, vector<vector<float> > &weight
     if(verbose) cout<<obs<<": ";
     for(unsigned sam(0); sam < entries[obs].size(); sam++) {
       if(verbose) cout<<"Yield"<<sam<<" "<<entries[obs][sam]*weights[obs][sam]
-		      <<", N"<<sam<<" "<<entries[obs][sam]
-		      <<", avW"<<sam<<" "<<weights[obs][sam]<<". ";
+                      <<", N"<<sam<<" "<<entries[obs][sam]
+                      <<", avW"<<sam<<" "<<weights[obs][sam]<<". ";
       stdyield += entries[obs][sam]*weights[obs][sam];
     }
     if(verbose) cout<<"  ==> Total yield "<<stdyield<<endl;
@@ -729,7 +840,7 @@ double calcKappa(vector<vector<float> > &entries, vector<vector<float> > &weight
 
   double mode(histo.GetBinLowEdge(histo.GetMaximumBin()));
   if(verbose) cout<<"Std kappa = "<<stdval<<"+"<<pSigma<<"-"<<mSigma<<".   Mean = "<<mean
-		  <<". Mode = "<<mode<<". Median = "<<median<<endl;
+                  <<". Mode = "<<mode<<". Median = "<<median<<endl;
 
   return stdval;
 }
