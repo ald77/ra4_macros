@@ -95,13 +95,6 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
   TString hname, pname, variable, samVariable, leghisto, totCut, title, ytitle, lumilabel, cmslabel;
   for(unsigned var(0); var<vars.size(); var++){
     const unsigned Nsam(vars[var].samples.size());
-    if(Nsam>=4) {
-      leg[0].SetX1NDC(legX1[0]);
-      leg[0].SetX2NDC(legX1[0]+legW);
-    } else {
-      leg[0].SetX1NDC(0.5);
-      leg[0].SetX2NDC(0.5+legW);
-    }
     legH = (Nsam<=3?legSingle*Nsam:legSingle*(Nsam+1)/2);
     fracLeg = legH/(1-style.PadTopMargin-style.PadBottomMargin)*1.25;
     for(int ileg(0); ileg<nLegs; ileg++) leg[ileg].SetY1NDC(legY-legH); 
@@ -137,7 +130,6 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
       
      
       nentries[sam] = histo[0][var][sam]->Integral(1,vars[var].nbins);
-      cout<<Samples[isam].tag<<" Nentries "<<nentries[sam]<<endl;
       if(nentries[sam]<0) nentries[sam]=0;
       ytitle = "Events";
       
@@ -202,11 +194,10 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
 
       }
       if(vars[var].normalize){
-	cout<<"NORMALIZING "<<endl;
-	    float num = histo[0][var][0]->Integral();
-	    float den = histo[0][var][last_hist]->Integral();
-	    normalization_ratio = num/den; //I want this to crash if den=0
-	  }
+	float num = histo[0][var][0]->Integral();
+	float den = histo[0][var][last_hist]->Integral();
+	normalization_ratio = num/den; //I want this to crash if den=0
+      }
       
       for(unsigned sam(Nsam-1); sam < Nsam; sam--){
 	int isam = vars[var].samples[sam];
@@ -284,7 +275,6 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
         for(unsigned sam(Nsam-1); sam < Nsam; sam--) {
           int isam = vars[var].samples[sam];
           if (Samples[isam].isData) {
-            cout<<"Adding sample "<<Samples[isam].tag<<endl; 
             if (ndatasam==0) hdata = static_cast<TH1D*>(histo[0][var][sam]->Clone());
             else hdata->Add(histo[0][var][sam]); //in case the different PDs are put in as separate samples
             ndatasam++;
@@ -298,6 +288,7 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
           hratio_data->GetXaxis()->SetLabelSize(style.LabelSize*2.2);
           hratio_data->GetYaxis()->SetLabelSize(style.LabelSize*2.1);
           hratio_data->GetYaxis()->SetTitle("Data / MC ");
+	  if(Nsam==2) hratio_data->GetYaxis()->SetTitle("2l / 1l");
           hratio_data->GetXaxis()->SetTitle(histo[0][var][firstplotted]->GetXaxis()->GetTitle());
           hratio_data->GetYaxis()->SetTitleSize(style.TitleSize*3);
           hratio_data->GetYaxis()->SetTitleOffset(0.5); //can't use relative size, since somehow it changes between plots...
@@ -328,6 +319,7 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
       //save canvas
       pad->SetLogy(1);
       pname = "plots/"+dir+"/log_lumi_"+vars[var].tag+plot_tag;
+      if(vars[var].normalize) pname.ReplaceAll("/log_lumi","/log_norm");
       if(!vars[var].skiplog && (vars[var].whichPlots.Contains("0") || vars[var].whichPlots.Contains("1"))) 
         can.SaveAs(pname);
       pad->SetLogy(0);
@@ -338,6 +330,7 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
       // pad = static_cast<TPad *>(can.cd(1));
       if (!doRatio) style.moveYAxisLabel(histo[0][var][firstplotted], maxpad, false);
       pname = "plots/"+dir+"/lumi_"+vars[var].tag+plot_tag;
+      if(vars[var].normalize) pname.ReplaceAll("/lumi","/norm");
       if(vars[var].whichPlots.Contains("0") || vars[var].whichPlots.Contains("2")) can.SaveAs(pname);
     } // Lumi plots
 
@@ -423,6 +416,12 @@ TString cuts2title(TString title){
   title.ReplaceAll("nvmus10==0&&nvels10==0", "0 leptons");  
   title.ReplaceAll("(nmus+nels)", "n_{lep}");  
   title.ReplaceAll("(nvmus+nvels)", "n^{veto}_{lep}");  
+  title.ReplaceAll("(nvmus>=2||nvels>=2)","n^{veto}_{lep} #geq 2"); 
+  title.ReplaceAll("nvmus", "n^{veto}_{#mu}");  
+  title.ReplaceAll("nvels", "n^{veto}_{e}");  
+  title.ReplaceAll("(mumu_m*(mumu_m>0)+elel_m*(elel_m>0))>80&&(mumu_m*(mumu_m>0)+elel_m*(elel_m>0))<100", 
+		   "80<m_{ll}<100");  
+
   title.ReplaceAll("njets30","n_{jets}^{30}"); 
   title.ReplaceAll("els_pt","p^{e}_{T}");title.ReplaceAll("mus_pt","p^{#mu}_{T}");
   title.ReplaceAll("mus_reliso","RelIso"); title.ReplaceAll("els_reliso","RelIso");
@@ -431,7 +430,8 @@ TString cuts2title(TString title){
   title.ReplaceAll(">=", " #geq "); title.ReplaceAll(">", " > "); 
   title.ReplaceAll("<=", " #leq "); title.ReplaceAll("<", " < "); 
   title.ReplaceAll("&&", ", "); 
-  title.ReplaceAll("met", "MET"); title.ReplaceAll("ht", "H_{T}");  title.ReplaceAll("mt", "m_{T}"); 
+  title.ReplaceAll("met", "MET"); title.ReplaceAll("ht_hlt", "H_{T}^{HLT}");  
+  title.ReplaceAll("ht", "H_{T}");  title.ReplaceAll("mt", "m_{T}"); 
   title.ReplaceAll("ntks_chg==0", " ITV");
   title.ReplaceAll("nleps==1", "1 lepton");  title.ReplaceAll("nbm","n_{b}"); title.ReplaceAll("==", " = "); 
   title.ReplaceAll("nbl[1]","n_{b,l}");
@@ -588,7 +588,7 @@ sysfeats::sysfeats(TString iname, TString ititle):
   title(ititle){
   bincuts = vector<TString>();
   weights = vector<double>();
-}
+  }
 void sysfeats::push_back(TString ibincut, double iweight){
   bincuts.push_back(ibincut);
   weights.push_back(iweight);
@@ -684,8 +684,8 @@ void dump_event(small_tree_full &tree, int entry){
   }
 
   cout<<"Dumping Tracks"<<endl;
-   for(unsigned int itks = 0; itks<tree.tks_pt().size();itks++){
-     cout<<Form("%i: ID= %i \tpT=%.1f \teta=%.1f \tphi=%.1f \tisPrimary= %i \tfrom W= %i \ttruID = %i",itks,tree.tks_id().at(itks),tree.tks_pt().at(itks),tree.tks_eta().at(itks),tree.tks_phi().at(itks),static_cast<int>(tree.tks_is_primary().at(itks)),static_cast<int>(tree.tks_from_w().at(itks)),tree.tks_tru_id().at(itks))<<endl;
+  for(unsigned int itks = 0; itks<tree.tks_pt().size();itks++){
+    cout<<Form("%i: ID= %i \tpT=%.1f \teta=%.1f \tphi=%.1f \tisPrimary= %i \tfrom W= %i \ttruID = %i",itks,tree.tks_id().at(itks),tree.tks_pt().at(itks),tree.tks_eta().at(itks),tree.tks_phi().at(itks),static_cast<int>(tree.tks_is_primary().at(itks)),static_cast<int>(tree.tks_from_w().at(itks)),tree.tks_tru_id().at(itks))<<endl;
   }
 }
 
