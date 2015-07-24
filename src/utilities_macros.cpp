@@ -166,14 +166,19 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
                   || vars[var].whichPlots.Contains("2"))){
       //// Plotting lumi-weighted distributions in histo[0], and then area-normalized in histo[1] ///
       int bkgind(-1);
+      unsigned int last_hist=9999;
+      float normalization_ratio=0;
       for(unsigned sam(Nsam-1); sam < Nsam; sam--){
         int isam = vars[var].samples[sam];
         bool noStack = Samples[isam].isSig || Samples[isam].isData;
         if(!noStack){ // Adding previous bkg histos
+	  if(sam<last_hist) last_hist=sam;
           for(unsigned bsam(sam+1); bsam < Nsam; bsam++){
             histo[0][var][sam]->Add(histo[0][var][bsam]);
             break;
           }
+
+	  
           histo[0][var][sam]->SetFillColor(Samples[isam].color);
           histo[0][var][sam]->SetFillStyle(1001);
           histo[0][var][sam]->SetLineColor(1);
@@ -191,6 +196,18 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
           }
           if(Samples[isam].doStack)  histo[0][var][sam]->Add(histo[0][var][bkgind]);
         }
+
+      }
+      if(vars[var].normalize){
+	    float num = histo[0][var][0]->Integral();
+	    float den = histo[0][var][last_hist]->Integral();
+	    normalization_ratio = num/den; //I want this to crash if den=0
+	  }
+      
+      for(unsigned sam(Nsam-1); sam < Nsam; sam--){
+	int isam = vars[var].samples[sam];
+	//bool noStack = Samples[isam].isSig || Samples[isam].isData;
+	if(sam>=last_hist) histo[0][var][sam]->Scale(normalization_ratio);
         if(Samples[isam].mcerr){ histo[0][var][sam]->SetLineWidth(4);  histo[0][var][sam]->SetMarkerStyle(20); 
           //histo[0][var][sam]->SetMarkerColor(Samples[isam].color);
           histo[0][var][sam]->SetMarkerSize(1.2);
@@ -200,7 +217,13 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
         double maxval(histo[0][var][sam]->GetMaximum());
         if(maxhisto < maxval) {maxhisto = maxval;
           if(Samples[isam].isData) maxhisto = maxval+sqrt(maxval);}
-      } // First loop over samples
+      }
+      
+
+
+
+
+      // First loop over samples
 
       pad->cd();
       for(int ileg(0); ileg<nLegs; ileg++) leg[ileg].Clear();

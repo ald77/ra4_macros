@@ -74,6 +74,7 @@ public:
   std::vector<double> nevents; //Added for track veto study. Useful to display number of events when hist is filled N times per event
   bool skiplog;
   TString whichPlots; // String that determines which of the [log_]lumi and [log_]shapes plots to make
+  bool normalize; //normalizes isData to sum of histograms
   
 };
 
