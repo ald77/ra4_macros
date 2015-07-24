@@ -32,8 +32,8 @@ using std::cout;
 using std::endl;
 
 int main(){ 
-  TString folder="/cms2r0/ald77/archive/"+ntuple_date+"/";
-  folder = "/cms7r0/heller/code/susy_cfa/out/ttbar_7_23/";
+  TString folder_ns="/cms2r0/ald77/archive/"+ntuple_date+"/";
+  TString folder = "/cms7r0/heller/code/susy_cfa/out/ttbar_7_23/";
   TString folder_2l="/cms2r0/ald77/archive/2015_07_22/skim_2l/";
 
   // vector<TString> s_t1t;
@@ -98,10 +98,18 @@ int main(){
   // Some of Other has leptons, but very little, and this is the easiest to put had tt with QCD
   Samples.push_back(sfeats(s_other, "Other", dps::c_other, 1,"ntruleps==0")); 
 
-  vector<int> ra4_sam;
-  for(unsigned sam(0); sam < Samples.size(); sam++) {
+  vector<int> ra4_sam, ra4_sam_ns;
+  unsigned nsam(Samples.size());
+  for(unsigned sam(0); sam < nsam; sam++){
     ra4_sam.push_back(sam);
-  }
+    ra4_sam_ns.push_back(nsam+sam);
+    vector<TString> sam_files = Samples[sam].file;
+    for(unsigned ifile(0); ifile < sam_files.size(); ifile++)
+      sam_files[ifile].ReplaceAll(folder, folder_ns);
+    Samples.push_back(sfeats(sam_files, Samples[sam].label, Samples[sam].color, Samples[sam].style,
+           Samples[sam].cut));
+    if (Samples[sam].label.Contains("Data")) Samples.back().isData = true;
+  } // Loop over samples
 
   Samples.push_back(sfeats(s_trig_all, "Lep15_VVVL",kBlack,1,"(trig[1]||trig[5])")); Samples.back().isData = true;
   vector<int> all_sam(ra4_sam);
@@ -201,6 +209,22 @@ int main(){
    			"ht>400&&met>150"));
   vars.back().whichPlots = "2"; vars.back().normalize = true;
 
+  ////////////////////////////// N-1 plots for Ryan's talk ////////////////////////////
+  vars.push_back(hfeats("met",16,0,800, ra4_sam_ns, "MET [GeV]",
+          "(nvmus+nvels)==1&&ht>"+minht+"&&njets>="+minjets+"&&nbm>="+minbm));
+  vars.back().whichPlots = "1";
+  vars.push_back(hfeats("njets",14,-0.5,13.5, ra4_sam_ns, "Number of jets",
+          "(nvmus+nvels)==1&&ht>"+minht+"&&met>"+minmet+"&&nbm>="+minbm));
+  vars.back().whichPlots = "2";
+  vars.back().normalize = true;
+  vars.push_back(hfeats("nbm",7,-0.5,6.5, ra4_sam_ns, "Number of b-tags (CSVM)",
+          "(nvmus+nvels)==1&&ht>"+minht+"&&met>"+minmet+"&&njets>="+minjets));
+  vars.back().whichPlots = "2";
+  vars.back().normalize = true;
+  vars.push_back(hfeats("mt",18,0,360, ra4_sam, "m_{T} [GeV]",
+          "(nvmus+nvels)==1&&ht>"+minht+"&&met>"+minmet+"&&njets>="+minjets+"&&nbm>="+minbm));
+  vars.back().whichPlots = "1";
+  vars.back().normalize = true;
 
   plot_distributions(Samples, vars, luminosity, plot_type, plot_style, "1d",true);
 
