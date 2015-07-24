@@ -18,14 +18,14 @@
 
 namespace  {
   TString ntuple_date("2015_05_25");
-  TString minjets("7"), midjets("8");
-  TString mjthresh("600");
-  TString highmet("400");
   TString luminosity="10";
   bool do_1b=false;
   bool do_2l=false;
-  bool do_nb_binning=false;
+  bool do_ttbaronly = true;
   bool do_note=true;
+  bool do_zbi=false;
+
+  int method = 1; // Only methods 1 and 3 currently supported
 }
 
 using namespace std;
@@ -37,15 +37,18 @@ TString YieldsCut(TString title, TString cuts, vector<TChain*> chain, vector<sfe
 int main(){
 
   // Reading ntuples
-  TString folder="/cms5r0/ald77/archive/"+ntuple_date+"/skim/";
+  TString folder, folder_ns;  
+  folder="/cms5r0/ald77/archive/"+ntuple_date+"/skim/";   
+  folder_ns="/cms5r0/ald77/archive/"+ntuple_date+"/";
   vector<TString> s_tt;
-  s_tt.push_back(folder+"*_TTJet*");
+  if(!(ntuple_date=="Spring15_Pow")) s_tt.push_back(folder+"*_TTJet*");
+  else s_tt.push_back(folder+"*_TT*");
   vector<TString> s_wjets;
   vector<TString> s_single;
   s_single.push_back(folder+"*_T*channel*");
   vector<TString> s_ttv;
   vector<TString> s_other;
-  s_other.push_back(folder+"*QCD_HT*");
+  s_other.push_back(folder+"*QCD*");
   s_other.push_back(folder+"*_ZJet*");
   s_other.push_back(folder+"*DY*");
   s_other.push_back(folder+"*WH_HToBB*");
@@ -59,10 +62,12 @@ int main(){
 
   vector<TChain *> chain;
   vector<sfeats> Samples; 
-  Samples.push_back(sfeats(s_other, "Other", 1001));
-  // Samples.push_back(sfeats(s_ttv, "$t\\bar{t}V$", 1002));
-  Samples.push_back(sfeats(s_single, "Single $t$", 1005));
-  // Samples.push_back(sfeats(s_wjets, "W+jets", 1004));
+  if(!do_ttbaronly){
+    Samples.push_back(sfeats(s_other, "Other", 1001));
+    Samples.push_back(sfeats(s_ttv, "$t\\bar{t}V$", 1002));
+    Samples.push_back(sfeats(s_single, "Single $t$", 1005));
+    Samples.push_back(sfeats(s_wjets, "W+jets", 1004));
+  }
   Samples.push_back(sfeats(s_tt, "$t\\bar{t}$ (1$\\ell$)", 1000,1,
 			   "ntruleps<=1"));
   Samples.push_back(sfeats(s_tt, "$t\\bar{t}$ ($2\\ell$)", 1006,1,
@@ -77,7 +82,11 @@ int main(){
       chain[sam]->Add(Samples[sam].file[insam]);
   }
 
-  bool do_zbi=false;
+  TString minjets("7"), midjets("8"), mjthresh("600"), highmet("400"); bool do_nb_binning=false;
+  if(method==1) {  minjets = "7"; midjets="8"; mjthresh="600"; highmet="400"; do_nb_binning=false; } 
+  if(method==3) {  minjets ="7"; midjets="8"; mjthresh="400"; highmet="400"; do_nb_binning=true; }  
+
+
   TString minjets_2l(""), midjets_2l("");
   minjets_2l += (minjets.Atoi()-1); midjets_2l += (midjets.Atoi()-1); 
   TString fom("$Z_{\\rm bi}$");
