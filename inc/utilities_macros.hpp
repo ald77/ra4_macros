@@ -39,11 +39,11 @@ namespace dps{
     // c_other    = 1014
 
     //option 2
-    c_tt_1l    = 1011, // ucsb_blue
-    c_tt_2l    = 1012, // tar_heel_blue
-    c_wjets    = 1020, // ucsb_gold
+    c_tt_1l    = 1012, // ucsb_blue
+    c_tt_2l    = 1011, // tar_heel_blue
+    c_wjets    = 1018, // ucsb_gold
     c_singlet  = 1015,
-    c_qcd    = 1018,
+    c_qcd    = 1020,
     c_other    = 1019
   };
 

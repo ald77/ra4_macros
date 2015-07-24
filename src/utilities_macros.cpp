@@ -134,10 +134,13 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
       histo[0][var][sam]->SetBinContent(vars[var].nbins,
                                         histo[0][var][sam]->GetBinContent(vars[var].nbins)+
                                         histo[0][var][sam]->GetBinContent(vars[var].nbins+1));
+      
+     
       nentries[sam] = histo[0][var][sam]->Integral(1,vars[var].nbins);
       cout<<Samples[isam].tag<<" Nentries "<<nentries[sam]<<endl;
       if(nentries[sam]<0) nentries[sam]=0;
       ytitle = "Events";
+      
       if(!namestyle.Contains("CMSPaper") || doRatio) {
         // ytitle = "Events for "+luminosity+" fb^{-1}";
         lumilabel = "";
@@ -167,7 +170,7 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
       //// Plotting lumi-weighted distributions in histo[0], and then area-normalized in histo[1] ///
       int bkgind(-1);
       unsigned int last_hist=9999;
-      float normalization_ratio=0;
+      float normalization_ratio=1;
       for(unsigned sam(Nsam-1); sam < Nsam; sam--){
         int isam = vars[var].samples[sam];
         bool noStack = Samples[isam].isSig || Samples[isam].isData;
@@ -199,6 +202,7 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
 
       }
       if(vars[var].normalize){
+	cout<<"NORMALIZING "<<endl;
 	    float num = histo[0][var][0]->Integral();
 	    float den = histo[0][var][last_hist]->Integral();
 	    normalization_ratio = num/den; //I want this to crash if den=0
@@ -207,7 +211,9 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
       for(unsigned sam(Nsam-1); sam < Nsam; sam--){
 	int isam = vars[var].samples[sam];
 	//bool noStack = Samples[isam].isSig || Samples[isam].isData;
-	if(sam>=last_hist) histo[0][var][sam]->Scale(normalization_ratio);
+	if(sam>=last_hist && vars[var].normalize ){ histo[0][var][sam]->Scale(normalization_ratio); nentries[sam]*= normalization_ratio;}
+
+	
         if(Samples[isam].mcerr){ histo[0][var][sam]->SetLineWidth(4);  histo[0][var][sam]->SetMarkerStyle(20); 
           //histo[0][var][sam]->SetMarkerColor(Samples[isam].color);
           histo[0][var][sam]->SetMarkerSize(1.2);
@@ -473,6 +479,7 @@ hfeats::hfeats(TString ivarname, int inbins, float iminx, float imaxx, vector<in
   else nevents = inevents;
   if(nevents.size() != samples.size() ) cout<<"hfeats samples/nevents size mismatch: "<<ititle<<endl;
   whichPlots = "0"; // Make all 4 [log_]lumi and [log_]shapes plots
+  normalize=false;
   
   string ctitle(title.Data()); // Needed because effing TString can't handle square brackets
   if(!(ctitle.find("GeV")==std::string::npos)) unit = "GeV";
