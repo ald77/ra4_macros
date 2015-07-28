@@ -76,8 +76,8 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
   float minLog = 0.04, fracLeg = 0.36; // Fraction of the histo pad devoted to the legend
 
   double legLeft(style.PadLeftMargin+0.03), legRight(1-style.PadRightMargin-0.02);
-  double legY(0.902), legSingle = 0.052;
-  if (doRatio) {legY=0.89; legSingle = 0.06;}
+  double legY(1-style.PadTopMargin-0.023), legSingle = 0.052;
+  if (doRatio) {legY=1-style.PadTopMargin-0.033; legSingle = 0.06;}
   double legW = 0.13, legH = legSingle*(vars[0].samples.size()+1)/2;
   double legX1[] = {legLeft, legLeft+(legRight-legLeft)/2.*1.15};
   TLegend leg[2]; int nLegs(2);
@@ -212,16 +212,13 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
           histo[0][var][2]->SetFillColorAlpha(Samples[2].color, 0.5);
         }
         double maxval(histo[0][var][sam]->GetMaximum());
-        if(maxhisto < maxval) {maxhisto = maxval;
-          if(Samples[isam].isData) maxhisto = maxval+sqrt(maxval);}
+        if(maxhisto < maxval)  maxhisto = maxval;
+	maxval += sqrt(maxval);
+	if(Samples[isam].isData && maxhisto < maxval) maxhisto = maxval;
       }
-      
-
-
 
 
       // First loop over samples
-
       pad->cd();
       for(int ileg(0); ileg<nLegs; ileg++) leg[ileg].Clear();
       unsigned legcount(0);
@@ -314,8 +311,8 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
       TString lumilbl = TString::Format("L = %1.f",luminosity.Atof()*1000.)+" pb^{-1}, 13 TeV";
       TLatex llbl;
       llbl.SetTextSize(style.LegendSize); 
-      llbl.SetNDC();
-      llbl.DrawLatex(0.57,0.57,lumilbl);
+      llbl.SetNDC(); llbl.SetTextAlign(13);
+      llbl.DrawLatex(0.57,leg[0].GetY1NDC()-0.02,lumilbl);
       //save canvas
       pad->SetLogy(1);
       pname = "plots/"+dir+"/log_lumi_"+vars[var].tag+plot_tag;
@@ -394,6 +391,7 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
     if(!vars[var].skiplog && (vars[var].whichPlots.Contains("0") || vars[var].whichPlots.Contains("4"))) 
       can.SaveAs(pname);
   }// Loop over variables
+  cout<<endl;
 
   for(unsigned his(0); his < 2; his++){
     for(unsigned var(0); var<vars.size(); var++){
@@ -420,6 +418,8 @@ TString cuts2title(TString title){
   title.ReplaceAll("nvmus", "n^{veto}_{#mu}");  
   title.ReplaceAll("nvels", "n^{veto}_{e}");  
   title.ReplaceAll("(mumu_m*(mumu_m>0)+elel_m*(elel_m>0))>80&&(mumu_m*(mumu_m>0)+elel_m*(elel_m>0))<100", 
+		   "80<m_{ll}<100");  
+  title.ReplaceAll("(mumuv_m*(mumuv_m>0)+elelv_m*(elelv_m>0))>80&&(mumuv_m*(mumuv_m>0)+elelv_m*(elelv_m>0))<100", 
 		   "80<m_{ll}<100");  
 
   title.ReplaceAll("njets30","n_{jets}^{30}"); 
