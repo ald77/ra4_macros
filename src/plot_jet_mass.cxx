@@ -57,24 +57,25 @@ int main(){
 
   vector<hfeats> vars;
 
-  vars.push_back(hfeats("jets_m",25,0,250, ra4_sam, "AK4 jet mass (GeV)",
-   			"ht>1000&&met<50&&(nmus+nels)==0",0));
-  vars.back().whichPlots = "1";
-  vars.push_back(hfeats("jets_pt",20,0,1000, ra4_sam, "jet p_{T} (GeV)",
-   			"ht>1000&&met<50&&(nmus+nels)==0",0));
-  vars.back().whichPlots = "1";
-
-  //mass in a couple typical bins of pT
-  vars.push_back(hfeats("jets_m",50,0,100, ra4_sam, "AK4 jet mass [GeV]",
+  // Mass plots for the DPS in two bins of pT
+  vars.push_back(hfeats("jets_m",54,0,27, ra4_sam, "AK4 jet mass [GeV]",
     			"ht>1000&&met<50&&(nmus+nels)==0&&jets_pt>50&&jets_pt<75",0));
   vars.back().whichPlots = "1"; vars.back().normalize = true;
-  vars.push_back(hfeats("jets_m",50,0,100, ra4_sam, "AK4 jet mass [GeV]",
+  vars.push_back(hfeats("jets_m",55,0,110, ra4_sam, "AK4 jet mass [GeV]",
     			"ht>1000&&met<50&&(nmus+nels)==0&&jets_pt>250",0));
   vars.back().whichPlots = "1"; vars.back().normalize = true;
 
-  vars.push_back(hfeats("npv",50,0,50, ra4_sam, "NPV",
-          "ht>1000&&met<50&&(nmus+nels)==0",0));
-  vars.back().normalize = true;
+  // // Additional plots
+  // vars.push_back(hfeats("npv",50,0,50, ra4_sam, "NPV",
+  //         "ht>1000&&met<50&&(nmus+nels)==0",0));
+  // vars.back().normalize = true;
+
+  // vars.push_back(hfeats("jets_m",25,0,250, ra4_sam, "AK4 jet mass (GeV)",
+  //  			"ht>1000&&met<50&&(nmus+nels)==0",0));
+  // vars.back().whichPlots = "1";
+  // vars.push_back(hfeats("jets_pt",20,0,1000, ra4_sam, "jet p_{T} (GeV)",
+  //  			"ht>1000&&met<50&&(nmus+nels)==0",0));
+  // vars.back().whichPlots = "1";
 
   plot_distributions(Samples, vars, "0.040", ".pdf", "CMSPaper", "1d",true);
 

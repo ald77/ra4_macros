@@ -201,7 +201,7 @@ int main(){
 
   // // ////////////////////////////// MJ plots for the DPS ////////////////////////////
   vars.push_back(hfeats("mj",20,0,1000, sig_sam_log, "M_{J} [GeV]",
-			"(nvmus+nvels)==1&&ht>"+minht+"&&met>150&&njets>=5&&nbm>=1"));
+			"onht>350&&onmet>100&&(nvmus+nvels)==1&&ht>"+minht+"&&met>150&&njets>=5&&nbm>=1"));
   vars.back().whichPlots = "1";
   vars.back().normalize = true;
 
