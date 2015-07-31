@@ -88,7 +88,7 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
     leg[ileg].SetFillStyle(0); leg[ileg].SetBorderSize(0);
     leg[ileg].SetTextFont(style.nFont); 
   }
-  TLine line; line.SetLineColor(28); line.SetLineWidth(4); line.SetLineStyle(2);
+  TLine line; line.SetLineColor(28); line.SetLineWidth(5); line.SetLineStyle(3);
   vector< vector<TH1D*> > histo[2];
   vector<TH1D*> varhisto;
   vector<float> nentries;
@@ -193,10 +193,14 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
         }
 
       }
-      if(vars[var].normalize){
-	float num = histo[0][var][0]->Integral();
-	float den = histo[0][var][last_hist]->Integral();
+      if(vars[var].normalize || doRatio){
+	double err_num(0), err_den(0);
+	float num = histo[0][var][0]->IntegralAndError(1,histo[0][var][0]->GetNbinsX(),err_num);
+	float den = histo[0][var][last_hist]->IntegralAndError(1,histo[0][var][last_hist]->GetNbinsX(),err_den);
 	normalization_ratio = num/den; //I want this to crash if den=0
+	double err_tot(den/num*sqrt(pow(err_num/num,2)+pow(err_den/den,2)));
+	cout<<"Histogram [MC] is ("<<RoundNumber((den/num-1)*100,1)
+	  <<" +- "<<RoundNumber(err_tot*100,1)<<")% larger than markers [data]"<<endl;
       }
       
       for(unsigned sam(Nsam-1); sam < Nsam; sam--){
@@ -278,10 +282,12 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
           }
         }        
         if (ndatasam) {
+	  float maxRatio = 1.9;
+	  if(vars[var].maxRatio > 0) maxRatio = vars[var].maxRatio;
           hratio_data = static_cast<TH1D*>(hdata->Clone());
           hratio_data->SetTitle("");
           hratio_data->Divide(histo[0][var][firstplotted]);
-          hratio_data->GetYaxis()->SetRangeUser(0.1,1.9);
+          hratio_data->GetYaxis()->SetRangeUser(0.1,maxRatio);
           hratio_data->GetXaxis()->SetLabelSize(style.LabelSize*2.2);
           hratio_data->GetYaxis()->SetLabelSize(style.LabelSize*2.1);
           hratio_data->GetYaxis()->SetTitle("Data / MC ");
@@ -408,20 +414,24 @@ TString cuts2title(TString title){
   title.ReplaceAll("Sum$(abs(mc_id)==13)","n^{true}_{#mu}");
   title.ReplaceAll("Sum$(genels_pt>0)", "n^{true}_{e}");
   title.ReplaceAll("Sum$(genmus_pt>0)", "n^{true}_{#mu}");
-  title.ReplaceAll("ntruleps", "n^{true}_{l}");
-  title.ReplaceAll("onmet", "MET^{on}"); title.ReplaceAll("onht", "H_{T}^{on}");  
   title.ReplaceAll("nvmus==1&&nmus==1&&nvels==0","1 #mu");
   title.ReplaceAll("nvmus10==0&&nvels10==0", "0 leptons");  
   title.ReplaceAll("(nmus+nels)", "n_{lep}");  
   title.ReplaceAll("(nvmus+nvels)", "n^{veto}_{lep}");  
   title.ReplaceAll("(nvmus>=2||nvels>=2)","n^{veto}_{lep} #geq 2"); 
-  title.ReplaceAll("nvmus", "n^{veto}_{#mu}");  
-  title.ReplaceAll("nvels", "n^{veto}_{e}");  
   title.ReplaceAll("(mumu_m*(mumu_m>0)+elel_m*(elel_m>0))>80&&(mumu_m*(mumu_m>0)+elel_m*(elel_m>0))<100", 
 		   "80<m_{ll}<100");  
   title.ReplaceAll("(mumuv_m*(mumuv_m>0)+elelv_m*(elelv_m>0))>80&&(mumuv_m*(mumuv_m>0)+elelv_m*(elelv_m>0))<100", 
 		   "80<m_{ll}<100");  
+  title.ReplaceAll("onht>350&&onmet>100&&","");
 
+  title.ReplaceAll("nmus", "n_{#mu}");  
+  title.ReplaceAll("nels", "n_{e}");  
+  title.ReplaceAll("nvmus", "n^{veto}_{#mu}");  
+  title.ReplaceAll("nvels", "n^{veto}_{e}");  
+  title.ReplaceAll("ntruleps", "n^{true}_{l}");
+
+  title.ReplaceAll("onmet", "MET^{on}"); title.ReplaceAll("onht", "H_{T}^{on}");  
   title.ReplaceAll("njets30","n_{jets}^{30}"); 
   title.ReplaceAll("els_pt","p^{e}_{T}");title.ReplaceAll("mus_pt","p^{#mu}_{T}");title.ReplaceAll("jets_pt","p^{jet}_{T}");
   title.ReplaceAll("mus_reliso","RelIso"); title.ReplaceAll("els_reliso","RelIso");
@@ -474,6 +484,7 @@ hfeats::hfeats(TString ivarname, int inbins, float iminx, float imaxx, vector<in
   format_tag();
   unit = "";
   maxYaxis = -1.;
+  maxRatio = -1.;
   skiplog=iskiplog;
   if(inevents.at(0)<0) nevents = vector<double>(isamples.size(),-1);
   else nevents = inevents;

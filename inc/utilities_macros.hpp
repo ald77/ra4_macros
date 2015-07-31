@@ -67,7 +67,7 @@ public:
   TString title, varname, tag, cuts, unit;
   int nbins;
   float *binning;
-  float minx, maxx, cut, maxYaxis;
+  float minx, maxx, cut, maxYaxis, maxRatio;
   std::vector<int> samples;
   TString tagname;
   void format_tag();
