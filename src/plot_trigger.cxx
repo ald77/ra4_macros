@@ -5,6 +5,8 @@
 
 #include "TChain.h"
 #include "TH1D.h"
+#include "TF1.h"
+#include "TMath.h"
 #include "TCanvas.h"
 #include "TLegend.h"
 #include "TLine.h"
@@ -16,6 +18,10 @@
 #include "utilities_macros.hpp"
 
 using namespace std;
+
+Double_t errorFun(Double_t *x, Double_t *par) {
+  return 0.5*par[0]*(1. + TMath::Erf( (x[0] - par[1]) / (sqrt(2.)*par[2]) )) ;
+}
 
 void PlotTurnOn(TChain *data, TString var, int nbins, double minx, double maxx, TString xtitle, 
 		TString den, TString num, TString title="", TString ytitle="");
@@ -34,22 +40,25 @@ int main(){
   alldata.Add(alldir+"*.root");
   htdata.Add(htdir+"*.root");
 
-  PlotTurnOn(&alldata, "met", 30,0,600, "Reco MET [GeV]",
+  PlotTurnOn(&alldata, "ht", 30,150,1050, "Reco H_{T} [GeV]",
+   	     "(trig[14])", "trig[0]","MET170",
+  	     "HT350_MET100");
+  PlotTurnOn(&alldata, "met", 15,0,600, "Reco MET [GeV]",
   	     "(trig[2]||trig[6])", "trig[0]",
   	     "Mu15/Ele15_HT600", 
    	     "HT350_MET100");
-  PlotTurnOn(&alldata, "met", 30,0,600, "Reco MET [GeV]",
-  	     "(trig[2]||trig[6])", "trig[1]||trig[5]",
-  	     "Mu15/Ele15_HT600", 
-   	     "(Mu15 || Ele15)_HT350_MET70");
-  PlotTurnOn(&alldata, "met", 30,0,600, "Reco MET [GeV]",
-  	     "(trig[3]||trig[7])", "trig[0]",
-  	     "Mu15/Ele15_HT400_Btag", 
-   	     "HT350_MET100");
-  PlotTurnOn(&alldata, "met", 30,0,600, "Reco MET [GeV]",
-  	     "(trig[3]||trig[7])", "trig[1]||trig[5]",
-  	     "Mu15/Ele15_HT400_Btag", 
-   	     "(Mu15 || Ele15)_HT350_MET70");
+  // PlotTurnOn(&alldata, "met", 30,0,600, "Reco MET [GeV]",
+  // 	     "(trig[2]||trig[6])", "trig[1]||trig[5]",
+  // 	     "Mu15/Ele15_HT600", 
+  //  	     "(Mu15 || Ele15)_HT350_MET70");
+  // PlotTurnOn(&alldata, "met", 30,0,600, "Reco MET [GeV]",
+  // 	     "(trig[3]||trig[7])", "trig[0]",
+  // 	     "Mu15/Ele15_HT400_Btag", 
+  //  	     "HT350_MET100");
+  // PlotTurnOn(&alldata, "met", 30,0,600, "Reco MET [GeV]",
+  // 	     "(trig[3]||trig[7])", "trig[1]||trig[5]",
+  // 	     "Mu15/Ele15_HT400_Btag", 
+  //  	     "(Mu15 || Ele15)_HT350_MET70");
 
 
   // Efficiency(&alldata, "(trig[4]&&nmus>=1||trig[8]&&nels>=1)&&ht>700", 
@@ -224,12 +233,31 @@ void PlotTurnOn(TChain *data, TString var, int nbins, double minx, double maxx, 
   TGraphAsymmErrors heff;
   heff = TGraphAsymmErrors(histo[1], histo[0]);
   heff.SetMarkerStyle(20); heff.SetMarkerSize(0.9);
-  heff.SetMarkerColor(2); heff.SetLineColor(2);
+  heff.SetMarkerColor(4); heff.SetLineColor(4);
   heff.SetTitle(title);
   heff.GetXaxis()->SetTitle(xtitle);
   heff.GetYaxis()->SetTitle("#epsilon ["+ytitle+"]");
   heff.GetYaxis()->SetRangeUser(0,1.2);
   heff.Draw("ap");
+  
+  // Fitting turn on curve
+  TF1 *fermiFunction = new TF1("fermiFunction",errorFun,minx,maxx,3);
+  Double_t params[3] = {1.,maxx/3.,10.};    
+  fermiFunction->SetParameters(params);
+  fermiFunction->SetParNames("#epsilon","#mu","#sigma");
+  fermiFunction->SetLineColor(2);
+  fermiFunction->SetLineWidth(2);
+  //heff.Fit("fermiFunction","QR+");
+  heff.Fit("fermiFunction","R+");
+
+  // Ploting denominator
+  histo[1]->Scale(0.3/histo[1]->GetMaximum());
+  //histo[1]->SetFillStyle(3344);
+  histo[1]->SetFillColor(kGray);
+  histo[1]->SetLineStyle(0);
+  histo[1]->Draw("same");
+
+  heff.Draw(" same");
 
   pname = "plots/turnon_"+format_tag(var)+"_"+format_tag(den)+"_"+format_tag(num)+filetype;
   can.SaveAs(pname);
@@ -240,6 +268,7 @@ void PlotTurnOn(TChain *data, TString var, int nbins, double minx, double maxx, 
  //     <<"-"<<RoundNumber(heff.GetErrorYlow(nbins)*100,1)<<endl;
   for(unsigned his(0); his<2; his++)
     histo[his]->Delete();
+  fermiFunction->Delete();
 }
 
 void Efficiency(TChain *data, TString den, TString num){
