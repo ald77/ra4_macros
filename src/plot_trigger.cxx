@@ -10,6 +10,9 @@
 #include "TCanvas.h"
 #include "TLegend.h"
 #include "TLine.h"
+#include "TBox.h"
+#include "TLatex.h"
+#include "TPaveText.h"
 #include "TString.h"
 #include "TGraphAsymmErrors.h"
 
@@ -40,21 +43,44 @@ int main(){
   alldata.Add(alldir+"*.root");
   htdata.Add(htdir+"*.root");
 
-  PlotTurnOn(&alldata, "ht", 30,150,1050, "Reco H_{T} [GeV]",
-   	     "(trig[14])", "trig[0]","MET170",
-  	     "HT350_MET100");
-  PlotTurnOn(&alldata, "met", 15,0,600, "Reco MET [GeV]",
-  	     "(trig[2]||trig[6])", "trig[0]",
-  	     "Mu15/Ele15_HT600", 
-   	     "HT350_MET100");
+  PlotTurnOn(&alldata, "Max$(mus_pt*(mus_sigid&&mus_miniso<0.2))", 32,10,50, "Max #mu_{reco} p_{T} [GeV]",
+  	     "(trig[0]||trig[12])", "trig[1]||trig[2]","HT800 || HT350_MET100", 
+  	     "Mu15_(HT350_MET70 || HT600)");
+  PlotTurnOn(&alldata, "Max$(els_pt*(els_sigid&&els_miniso<0.1))", 32,10,50, "Max e_{reco} p_{T} [GeV]",
+  	     "(trig[0]||trig[12])", "trig[5]||trig[6]","HT800 || HT350_MET100", 
+  	     "Ele15_(HT350_MET70 || HT600)");
+  PlotTurnOn(&alldata, "Max$(mus_pt*(mus_sigid&&mus_miniso<0.2))", 32,10,50, "Max #mu_{reco} p_{T} [GeV]",
+  	     "(trig[0]||trig[12])", "trig[18]","HT800 || HT350_MET100", 
+  	     "IsoMu20");
+  // PlotTurnOn(&alldata, "met", 24,0,600, "Reco MET [GeV]",
+  // 	     "(trig[3]||trig[7])", "trig[0]",
+  // 	     "Mu15/Ele15_HT400_Btag", 
+  //  	     "HT350_MET100");
+  // PlotTurnOn(&alldata, "mht_ra2b", 24,0,600, "Reco MHT [GeV]",
+  // 	     "(trig[3]||trig[7])", "trig[0]",
+  // 	     "Mu15/Ele15_HT400_Btag", 
+  //  	     "HT350_MET100");
+
+
+  // PlotTurnOn(&alldata, "ht_ra2b", 32,200,1000, "Reco H_{T} [GeV]",
+  //  	     "(trig[14])", "trig[0]","MET170",
+  // 	     "HT350_MET100");
+  // PlotTurnOn(&alldata, "met", 24,0,600, "Reco MET [GeV]",
+  // 	     "(trig[3]||trig[7])", "trig[0]",
+  // 	     "Mu15/Ele15_HT400_Btag", 
+  //  	     "HT350_MET100");
+  // PlotTurnOn(&alldata, "mht_ra2b", 24,0,600, "Reco MHT [GeV]",
+  // 	     "(trig[3]||trig[7])", "trig[0]",
+  // 	     "Mu15/Ele15_HT400_Btag", 
+  //  	     "HT350_MET100");
+  // PlotTurnOn(&alldata, "met", 15,0,600, "Reco MET [GeV]",
+  // 	     "(trig[2]||trig[6])", "trig[0]",
+  // 	     "Mu15/Ele15_HT600", 
+  //  	     "HT350_MET100");
   // PlotTurnOn(&alldata, "met", 30,0,600, "Reco MET [GeV]",
   // 	     "(trig[2]||trig[6])", "trig[1]||trig[5]",
   // 	     "Mu15/Ele15_HT600", 
   //  	     "(Mu15 || Ele15)_HT350_MET70");
-  // PlotTurnOn(&alldata, "met", 30,0,600, "Reco MET [GeV]",
-  // 	     "(trig[3]||trig[7])", "trig[0]",
-  // 	     "Mu15/Ele15_HT400_Btag", 
-  //  	     "HT350_MET100");
   // PlotTurnOn(&alldata, "met", 30,0,600, "Reco MET [GeV]",
   // 	     "(trig[3]||trig[7])", "trig[1]||trig[5]",
   // 	     "Mu15/Ele15_HT400_Btag", 
@@ -227,37 +253,65 @@ void PlotTurnOn(TChain *data, TString var, int nbins, double minx, double maxx, 
   hname = "num"; totCut = "("+den+")&&("+num+")";
   histo[1] = new TH1D(hname, "", nbins, minx, maxx);
   data->Project(hname, var, totCut);
-   for(unsigned his(0); his<2; his++)
-     histo[his]->SetBinContent(nbins, histo[his]->GetBinContent(nbins)+histo[his]->GetBinContent(nbins+1));
+  // for(unsigned his(0); his<2; his++)
+  //   histo[his]->SetBinContent(nbins, histo[his]->GetBinContent(nbins)+histo[his]->GetBinContent(nbins+1));
 
   TGraphAsymmErrors heff;
   heff = TGraphAsymmErrors(histo[1], histo[0]);
   heff.SetMarkerStyle(20); heff.SetMarkerSize(0.9);
   heff.SetMarkerColor(4); heff.SetLineColor(4);
-  heff.SetTitle(title);
-  heff.GetXaxis()->SetTitle(xtitle);
-  heff.GetYaxis()->SetTitle("#epsilon ["+ytitle+"]");
-  heff.GetYaxis()->SetRangeUser(0,1.2);
-  heff.Draw("ap");
-  
-  // Fitting turn on curve
-  TF1 *fermiFunction = new TF1("fermiFunction",errorFun,minx,maxx,3);
-  Double_t params[3] = {1.,maxx/3.,10.};    
-  fermiFunction->SetParameters(params);
-  fermiFunction->SetParNames("#epsilon","#mu","#sigma");
-  fermiFunction->SetLineColor(2);
-  fermiFunction->SetLineWidth(2);
-  //heff.Fit("fermiFunction","QR+");
-  heff.Fit("fermiFunction","R+");
+
 
   // Ploting denominator
-  histo[1]->Scale(0.3/histo[1]->GetMaximum());
+  float hfactor(0.3/histo[1]->GetMaximum());
+  histo[1]->Scale(hfactor);
   //histo[1]->SetFillStyle(3344);
   histo[1]->SetFillColor(kGray);
   histo[1]->SetLineStyle(0);
-  histo[1]->Draw("same");
+  histo[1]->SetTitle("Denom: "+title);
+  histo[1]->GetXaxis()->SetTitle(xtitle);
+  histo[1]->GetYaxis()->SetTitle("#epsilon ["+ytitle+"]");
+  histo[1]->GetYaxis()->SetRangeUser(0,1.3);
+  histo[1]->Draw();
 
-  heff.Draw(" same");
+  histo[0]->Scale(hfactor);
+  histo[0]->SetLineColor(kGray+1);
+  histo[0]->SetLineStyle(2);
+  histo[0]->SetLineWidth(2);
+  histo[0]->Draw("same");
+
+
+  
+  // Fitting turn on curve
+  TF1 *fitCurve = new TF1("fitCurve",errorFun,minx,maxx,3);
+  Double_t params[3] = {1.,maxx/3.,10.};    
+  fitCurve->SetParameters(params);
+  fitCurve->SetParNames("#epsilon","#mu","#sigma");
+  fitCurve->SetLineColor(2);
+  fitCurve->SetLineWidth(2);
+  heff.Fit("fitCurve","QR+");
+  
+  heff.Draw("p");
+  histo[1]->Draw("axis same");
+
+  // 95th percentile of Gaussian from Wolfram Alpha
+  float p95(fitCurve->GetParameter(1)+1.64485*fitCurve->GetParameter(2));
+  TString fitpar("#splitline{Plateau #epsilon = ("+
+		 RoundNumber(fitCurve->GetParameter(0)*100,1)+" #pm "+
+		 RoundNumber(fitCurve->GetParError(0)*100,1)+
+		 ")%}{95% of plateau at "+RoundNumber(p95,0)+" GeV}");
+  TLatex label; label.SetTextSize(0.045); 
+  label.SetTextAlign(33); //label.SetNDC(); 
+  float range(maxx-minx);
+  float x1(maxx-0.57*range), y1(1.08), x2(maxx-0.05*range), y2(1.25);
+  TBox box(x1,y1,x2,y2); box.SetFillColor(10); box.SetFillStyle(1001); 
+  box.Draw();
+  label.DrawLatex(x2-0.01*range,y2-0.01,fitpar);
+
+  // TPaveText label(x1,y1,x2,y2,"NDC NB"); label.SetTextSize(0.045); 
+  // label.SetFillColor(10); label.SetFillStyle(1001); 
+  // label.SetTextAlign(33); label.AddText(fitpar);
+  // label.Draw();
 
   pname = "plots/turnon_"+format_tag(var)+"_"+format_tag(den)+"_"+format_tag(num)+filetype;
   can.SaveAs(pname);
@@ -268,7 +322,7 @@ void PlotTurnOn(TChain *data, TString var, int nbins, double minx, double maxx, 
  //     <<"-"<<RoundNumber(heff.GetErrorYlow(nbins)*100,1)<<endl;
   for(unsigned his(0); his<2; his++)
     histo[his]->Delete();
-  fermiFunction->Delete();
+  fitCurve->Delete();
 }
 
 void Efficiency(TChain *data, TString den, TString num){
