@@ -122,20 +122,25 @@ int main(int argc, char *argv[]){
 	       style.PadLeftMargin+width, style.PadBottomMargin+height, "NDCNB");
   TPaveText l2(1.-style.PadRightMargin-width, style.PadBottomMargin,
 	       1.-style.PadRightMargin, style.PadBottomMargin+height, "NDCNB");
-  TPaveText l3(style.PadLeftMargin, 1.-style.PadTopMargin-height,
-	       style.PadLeftMargin+width, 1.-style.PadTopMargin, "NDCNB");
-  TPaveText l4(1.-style.PadRightMargin-width, 1.-style.PadTopMargin-height,
-	       1.-style.PadRightMargin, 1.-style.PadTopMargin, "NDCNB");
+  TPaveText l3(style.PadLeftMargin, 1.-style.PadTopMargin-1.5*height,
+	       style.PadLeftMargin+width, 1.-style.PadTopMargin-0.5*height, "NDCNB");
+  TPaveText l4(1.-style.PadRightMargin-width, 1.-style.PadTopMargin-1.5*height,
+	       1.-style.PadRightMargin, 1.-style.PadTopMargin-0.5*height, "NDCNB");
+  TPaveText lcms(style.PadLeftMargin, 1.-style.PadTopMargin-0.5*height,
+		 style.PadLeftMargin+2.*width, 1.-style.PadTopMargin, "NDCNB");
 
   l1.AddText("R1");
   l2.AddText("R2");
   l3.AddText("R3");
   l4.AddText("R4");
+  lcms.AddText("#font[62]{CMS Simulation}");
 
   SetStyle(l1);
   SetStyle(l2);
   SetStyle(l3);
   SetStyle(l4);
+  SetStyle(lcms);
+  lcms.SetTextColorAlpha(1,1.);
 
   TCanvas c;
   h.Draw();
@@ -155,6 +160,7 @@ int main(int argc, char *argv[]){
   l2.Draw("same");
   l3.Draw("same");
   l4.Draw("same");
+  lcms.Draw("same");
 
   ostringstream outname;
   outname << "plots/scat_mj_mt_met_"
