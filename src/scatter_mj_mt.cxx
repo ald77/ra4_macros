@@ -126,8 +126,8 @@ int main(int argc, char *argv[]){
 	       style.PadLeftMargin+width, 1.-style.PadTopMargin-0.5*height, "NDCNB");
   TPaveText l4(1.-style.PadRightMargin-width, 1.-style.PadTopMargin-1.5*height,
 	       1.-style.PadRightMargin, 1.-style.PadTopMargin-0.5*height, "NDCNB");
-  TPaveText lcms(style.PadLeftMargin, 1.-style.PadTopMargin-0.5*height,
-		 style.PadLeftMargin+2.*width, 1.-style.PadTopMargin, "NDCNB");
+  TPaveText lcms(style.PadLeftMargin+0.01, 1.-style.PadTopMargin-0.5*height-0.01,
+		 style.PadLeftMargin+0.01+2.*width, 1.-style.PadTopMargin-0.01, "NDCNB");
 
   l1.AddText("R1");
   l2.AddText("R2");

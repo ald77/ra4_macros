@@ -20,8 +20,8 @@ using namespace std;
 
 int main(){ 
 
-  TString folder_mc="/cms2r0/ald77/archive/2015_07_22/skim_ht1000/";
-  TString folder_data="/cms2r0/ald77/archive/2015_07_26/skim_ht1000/";
+  TString folder_mc="/net/cms2/cms2r0/ald77/archive/2015_07_22/skim_ht1000/";
+  TString folder_data="/net/cms2/cms2r0/ald77/archive/2015_07_26/skim_ht1000/";
 
   vector<TString> s_data_ns;
   s_data_ns.push_back(folder_data+"*JetHT*");

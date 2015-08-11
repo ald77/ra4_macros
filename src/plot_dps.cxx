@@ -31,12 +31,14 @@ using std::cout;
 using std::endl;
 
 int main(){ 
-  TString folder_ns="/cms2r0/ald77/archive/2015_07_22/";
-  TString folder_nsdata="/cms2r0/ald77/archive/2015_07_26/";
-  TString folder_1l = "/cms2r0/ald77/archive/2015_07_22/skim_1lht400/";
-  TString folder_1ldata = "/cms2r0/ald77/archive/2015_07_26/skim_1lht400/";
-  TString folder_2l="/cms2r0/ald77/archive/2015_07_22/skim_2l/";
-  TString folder_2ldata="/cms2r0/ald77/archive/2015_07_26/skim_2l/";
+  TString folder_ns="/net/cms2/cms2r0/ald77/archive/2015_07_22/";
+  TString folder_nsdata="/net/cms2/cms2r0/ald77/archive/2015_07_26/";
+  TString folder_1l = "/net/cms2/cms2r0/ald77/archive/2015_07_22/skim_1lht400/";
+  TString folder_1ldata = "/net/cms2/cms2r0/ald77/archive/2015_07_26/skim_1lht400/";
+  folder_1l = "/net/cms2/cms2r0/ald77/archive/2015_08_10/skim_1lht400/";
+  folder_1ldata = "/net/cms2/cms2r0/ald77/archive/2015_08_10/skim_1lht400/";
+  TString folder_2l="/net/cms2/cms2r0/ald77/archive/2015_07_22/skim_2l/";
+  TString folder_2ldata="/net/cms2/cms2r0/ald77/archive/2015_07_26/skim_2l/";
 
   vector<TString> s_trig_htmht;
   s_trig_htmht.push_back(folder_1ldata+"*HTMHT*");
@@ -90,10 +92,10 @@ int main(){
   vector<sfeats> Samples; 
   TString datatitle = "Data";
   Samples.push_back(sfeats(s_trig_htmht, datatitle,kBlack,1,"trig[0]&&json_golden")); Samples.back().isData = true;
-  Samples.push_back(sfeats(s_tt, "t#bar{t}, 1 l", dps::c_tt_1l, 1,"ntruleps<=1"));
-  Samples.push_back(sfeats(s_tt, "t#bar{t}, 2 l", dps::c_tt_2l,1,"ntruleps>=2"));
+  Samples.push_back(sfeats(s_tt, "t#bar{t}, 1 true lepton", dps::c_tt_1l, 1,"ntruleps<=1"));
+  Samples.push_back(sfeats(s_tt, "t#bar{t}, 2 true leptons", dps::c_tt_2l,1,"ntruleps>=2"));
   Samples.push_back(sfeats(s_wjets, "W+jets", dps::c_wjets,1));
-  Samples.push_back(sfeats(s_singlet, "Single t", dps::c_singlet));
+  Samples.push_back(sfeats(s_singlet, "Single top", dps::c_singlet));
   //Samples.push_back(sfeats(s_ttv, "ttV", ra4::c_ttv));
   Samples.push_back(sfeats(s_qcd, "QCD", dps::c_qcd));
   // Some of Other has leptons, but very little, and this is the easiest to put had tt with QCD
@@ -182,27 +184,35 @@ int main(){
 
   /////////////////////////// N-1 plots for the DPS////////////////////////////
 
+  vars.push_back(hfeats("mt",18,0,360, ra4_sam, "m_{T} [GeV]",
+          "pass&&onht>350&&onmet>100&&(nvmus+nvels)==1&&ht>"+minht+"&&met>"+minmet+"&&njets>="+minjets+"&&nbm>="+minbm));
+  vars.back().whichPlots = "1"; vars.back().normalize = true;
+
+  vars.push_back(hfeats("met",16,0,800, ra4_sam, "MET [GeV]",
+          "pass&&onht>350&&onmet>100&&(nvmus+nvels)==1&&ht>"+minht+"&&njets>="+minjets+"&&nbm>="+minbm));
+  vars.back().whichPlots = "1"; vars.back().normalize = true;
+
   vars.push_back(hfeats("njets",14,-0.5,13.5, ra4_sam, "Number of jets",
-          "onht>350&&onmet>100&&(nvmus+nvels)==1&&ht>"+minht+"&&met>"+minmet+"&&nbm>="+minbm));
+          "pass&&onht>350&&onmet>100&&(nvmus+nvels)==1&&ht>"+minht+"&&met>"+minmet+"&&nbm>="+minbm));
   vars.back().whichPlots = "2"; vars.back().normalize = true;
 
   vars.push_back(hfeats("nbm",7,-0.5,6.5, ra4_sam, "Number of b-tags (CSVM)",
-          "onht>350&&onmet>100&&(nvmus+nvels)==1&&ht>"+minht+"&&met>"+minmet+"&&njets>="+minjets));
+          "pass&&onht>350&&onmet>100&&(nvmus+nvels)==1&&ht>"+minht+"&&met>"+minmet+"&&njets>="+minjets));
   vars.back().whichPlots = "2"; vars.back().normalize = true;
 
-  vars.push_back(hfeats("mt",18,0,360, ra4_sam, "m_{T} [GeV]",
-          "onht>350&&onmet>100&&(nvmus+nvels)==1&&ht>"+minht+"&&met>"+minmet+"&&njets>="+minjets+"&&nbm>="+minbm));
-  vars.back().whichPlots = "1"; vars.back().normalize = true;
 
-  vars.push_back(hfeats("met",16,0,800, ra4_sam_ns, "MET [GeV]",
-          "onht>350&&onmet>100&&(nvmus+nvels)==1&&ht>"+minht+"&&njets>="+minjets+"&&nbm>="+minbm));
-  vars.back().whichPlots = "1"; vars.back().normalize = true;
+  // ////////////////////////////// MJ plots for the DPS ////////////////////////////
+  vars.push_back(hfeats("mj",15,0,600, ra4_sam, "M_{J} [GeV]",
+   			"pass&&onht>350&&onmet>100&&ht>400&&met>150&nbm>=1&&njets>=5&&(nvmus+nvels)==1&&mt<=140"));
+  vars.back().whichPlots = "2"; vars.back().normalize = true;
 
+  vars.push_back(hfeats("mj",15,0,600, ra4_sam, "M_{J} [GeV]",
+   			"pass&&onht>350&&onmet>100&&ht>400&&met>150&&njets>=4&&(nvmus+nvels)==2"));
+  vars.back().whichPlots = "2"; vars.back().normalize = true;
 
-  // // ////////////////////////////// MJ plots for the DPS ////////////////////////////
-  vars.push_back(hfeats("mj",20,0,1000, sig_sam, "M_{J} [GeV]",
-			"onht>350&&onmet>100&&(nvmus+nvels)==1&&ht>"+minht+"&&met>150&&njets>=5&&nbm>=1"));
-  vars.back().whichPlots = "1"; vars.back().normalize = true; vars.back().maxRatio = 3.9;
+  vars.push_back(hfeats("mj",15,0,600, mj_sam, "M_{J} [GeV]",
+   			"pass&ht>400&&met>150"));
+  vars.back().whichPlots = "2"; vars.back().normalize = true; //vars.back().maxRatio = 2.2;
 
   TString mll("(mumuv_m*(mumuv_m>0)+elelv_m*(elelv_m>0))>80&&(mumuv_m*(mumuv_m>0)+elelv_m*(elelv_m>0))<100");
   vars.push_back(hfeats("mj",15,0,600, dl_sam, "M_{J} [GeV]",
@@ -261,11 +271,11 @@ int main(){
 
   // ////////////////////////////// ttbar plots for Ryan's talk ////////////////////////////
   // vars.push_back(hfeats("mj",15,0,600, ra4_sam, "M_{J} [GeV]",
-  //  			"ht>400&&met>150&nbm>=1&&njets>=5&&(nvmus+nvels)==1&&mt<=140"));
+  //  			"onht>350&&onmet>100&&ht>400&&met>150&nbm>=1&&njets>=5&&(nvmus+nvels)==1&&mt<=140"));
   // vars.back().whichPlots = "2"; vars.back().normalize = true;
 
   // vars.push_back(hfeats("mj",15,0,600, ra4_sam, "M_{J} [GeV]",
-  //  			"ht>400&&met>150&&njets>=4&&(nvmus+nvels)==2"));
+  //  			"onht>350&&onmet>100&&ht>400&&met>150&&njets>=4&&(nvmus+nvels)==2"));
   // vars.back().whichPlots = "2"; vars.back().normalize = true;
 
   plot_distributions(Samples, vars, luminosity, plot_type, plot_style, "1d",true);

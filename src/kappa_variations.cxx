@@ -44,7 +44,7 @@ int main(){
   style.setDefaultStyle();
   // TString folder="/cms5r0/ald77/archive/"+ntuple_date+"/skim100/";
   // TString folder_ns="/cms5r0/ald77/archive/"+ntuple_date+"/";
-  // TString folder="/cms2r0/manuelf/root/archive/15-06-01/skim/";
+  // TString folder="/net/cms2/cms2r0/manuelf/root/archive/15-06-01/skim/";
   TString folder="/cms5r0/aovcharova/archive/2015_06_05/skim/";
 
 
