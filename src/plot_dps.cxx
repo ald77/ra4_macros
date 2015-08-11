@@ -182,28 +182,27 @@ int main(){
 
   /////////////////////////// N-1 plots for the DPS////////////////////////////
 
-  vars.push_back(hfeats("njets",14,-0.5,13.5, sig_sam, "Number of jets",
+  vars.push_back(hfeats("njets",14,-0.5,13.5, ra4_sam, "Number of jets",
           "onht>350&&onmet>100&&(nvmus+nvels)==1&&ht>"+minht+"&&met>"+minmet+"&&nbm>="+minbm));
   vars.back().whichPlots = "2"; vars.back().normalize = true;
 
-  vars.push_back(hfeats("nbm",7,-0.5,6.5, sig_sam, "Number of b-tags (CSVM)",
+  vars.push_back(hfeats("nbm",7,-0.5,6.5, ra4_sam, "Number of b-tags (CSVM)",
           "onht>350&&onmet>100&&(nvmus+nvels)==1&&ht>"+minht+"&&met>"+minmet+"&&njets>="+minjets));
   vars.back().whichPlots = "2"; vars.back().normalize = true;
 
-  vars.push_back(hfeats("mt",18,0,360, sig_sam_log, "m_{T} [GeV]",
+  vars.push_back(hfeats("mt",18,0,360, ra4_sam, "m_{T} [GeV]",
           "onht>350&&onmet>100&&(nvmus+nvels)==1&&ht>"+minht+"&&met>"+minmet+"&&njets>="+minjets+"&&nbm>="+minbm));
   vars.back().whichPlots = "1"; vars.back().normalize = true;
 
-  vars.push_back(hfeats("met",16,0,800, sig_sam_ns, "MET [GeV]",
+  vars.push_back(hfeats("met",16,0,800, ra4_sam_ns, "MET [GeV]",
           "onht>350&&onmet>100&&(nvmus+nvels)==1&&ht>"+minht+"&&njets>="+minjets+"&&nbm>="+minbm));
   vars.back().whichPlots = "1"; vars.back().normalize = true;
 
 
   // // ////////////////////////////// MJ plots for the DPS ////////////////////////////
-  vars.push_back(hfeats("mj",20,0,1000, sig_sam_log, "M_{J} [GeV]",
+  vars.push_back(hfeats("mj",20,0,1000, sig_sam, "M_{J} [GeV]",
 			"onht>350&&onmet>100&&(nvmus+nvels)==1&&ht>"+minht+"&&met>150&&njets>=5&&nbm>=1"));
-  vars.back().whichPlots = "1";
-  vars.back().normalize = true;
+  vars.back().whichPlots = "1"; vars.back().normalize = true; vars.back().maxRatio = 3.9;
 
   TString mll("(mumuv_m*(mumuv_m>0)+elelv_m*(elelv_m>0))>80&&(mumuv_m*(mumuv_m>0)+elelv_m*(elelv_m>0))<100");
   vars.push_back(hfeats("mj",15,0,600, dl_sam, "M_{J} [GeV]",
@@ -213,65 +212,61 @@ int main(){
 
   //////////////////////////// DY plots for Ryan's talk ////////////////////////////
 
-  // Invariant masses
+  // // Invariant masses
   // vars.push_back(hfeats("mumuv_m",32,20,180, dmu_sam, "m_{#mu#mu} [GeV]",
-  //  			"ht_hlt>350&&nvmus>=2&&njets<=3"));
+  //  			"ht>350&&nvmus>=2&&njets<=3"));
   // vars.back().whichPlots = "2"; //vars.back().normalize = true;
   // vars.push_back(hfeats("elelv_m",32,20,180, del_sam, "m_{ee} [GeV]",
-  //  			"ht_hlt>350&&nvels>=2&&njets<=3"));
+  //  			"ht>350&&nvels>=2&&njets<=3"));
   // vars.back().whichPlots = "2"; //vars.back().normalize = true;
   // vars.push_back(hfeats("mumuv_m*(mumuv_m>0)+elelv_m*(elelv_m>0)",32,20,180, dl_sam, "m_{ll} [GeV]",
-  //  			"ht_hlt>350&&(nvmus>=2||nvels>=2)&&njets<=3"));
+  //  			"ht>350&&(nvmus>=2||nvels>=2)&&njets<=3"));
   // vars.back().whichPlots = "2"; //vars.back().normalize = true;
 
 
   // vars.push_back(hfeats("mumuv_m",32,20,180, dmu_sam, "m_{#mu#mu} [GeV]",
-  //  			"ht_hlt>350&&nvmus>=2&&njets>=4"));
+  //  			"ht>350&&nvmus>=2&&njets>=4"));
   // vars.back().whichPlots = "2"; //vars.back().normalize = true;
   // vars.push_back(hfeats("elelv_m",32,20,180, del_sam, "m_{ee} [GeV]",
-  //  			"ht_hlt>350&&nvels>=2&&njets>=4"));
+  //  			"ht>350&&nvels>=2&&njets>=4"));
   // vars.back().whichPlots = "2"; //vars.back().normalize = true;
   // vars.push_back(hfeats("mumuv_m*(mumuv_m>0)+elelv_m*(elelv_m>0)",32,20,180, dl_sam, "m_{ll} [GeV]",
-  //  			"ht_hlt>350&&(nvmus>=2||nvels>=2)&&njets>=4"));
+  //  			"ht>350&&(nvmus>=2||nvels>=2)&&njets>=4"));
   // vars.back().whichPlots = "2"; //vars.back().normalize = true;
 
 
-  // Kinematic distributions
-  // vars.push_back(hfeats("ht_hlt",20,0,1000, dl_sam, "H_{T}^{HLT} [GeV]",
+  // // Kinematic distributions
+  // vars.push_back(hfeats("ht",20,0,1000, dl_sam, "H_{T}^{HLT} [GeV]",
   //  			"(nvmus>=2||nvels>=2)&&njets>=4&&"+mll));
   // vars.back().whichPlots = "2"; // vars.back().normalize = true;
   // vars.push_back(hfeats("njets",9,-0.5,8.5, dl_sam, "N_{jets} [GeV]",
-  //  			"ht_hlt>350&&(nvmus>=2||nvels>=2)&&"+mll));
+  //  			"ht>350&&(nvmus>=2||nvels>=2)&&"+mll));
   // vars.back().whichPlots = "2"; // vars.back().normalize = true;
   // vars.push_back(hfeats("fjets_m[0]",20,0,500, dl_sam, "Most massive fat jet mass [GeV]",
-  //  			"ht_hlt>350&&(nvmus>=2||nvels>=2)&&njets>=4&&"+mll));
+  //  			"ht>350&&(nvmus>=2||nvels>=2)&&njets>=4&&"+mll));
   // vars.back().whichPlots = "2"; // vars.back().normalize = true;
   // vars.push_back(hfeats("nfjets",10,-0.5,9.5, dl_sam, "N_{fat jets}",
-  //  			"ht_hlt>350&&(nvmus>=2||nvels>=2)&&njets>=4&&"+mll));
+  //  			"ht>350&&(nvmus>=2||nvels>=2)&&njets>=4&&"+mll));
   // vars.back().whichPlots = "2"; // vars.back().normalize = true;
 
 
-  // MJ distributions
+  // // MJ distributions
   // vars.push_back(hfeats("mj",20,0,600, dl_sam, "M_{J} [GeV]",
-  //  			"ht_hlt>350&&(nvmus>=2||nvels>=2)&&njets<=3&&"+mll));
+  //  			"ht>350&&(nvmus>=2||nvels>=2)&&njets<=3&&"+mll));
   // vars.back().whichPlots = "2"; // vars.back().normalize = true;
   // vars.push_back(hfeats("mj",20,0,600, dl_sam, "M_{J} [GeV]",
-  //  			"ht_hlt>350&&(nvmus>=2||nvels>=2)&&njets>=4&&"+mll));
+  //  			"ht>350&&(nvmus>=2||nvels>=2)&&njets>=4&&"+mll));
   // vars.back().whichPlots = "2"; // vars.back().normalize = true;
 
 
   // ////////////////////////////// ttbar plots for Ryan's talk ////////////////////////////
-  // vars.push_back(hfeats("mj",20,0,1000, ra4_sam, "M_{J} [GeV]",
+  // vars.push_back(hfeats("mj",15,0,600, ra4_sam, "M_{J} [GeV]",
   //  			"ht>400&&met>150&nbm>=1&&njets>=5&&(nvmus+nvels)==1&&mt<=140"));
   // vars.back().whichPlots = "2"; vars.back().normalize = true;
 
-  // vars.push_back(hfeats("mj",20,0,1000, ra4_sam, "M_{J} [GeV]",
+  // vars.push_back(hfeats("mj",15,0,600, ra4_sam, "M_{J} [GeV]",
   //  			"ht>400&&met>150&&njets>=4&&(nvmus+nvels)==2"));
   // vars.back().whichPlots = "2"; vars.back().normalize = true;
-
-  // vars.push_back(hfeats("mj",15,0,600, mj_sam, "M_{J} [GeV]",
-  //  			"ht>400&&met>150"));
-  // vars.back().whichPlots = "2"; vars.back().normalize = true; vars.back().maxRatio = 3.9;
 
   plot_distributions(Samples, vars, luminosity, plot_type, plot_style, "1d",true);
 

@@ -32,6 +32,7 @@ using namespace std;
 
 void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString luminosity, 
                         TString filetype, TString namestyle, TString dir, bool doRatio){
+  bool showcuts(false);
   if (doRatio) namestyle = "CMSPaper";
   styles style(namestyle);
   if(namestyle.Contains("CMSPaper")) style.nDivisions = 706;
@@ -96,12 +97,12 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
   for(unsigned var(0); var<vars.size(); var++){
     const unsigned Nsam(vars[var].samples.size());
     legH = (Nsam<=3?legSingle*Nsam:legSingle*(Nsam+1)/2);
-    fracLeg = legH/(1-style.PadTopMargin-style.PadBottomMargin)*1.25;
+    fracLeg = legH/(1-style.PadTopMargin-style.PadBottomMargin)*1.15;
     for(int ileg(0); ileg<nLegs; ileg++) leg[ileg].SetY1NDC(legY-legH); 
     cout<<endl;
     // Generating vector of histograms
     title = cuts2title(vars[var].cuts); 
-    if(namestyle.Contains("CMSPaper")&& !doRatio) title = "";
+    if(namestyle.Contains("CMSPaper") && !showcuts) title = "";
     for(unsigned his(0); his < 2; his++){
       varhisto.resize(0);
       for(unsigned sam(0); sam < Nsam; sam++){
@@ -133,13 +134,13 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
       if(nentries[sam]<0) nentries[sam]=0;
       ytitle = "Events";
       
-      if(!namestyle.Contains("CMSPaper") || doRatio) {
+      if(!namestyle.Contains("CMSPaper") || showcuts) {
         // ytitle = "Events for "+luminosity+" fb^{-1}";
         lumilabel = "";
         cmslabel = "";
       } else {
-        lumilabel = luminosity+" fb^{-1} (13 TeV)";
-        cmslabel = "#font[62]{CMS}";
+        lumilabel = TString::Format("L = %1.f",luminosity.Atof()*1000.)+" pb^{-1} (13 TeV)";
+        cmslabel = "#font[62]{CMS preliminary}";
       }
       if(vars[var].unit!="") {
         int digits(0);
@@ -193,14 +194,19 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
         }
 
       }
+      TString norm_s("");
       if(vars[var].normalize || doRatio){
 	double err_num(0), err_den(0);
 	float num = histo[0][var][0]->IntegralAndError(1,histo[0][var][0]->GetNbinsX(),err_num);
 	float den = histo[0][var][last_hist]->IntegralAndError(1,histo[0][var][last_hist]->GetNbinsX(),err_den);
 	normalization_ratio = num/den; //I want this to crash if den=0
 	double err_tot(den/num*sqrt(pow(err_num/num,2)+pow(err_den/den,2)));
-	cout<<"Histogram [MC] is ("<<RoundNumber((den/num-1)*100,1)
-	  <<" +- "<<RoundNumber(err_tot*100,1)<<")% larger than markers [data]"<<endl;
+	err_tot = num/den*sqrt(pow(err_num/num,2)+pow(err_den/den,2));
+	// cout<<"Histogram [MC] is ("<<RoundNumber((den/num-1)*100,1)
+	//   <<" +- "<<RoundNumber(err_tot*100,1)<<")% larger than markers [data]"<<endl;
+	norm_s = "("+RoundNumber((num/den)*100,1)+"#pm"+RoundNumber(err_tot*100,1)+")%";
+	cout<<"Markers [data] are ("<<RoundNumber((num/den)*100,1)
+	  <<" +- "<<RoundNumber(err_tot*100,1)<<")% the histogram [MC]"<<endl;
       }
       
       for(unsigned sam(Nsam-1); sam < Nsam; sam--){
@@ -230,8 +236,8 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
       for(unsigned sam(0); sam < Nsam; sam++){
         int isam = vars[var].samples[sam];
         leghisto = Samples[isam].label;
-        // if(!namestyle.Contains("CMSPaper")) leghisto += " [N=" + RoundNumber(nentries[sam],0) + "]";
-        leghisto += " [N=" + RoundNumber(nentries[sam],0) + "]";
+        if(!namestyle.Contains("CMSPaper") || showcuts) leghisto += " [N=" + RoundNumber(nentries[sam],0) + "]";
+        //leghisto += " [N=" + RoundNumber(nentries[sam],0) + "]";
         bool noStack = Samples[isam].isSig || Samples[isam].isData;
         unsigned ileg = (Nsam<=3?0:legcount>=(Nsam+1)/2);
         if(!noStack){
@@ -301,7 +307,8 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
           histo[0][var][firstplotted]->GetXaxis()->SetLabelOffset(2.);
           //line at 1
           bpad->cd();
-          hratio_data->Draw();
+          hratio_data->Draw("e0");
+	  
           l1 = new TLine(histo[0][var][firstplotted]->GetXaxis()->GetXmin(), 1., histo[0][var][firstplotted]->GetXaxis()->GetXmax(), 1.);
           l1->SetLineStyle(2);
           l1->Draw("same");
@@ -314,11 +321,13 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
 
       //label lumi
       pad->cd();
-      TString lumilbl = TString::Format("L = %1.f",luminosity.Atof()*1000.)+" pb^{-1}, 13 TeV";
-      TLatex llbl;
-      llbl.SetTextSize(style.LegendSize); 
-      llbl.SetNDC(); llbl.SetTextAlign(13);
-      llbl.DrawLatex(0.57,leg[0].GetY1NDC()-0.02,lumilbl);
+      if(!namestyle.Contains("CMSPaper") || showcuts) {
+	TString lumilbl = TString::Format("L = %1.f",luminosity.Atof()*1000.)+" pb^{-1}, "+norm_s;
+	TLatex llbl;
+	llbl.SetTextSize(style.LegendSize*0.8); 
+	llbl.SetNDC(); llbl.SetTextAlign(33);
+	llbl.DrawLatex(1-style.PadRightMargin-0.02,leg[0].GetY1NDC()-0.02,lumilbl);
+      }
       //save canvas
       pad->SetLogy(1);
       pname = "plots/"+dir+"/log_lumi_"+vars[var].tag+plot_tag;
@@ -362,7 +371,7 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
       }
       leghisto = Samples[isam].label;
       unsigned ileg = (Nsam<=3?0:legcount>=(Nsam+1)/2);
-      if(!namestyle.Contains("CMSPaper")){
+      if(!namestyle.Contains("CMSPaper") || showcuts){
         if(vars[var].nevents.at(sam)<0){
           leghisto += " [#mu=";
           int digits(0);
@@ -371,8 +380,6 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
         } else{
           leg[ileg].SetX1NDC(0.24); leg[ileg].SetX2NDC(0.7);
           leg[ileg].SetTextSize(0.75*style.LegendSize);
-          leghisto +=  "[N_{tks} = " + RoundNumber(nentries[sam],1) + ", from N_{events} = "
-            +RoundNumber(vars[var].nevents.at(sam),1)+"]";
         }
       }
       
@@ -414,6 +421,8 @@ TString cuts2title(TString title){
   title.ReplaceAll("Sum$(abs(mc_id)==13)","n^{true}_{#mu}");
   title.ReplaceAll("Sum$(genels_pt>0)", "n^{true}_{e}");
   title.ReplaceAll("Sum$(genmus_pt>0)", "n^{true}_{#mu}");
+  title.ReplaceAll("Sum$(mus_sigid&&mus_miniso<0.2)","n_{#mu}^{10}");
+  title.ReplaceAll("Sum$(els_sigid&&els_miniso<0.1)","n_{e}^{10}");
   title.ReplaceAll("nvmus==1&&nmus==1&&nvels==0","1 #mu");
   title.ReplaceAll("nvmus10==0&&nvels10==0", "0 leptons");  
   title.ReplaceAll("(nmus+nels)", "n_{lep}");  
@@ -430,6 +439,9 @@ TString cuts2title(TString title){
   title.ReplaceAll("nvmus", "n^{veto}_{#mu}");  
   title.ReplaceAll("nvels", "n^{veto}_{e}");  
   title.ReplaceAll("ntruleps", "n^{true}_{l}");
+  title.ReplaceAll("_ra2b", "^{ra2b}");
+  title.ReplaceAll("npv", "n_{PV}");  
+  title.ReplaceAll("mumu_pt1", "p_{T}^{#mu}");  title.ReplaceAll("elel_pt1", "p_{T}^{e}");  
 
   title.ReplaceAll("onmet", "MET^{on}"); title.ReplaceAll("onht", "H_{T}^{on}");  
   title.ReplaceAll("njets30","n_{jets}^{30}"); 
@@ -439,12 +451,12 @@ TString cuts2title(TString title){
   title.ReplaceAll("njets","n_{jets}");title.ReplaceAll("abs(lep_id)==13&&","");
   title.ReplaceAll(">=", " #geq "); title.ReplaceAll(">", " > "); 
   title.ReplaceAll("<=", " #leq "); title.ReplaceAll("<", " < "); 
-  title.ReplaceAll("&&", ", "); 
+  title.ReplaceAll("&&", ", "); title.ReplaceAll("==", " = "); 
   title.ReplaceAll("met", "MET"); title.ReplaceAll("ht_hlt", "H_{T}^{HLT}");  
   title.ReplaceAll("ht", "H_{T}");  title.ReplaceAll("mt", "m_{T}"); 
   title.ReplaceAll("ntks_chg==0", " ITV");
-  title.ReplaceAll("nleps==1", "1 lepton");  title.ReplaceAll("nbm","n_{b}"); title.ReplaceAll("==", " = "); 
-  title.ReplaceAll("nbl[1]","n_{b,l}");
+  title.ReplaceAll("nbm","n_{b}"); 
+  title.ReplaceAll("nbl","n_{b,l}");
   title.ReplaceAll("mj", " M_{J}");
   
 
