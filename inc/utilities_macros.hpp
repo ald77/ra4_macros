@@ -64,10 +64,12 @@ public:
   hfeats(TString ivarname, int inbins, float* ibinning, std::vector<int> isamples,
          TString ititle="", TString icuts="1", float icut=-1, TString itagname="",bool iskiplog=false, 
          std::vector<double> inevents= std::vector<double>(1,-1.));
-  TString title, varname, tag, cuts, unit;
-  int nbins;
+  hfeats(TString ivarnamex, TString ivarnamey, int inbinsx, float iminx, float imaxx, int inbinsy, float iminy, float imaxy,  std::vector<int> isamples,
+         TString ititlex, TString ititley, TString icuts, float icutx, float icuty, TString itagname);
+  TString title, titlex, titley, varname, varnamex, varnamey, tag, cuts, unit;
+  int nbins, nbinsx, nbinsy;
   float *binning;
-  float minx, maxx, cut, maxYaxis, maxRatio;
+  float minx, maxx, miny, maxy, cut, cutx, cuty,  maxYaxis, maxRatio;
   std::vector<int> samples;
   TString tagname;
   void format_tag();
@@ -110,6 +112,8 @@ long getYieldErr(TChain& tree, TString cut, double& yield, double& uncertainty);
 
 void plot_distributions(std::vector<sfeats> Samples, std::vector<hfeats> vars, TString luminosity="10", 
 			TString filetype=".eps", TString namestyle="LargeLabels", TString dir = "1d", bool doRatio=false);
+void plot_2D_distributions(std::vector<sfeats> Samples, std::vector<hfeats> vars, TString luminosity,
+                           TString filetype, TString namestyle, TString dir);
 TString cuts2title(TString title);
 TString invertcut(TString cut);
 TString format_tag(TString tag);

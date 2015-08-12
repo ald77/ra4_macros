@@ -15,6 +15,7 @@
 
 #include "TChain.h"
 #include "TH1D.h"
+#include "TH2D.h"
 #include "TCanvas.h"
 #include "TLegend.h"
 #include "TLatex.h"
@@ -23,6 +24,7 @@
 #include "TColor.h"
 #include "TMath.h"
 #include "TRandom3.h"
+#include "TStyle.h"
 
 #include "styles.hpp"
 #include "utilities.hpp"
@@ -414,6 +416,97 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
   }
 }
 
+// Right now you have to use full samples, i.e. cuts added to sfeats is ignored (e.g. ntruleps==1 for 1l ttbar)
+void plot_2D_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString luminosity,
+			   TString filetype, TString namestyle, TString dir){
+
+  TString lumi_nodot = luminosity; lumi_nodot.ReplaceAll(".","p");
+
+  styles style(namestyle);
+  if(namestyle.Contains("CMSPaper")) style.nDivisions = 706;
+  style.setDefaultStyle();
+  TCanvas can;
+  can.cd();
+  TPad *pad(NULL);
+  pad = static_cast<TPad *>(can.cd());
+
+  // Reading ntuples
+  vector<TChain *> chain;
+  for(unsigned sam(0); sam < Samples.size(); sam++){
+    chain.push_back(new TChain("tree"));
+    for(unsigned insam(0); insam < Samples[sam].file.size(); insam++){
+      //cout<<"Reading "<<Samples[sam].file[insam]<<endl;
+      chain[sam]->Add(Samples[sam].file[insam]);
+      //cout<<"Entries "<<chain[sam]->GetEntries()<<endl;
+    }
+  }
+
+  vector<TH2D*> hists;
+  TString hname, title, variable, totCut;
+
+  // Looping over histograms
+  for(unsigned int i=0; i<vars.size(); i++){
+    hname = "hist"; hname += i;
+    title = cuts2title(vars[i].cuts); title += ";"; title += vars[i].titlex; title += ";"; title += vars[i].titley;
+    variable = vars[i].varnamey+":"+vars[i].varnamex;
+    totCut = luminosity+"*weight*("+vars[i].cuts+")";
+
+    // Add together chains for the samples that should be in this plot
+
+    if (isatty(1)) {
+      printf("\rSetting up chain %i of %lu for 2D plots...",i+1,vars.size());
+      fflush(stdout);
+      if(i==vars.size()-1) printf("\n");
+    }
+
+    //cout<<"Setting up chain "<<i+1<<" of "<<vars.size()<<endl;
+    TChain *tempChain = new TChain("tree");
+    for(unsigned int j=0; j<vars[i].samples.size(); j++){
+      //cout<<"Reading "<<chain[vars[i].samples[j]]<<endl;
+      tempChain->Add(chain[vars[i].samples[j]]);
+      //cout<<"Entries "<<tempChain->GetEntries()<<endl;
+    }
+
+    //Create and project histogram
+    hists.push_back(new TH2D(hname, title, vars[i].nbinsx,vars[i].minx,vars[i].maxx,vars[i].nbinsy,vars[i].miny,vars[i].maxy));
+    tempChain->Project(hname, variable, totCut, "colz");
+  }
+
+  // Save and format histograms
+  gStyle->SetOptStat("emr");
+  gStyle->SetStatX(0.338); gStyle->SetStatW(0.18); gStyle->SetStatY(0.90);  gStyle->SetStatH(0.14);
+
+  cout<<"Printing 2D plots"<<endl;
+  for(unsigned int doLogz=0; doLogz<2; doLogz++){
+    for(unsigned int i=0; i<vars.size(); i++){
+      if(doLogz==0 && vars[i].whichPlots.Contains("2")) continue;
+      if(doLogz==1 && vars[i].whichPlots.Contains("1")) continue;
+      TString pname;
+      TString plot_tag("_lumi"+lumi_nodot+filetype);
+      hists[i]->SetStats(1);
+      hists[i]->Draw("colz");
+      pname = "plots/"+dir+"/"+vars[i].tag+plot_tag;
+      if(doLogz) pname = "plots/"+dir+"/logz_"+vars[i].tag+plot_tag;
+      can.SetLogz(doLogz);
+      // Draw cut lines
+      if(vars[i].cutx>0 || vars[i].cuty>0){
+        TLine line; line.SetLineColor(1); line.SetLineWidth(6); line.SetLineStyle(2);
+        if(vars[i].cutx>0 && vars[i].cuty>0){
+          line.DrawLine(vars[i].cutx,0,vars[i].cutx,vars[i].cuty);
+          line.DrawLine(0,vars[i].cuty,vars[i].cutx,vars[i].cuty);
+        }
+        else if(vars[i].cutx>0 && vars[i].cuty<0){
+          line.DrawLine(vars[i].cutx,0,vars[i].cutx,vars[i].maxy);
+        }
+        else if(vars[i].cutx<0 && vars[i].cuty>0){
+          line.DrawLine(0,vars[i].cuty,vars[i].maxx,vars[i].cuty);
+        }
+      }
+      can.SaveAs(pname);
+    }
+  }
+}
+
 TString cuts2title(TString title){
   if(title=="1") title = "";
   title.ReplaceAll("1==1", "Full Sample");
@@ -501,9 +594,34 @@ hfeats::hfeats(TString ivarname, int inbins, float iminx, float imaxx, vector<in
   if(inevents.at(0)<0) nevents = vector<double>(isamples.size(),-1);
   else nevents = inevents;
   if(nevents.size() != samples.size() ) cout<<"hfeats samples/nevents size mismatch: "<<ititle<<endl;
-  whichPlots = "0"; // Make all 4 [log_]lumi and [log_]shapes plots
+  whichPlots = "0"; // Make all 4 [log_]lumi and [log_]shapes plots; For 2D: 1=linear, 2=log
   normalize=false;
   
+  string ctitle(title.Data()); // Needed because effing TString can't handle square brackets
+  if(!(ctitle.find("GeV")==std::string::npos)) unit = "GeV";
+  if(!(ctitle.find("phi")==std::string::npos)) unit = "rad";
+  }
+hfeats::hfeats(TString ivarnamex, TString ivarnamey, int inbinsx, float iminx, float imaxx, int inbinsy, float iminy, float imaxy,  vector<int> isamples,
+               TString ititlex, TString ititley, TString icuts, float icutx, float icuty, TString itagname):
+  titlex(ititlex),
+  titley(ititley),
+  varnamex(ivarnamex),
+  varnamey(ivarnamey),
+  cuts(icuts),
+  nbinsx(inbinsx),
+  nbinsy(inbinsy),
+  minx(iminx),
+  maxx(imaxx),
+  miny(iminy),
+  maxy(imaxy),
+  cutx(icutx),
+  cuty(icuty),
+  samples(isamples),
+  tagname(itagname){
+  format_tag();
+  unit = "";
+  maxYaxis = -1.;
+
   string ctitle(title.Data()); // Needed because effing TString can't handle square brackets
   if(!(ctitle.find("GeV")==std::string::npos)) unit = "GeV";
   if(!(ctitle.find("phi")==std::string::npos)) unit = "rad";
@@ -527,7 +645,7 @@ hfeats::hfeats(TString ivarname, int inbins, float *ibinning, vector<int> isampl
   if(inevents.at(0)<0) nevents = vector<double>(isamples.size(),-1);
   else nevents = inevents;
   if(nevents.size() != samples.size() ) cout<<"hfeats samples/nevents size mismatch: "<<ititle<<endl;
-  whichPlots = "0"; // Make all 4 [log_]lumi and [log_]shapes plots
+  whichPlots = "0"; // Make all 4 [log_]lumi and [log_]shapes plots; For 2D: 1=linear, 2=log
   
   string ctitle(title.Data()); // Needed because effing TString can't handle square brackets
   if(!(ctitle.find("GeV")==std::string::npos)) unit = "GeV";
@@ -536,8 +654,9 @@ hfeats::hfeats(TString ivarname, int inbins, float *ibinning, vector<int> isampl
 
 void hfeats::format_tag(){
   tag = varname;
+  if(varnamex!="" && varnamey!="") tag = varnamex+"_vs_"+varnamey;
   if(cuts!="1")   tag+="_"+cuts;
-  if(tagname!="") tag+="_"+tagname;
+  if(tagname!="") tag.Prepend(tagname+"_");
 
   tag.ReplaceAll("1==1", "full_sample");
   tag.ReplaceAll(".","");
@@ -550,8 +669,8 @@ void hfeats::format_tag(){
   tag.ReplaceAll("!","not");
   tag.ReplaceAll("#",""); tag.ReplaceAll("{",""); tag.ReplaceAll("}","");
 
-  tag.ReplaceAll("htg500_metg200_nbmge1_mtg140_njetsge7_nmusnels1_","baseline1B_");
-  tag.ReplaceAll("htg500_metg200_nbmge1_mtg140_njetsge7_nmusnels1_","baseline_");
+  tag.ReplaceAll("htg500_metg200_njetsge7_nbmge1_nmusnels1_","Baseline1B_");
+  tag.ReplaceAll("htg500_metg200_njetsge7_nbmge2_nmusnels1_","Baseline_");
 
   tag.ReplaceAll("tks_idlep_chargeg0_nottks_is_primary_tks_idtks_id121_","os_els_");
   tag.ReplaceAll("tks_idlep_chargeg0_nottks_is_primary_tks_idtks_id169_","os_mus_");
