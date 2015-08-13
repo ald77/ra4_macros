@@ -16,17 +16,26 @@
 #include "styles.hpp"
 #include "utilities_macros.hpp"
 
+namespace {
+  TString metcut("met_nohf<50");
+  TString luminosity="0.0419"; // in ifb
+  TString plot_type=".pdf";
+  TString plot_style="CMSPaper";
+}
+
 using namespace std;
 
 int main(){ 
 
   TString folder_mc="/net/cms2/cms2r0/ald77/archive/2015_07_22/skim_ht1000/";
   TString folder_data="/net/cms2/cms2r0/ald77/archive/2015_07_26/skim_ht1000/";
+  folder_mc = "/net/cms2/cms2r0/ald77/archive/2015_08_13/skim_ht1000/";
+  folder_data = "/net/cms2/cms2r0/ald77/archive/2015_08_13/skim_ht1000/";
 
   vector<TString> s_data_ns;
   s_data_ns.push_back(folder_data+"*JetHT*");
   vector<TString> s_tt;
-  s_tt.push_back(folder_mc+"*_TTJet*25ns*");
+  s_tt.push_back(folder_mc+"*_TTJet*50ns*");
   vector<TString> s_singlet;
   s_singlet.push_back(folder_mc+"*ST*");
   vector<TString> s_qcd;
@@ -45,7 +54,7 @@ int main(){
   Samples.push_back(sfeats(s_data_ns, "Data", 1, -1, "trig[12] && json_golden")); Samples.back().isData = true;
   Samples.push_back(sfeats(s_qcd, "QCD", dps::c_qcd));
   Samples.push_back(sfeats(s_tt, "t#bar{t}", dps::c_tt_1l, 1));
-  Samples.push_back(sfeats(s_singlet, "Single t", dps::c_singlet));
+  Samples.push_back(sfeats(s_singlet, "Single top", dps::c_singlet));
   Samples.push_back(sfeats(s_other, "Other", dps::c_other));
 
   vector<int> ra4_sam;
@@ -58,11 +67,11 @@ int main(){
   vector<hfeats> vars;
 
   // Mass plots for the DPS in two bins of pT
-  vars.push_back(hfeats("jets_m",54,0,27, ra4_sam, "AK4 jet mass [GeV]",
-    			"ht>1000&&met<50&&(nmus+nels)==0&&jets_pt>50&&jets_pt<75",0));
+  vars.push_back(hfeats("jets_m",48,0,24, ra4_sam, "AK4 jet mass [GeV]",
+    			"ht>1000&&"+metcut+"&&(nvmus+nvels)==0&&jets_pt>50&&jets_pt<75",0));
   vars.back().whichPlots = "1"; vars.back().normalize = true;
   vars.push_back(hfeats("jets_m",55,0,110, ra4_sam, "AK4 jet mass [GeV]",
-    			"ht>1000&&met<50&&(nmus+nels)==0&&jets_pt>250",0));
+    			"ht>1000&&"+metcut+"&&(nvmus+nvels)==0&&jets_pt>250",0));
   vars.back().whichPlots = "1"; vars.back().normalize = true;
 
   // // Additional plots
@@ -71,13 +80,13 @@ int main(){
   // vars.back().normalize = true;
 
   // vars.push_back(hfeats("jets_m",25,0,250, ra4_sam, "AK4 jet mass (GeV)",
-  //  			"ht>1000&&met<50&&(nmus+nels)==0",0));
+  //  			"ht>1000&&met_nohf<50&&(nmus+nels)==0",0));
   // vars.back().whichPlots = "1";
   // vars.push_back(hfeats("jets_pt",20,0,1000, ra4_sam, "jet p_{T} (GeV)",
-  //  			"ht>1000&&met<50&&(nmus+nels)==0",0));
+  //  			"ht>1000&&met_nohf<50&&(nmus+nels)==0",0));
   // vars.back().whichPlots = "1";
 
-  plot_distributions(Samples, vars, "0.040", ".pdf", "CMSPaper", "1d",true);
+  plot_distributions(Samples, vars, luminosity, plot_type, plot_style, "1d",true);
 
   double ptBinEdges[30] = {50, 60, 70, 80, 90,
                         100, 110, 120, 130, 140,
@@ -101,7 +110,7 @@ int main(){
   for(unsigned int i=0; i<s_other.size(); i++) filesMC->Add(s_other.at(i));
 
   // make 2-d histograms for projections
-  TString cuts("ht>1000&&met<50&&(nmus+nels)==0");
+  TString cuts("ht>1000&&"+metcut+"&&(nmus+nels)==0");
   filesData->Project("jetmass_vs_pt_data", "jets_m:jets_pt", "weight*(trig[12] && json_golden && "+cuts+")");
   filesMC->Project("jetmass_vs_pt_MC", "jets_m:jets_pt", "weight*("+cuts+")");
 
@@ -119,7 +128,7 @@ int main(){
   jetmass_vs_pt_data->Print();
   jetmass_vs_pt_data->ProfileY()->Print();
   TH1D *data = new TH1D("hdata", "hdata", 29, ptBinEdges); data->Sumw2();
-  TH1D *MC = new TH1D("hmc", "hmc", 29, ptBinEdges); MC->Sumw2();
+  TH1D *MC = new TH1D("hmc", "", 29, ptBinEdges); MC->Sumw2();
   for (int i=1; i<30; i++){
     TH1D* htempdata = static_cast<TH1D*>(jetmass_vs_pt_data->ProjectionY(TString::Format("hdata_%i",i),i,i));
     data->SetBinContent(i, htempdata->GetMean());
@@ -151,15 +160,19 @@ int main(){
   MC->SetMarkerColor(kRed);
   MC->SetMarkerSize(0.6);
   MC->SetLineWidth(2);
-  MC->SetTitle(cuts2title(cuts));
+  // MC->SetTitle(cuts2title(cuts));
+  // MC->GetYaxis()->SetTitle("Mean AK4 jet mass [GeV]"); 
   MC->Draw("e x0");
-  MC->GetYaxis()->SetTitle("Mean AK4 jet mass [GeV]"); 
   data->SetMarkerStyle(kOpenSquare);
   data->SetMarkerColor(kBlack);
   data->SetMarkerSize(0.6);
   data->SetLineColor(kBlack);
   data->SetLineWidth(2);
   data->Draw("e x0 same");
+
+  TString cmslabel = "#font[62]{CMS} #scale[0.8]{#font[52]{Preliminary}}";
+  TString lumilabel = TString::Format("L = %1.f",luminosity.Atof()*1000.)+" pb^{-1} (13 TeV)";
+  style.setTitles(MC, "", "Mean AK4 jet mass [GeV]", cmslabel, lumilabel);
 
   TLegend *leg = new TLegend(0.6, 0.3, 0.8, 0.5);
   leg->AddEntry(data, "Data", "P");
@@ -168,11 +181,13 @@ int main(){
   leg->SetFillStyle(0);
   leg->Draw();
 
+  
+
   // // ------- RATIO ---------
   TH1D* hratio = static_cast<TH1D*>(data->Clone());
   hratio->SetTitle("");
   hratio->Divide(MC);
-  hratio->GetYaxis()->SetRangeUser(0.905,1.095);
+  hratio->GetYaxis()->SetRangeUser(0.925,1.075);
   hratio->GetXaxis()->SetLabelSize(style.LabelSize*2.2);
   hratio->GetYaxis()->SetLabelSize(style.LabelSize*2.1);
   hratio->GetYaxis()->SetTitle("Data / MC ");
@@ -194,6 +209,5 @@ int main(){
   l1->Draw("same");
 
   can->SaveAs("plots/1d/mass_versus_pt2.pdf");
-
 
 }

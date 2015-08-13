@@ -39,10 +39,12 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
   styles style(namestyle);
   if(namestyle.Contains("CMSPaper")) style.nDivisions = 706;
   if (doRatio){
-    style.LabelSize *=1.1;
-    style.LegendSize *=1.2;
-    style.TitleSize *=1.2;
-    style.yTitleOffset /=1.3;
+    style.LabelSize    *= 1.1;
+    style.LegendSize   *= 1.2;
+    style.TitleSize    *= 1.2;
+    style.yTitleOffset /= 1.3;
+    style.xTitleOffset /= 1.08;
+
   }
   style.setDefaultStyle();
   TCanvas can;
@@ -142,7 +144,7 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
         cmslabel = "";
       } else {
         lumilabel = TString::Format("L = %1.f",luminosity.Atof()*1000.)+" pb^{-1} (13 TeV)";
-        cmslabel = "#font[62]{CMS preliminary}";
+        cmslabel = "#font[62]{CMS} #scale[0.8]{#font[52]{Preliminary}}";
       }
       if(vars[var].unit!="") {
         int digits(0);
@@ -208,7 +210,7 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
 	//   <<" +- "<<RoundNumber(err_tot*100,1)<<")% larger than markers [data]"<<endl;
 	norm_s = "("+RoundNumber((num/den)*100,1)+"#pm"+RoundNumber(err_tot*100,1)+")%";
 	cout<<"Markers [data] are ("<<RoundNumber((num/den)*100,1)
-	  <<" +- "<<RoundNumber(err_tot*100,1)<<")% the histogram [MC]"<<endl;
+	    <<" +- "<<RoundNumber(err_tot*100,1)<<")% the histogram [MC]. Data yield is "<<num<<endl;
       }
       
       for(unsigned sam(Nsam-1); sam < Nsam; sam--){
