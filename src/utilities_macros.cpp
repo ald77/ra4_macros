@@ -505,6 +505,10 @@ void plot_2D_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString 
       can.SaveAs(pname);
     }
   }
+  // Delete historgrams
+  for(unsigned int i=0; i<vars.size(); i++){
+    if(hists[i]) hists[i]->Delete();
+  }
 }
 
 TString cuts2title(TString title){
