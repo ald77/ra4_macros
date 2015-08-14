@@ -125,6 +125,7 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
       samVariable = Samples[isam].samVariable;
       totCut = Samples[isam].factor+"*"+luminosity+"*weight*("+vars[var].cuts+"&&"+Samples[isam].cut+")";
       if(Samples[isam].isData) totCut= vars[var].cuts+"&&"+Samples[isam].cut;
+      if(vars[var].PU_reweight && !Samples[isam].isData) totCut = Samples[isam].factor+"*"+luminosity+"*weight*wpu*("+vars[var].cuts+"&&"+Samples[isam].cut+")";
       //cout<<totCut<<endl;
       histo[0][var][sam]->Sumw2();
       if(samVariable=="noPlot") chain[isam]->Project(histo[0][var][sam]->GetName(), variable, totCut);
@@ -602,6 +603,7 @@ hfeats::hfeats(TString ivarname, int inbins, float iminx, float imaxx, vector<in
   if(nevents.size() != samples.size() ) cout<<"hfeats samples/nevents size mismatch: "<<ititle<<endl;
   whichPlots = "0"; // Make all 4 [log_]lumi and [log_]shapes plots; For 2D: 1=linear, 2=log
   normalize=false;
+  PU_reweight=false;
   
   string ctitle(title.Data()); // Needed because effing TString can't handle square brackets
   if(!(ctitle.find("GeV")==std::string::npos)) unit = "GeV";
@@ -627,6 +629,7 @@ hfeats::hfeats(TString ivarnamex, TString ivarnamey, int inbinsx, float iminx, f
   format_tag();
   unit = "";
   maxYaxis = -1.;
+  PU_reweight=false;
 
   string ctitle(title.Data()); // Needed because effing TString can't handle square brackets
   if(!(ctitle.find("GeV")==std::string::npos)) unit = "GeV";
@@ -652,7 +655,7 @@ hfeats::hfeats(TString ivarname, int inbins, float *ibinning, vector<int> isampl
   else nevents = inevents;
   if(nevents.size() != samples.size() ) cout<<"hfeats samples/nevents size mismatch: "<<ititle<<endl;
   whichPlots = "0"; // Make all 4 [log_]lumi and [log_]shapes plots; For 2D: 1=linear, 2=log
-  
+  PU_reweight=false;
   string ctitle(title.Data()); // Needed because effing TString can't handle square brackets
   if(!(ctitle.find("GeV")==std::string::npos)) unit = "GeV";
   if(!(ctitle.find("phi")==std::string::npos)) unit = "rad";
