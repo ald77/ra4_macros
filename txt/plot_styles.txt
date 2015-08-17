@@ -74,6 +74,19 @@
 [CMSPaper_Digits_5]
     yTitleOffset    = 1.55
 
+[HLTStyle]
+    CanvasW	    = 670
+    CanvasH	    = 600
+    LegendSize	    = 0.054
+    TitleSize	    = 0.043
+    LabelSize	    = 0.05     
+    PadRightMargin  = 0.05
+    PadTopMargin    = 0.09
+    PadBottomMargin = 0.14
+    xTitleOffset    = 1.1     
+    PadLeftMargin   = 0.19
+    yTitleOffset    = 1.2
+
 [LargeLabels]
     CanvasW	    = 1000
     CanvasH	    = 660
