@@ -24,8 +24,8 @@
 #include "utilities_macros.hpp"
 
 namespace  {
-  bool do_ht = true;
-  bool do_met = false;
+  bool do_ht = false;
+  bool do_met = true;
   TString plot_type = ".pdf";
 }
 
@@ -46,7 +46,7 @@ int main(){
   styles style("HLTStyle"); 
   style.setDefaultStyle();
 
-  TString folder("root/");
+  TString folder("/net/cms2/cms2r0/ald77/archive/2015_08_17/");
 
   TChain c_jetht("tree"); c_jetht.Add(folder+"*JetHT*root");
   TChain c_met("tree"); c_met.Add(folder+"*MET*root");
@@ -63,64 +63,64 @@ int main(){
 
     // MET, no cuts
     PlotTurnOn(&c_el, "met", metbins,metmin,metmax, "Offline E_{T}^{miss} [GeV]",
-    	       "(trig[6]||trig[7])", "trig[0]", "Ele15_"+vvvl_or+"", "PFHT350_PFMET100");
+    	       "(trig[6]||trig[7])", "trig[0]", "Ele15_"+vvvl_or+"", "HT350_MET100");
     PlotTurnOn(&c_mu, "met", metbins,metmin,metmax, "Offline E_{T}^{miss} [GeV]",
-    	       "(trig[2]||trig[3])", "trig[0]",  "Mu15_"+vvvl_or+"", "PFHT350_PFMET100");
+    	       "(trig[2]||trig[3])", "trig[0]",  "Mu15_"+vvvl_or+"", "HT350_MET100");
     // MET, njets >= 4
     PlotTurnOn(&c_el, "met", metbins,metmin,metmax, "Offline E_{T}^{miss} [GeV]",
     	       "(trig[6]||trig[7])&&njets>=4", "trig[0]",
-    	       "Ele15_"+vvvl_or+", n_{j}#geq4", "PFHT350_PFMET100");
+    	       "Ele15_"+vvvl_or+", n_{j}#geq4", "HT350_MET100");
     PlotTurnOn(&c_mu, "met", metbins,metmin,metmax, "Offline E_{T}^{miss} [GeV]",
     	       "(trig[2]||trig[3])&&njets>=4", "trig[0]",
-    	       "Mu15_"+vvvl_or+", n_{j}#geq4", "PFHT350_PFMET100");
+    	       "Mu15_"+vvvl_or+", n_{j}#geq4", "HT350_MET100");
     PlotTurnOn(&c_lep, "met", metbins,metmin,metmax, "Offline E_{T}^{miss} [GeV]",
     	       "(trig[2]||trig[3]||trig[6]||trig[7])&&njets>=4", "trig[0]",
-    	       "Lep15_"+vvvl_or+", n_{j}#geq4", "PFHT350_PFMET100");
+    	       "Lep15_"+vvvl_or+", n_{j}#geq4", "HT350_MET100");
 
     // MET no HF, njets >= 4
     PlotTurnOn(&c_el, "met_nohf", metbins,metmin,metmax, "Offline E_{T}^{miss} no HF [GeV]",
     	       "(trig[6]||trig[7])&&njets>=4", "trig[0]",
-    	       "Ele15_"+vvvl_or+", n_{j}#geq4", "PFHT350_PFMET100");
+    	       "Ele15_"+vvvl_or+", n_{j}#geq4", "HT350_MET100");
     PlotTurnOn(&c_mu, "met_nohf", metbins,metmin,metmax, "Offline E_{T}^{miss} no HF [GeV]",
     	       "(trig[2]||trig[3])&&njets>=4", "trig[0]",
-    	       "Mu15_"+vvvl_or+", n_{j}#geq4", "PFHT350_PFMET100");
+    	       "Mu15_"+vvvl_or+", n_{j}#geq4", "HT350_MET100");
     PlotTurnOn(&c_lep, "met_nohf", metbins,metmin,metmax, "Offline E_{T}^{miss} no HF [GeV]",
     	       "(trig[2]||trig[3]||trig[6]||trig[7])&&njets>=4", "trig[0]",
-    	       "Lep15_"+vvvl_or+", n_{j}#geq4", "PFHT350_PFMET100");
+    	       "Lep15_"+vvvl_or+", n_{j}#geq4", "HT350_MET100");
 
     // MHT, njets >= 4
     PlotTurnOn(&c_el, "mht_ra2b", metbins,metmin,metmax, "Offline H_{T}^{miss} [GeV]",
     	       "(trig[6]||trig[7])&&njets>=4", "trig[0]",
-    	       "Ele15_"+vvvl_or+", n_{j}#geq4", "PFHT350_PFMET100");
+    	       "Ele15_"+vvvl_or+", n_{j}#geq4", "HT350_MET100");
     PlotTurnOn(&c_el, "mht_ra2b", metbins,metmin,metmax, "Offline H_{T}^{miss} [GeV]",
     	       "(trig[6]||trig[7])&&mht_ra2b/met>0.5&&mht_ra2b/met<2&&njets>=4", "trig[0]",
-    	       "Ele15_"+vvvl_or+", n_{j}#geq4", "PFHT350_PFMET100");
+    	       "Ele15_"+vvvl_or+", n_{j}#geq4", "HT350_MET100");
     PlotTurnOn(&c_mu, "mht_ra2b", metbins,metmin,metmax, "Offline H_{T}^{miss} [GeV]",
     	       "(trig[2]||trig[3])&&mht_ra2b/met>0.5&&mht_ra2b/met<2&&njets>=4", "trig[0]",
-    	       "Mu15_"+vvvl_or+", n_{j}#geq4", "PFHT350_PFMET100");
+    	       "Mu15_"+vvvl_or+", n_{j}#geq4", "HT350_MET100");
     PlotTurnOn(&c_lep, "mht_ra2b", metbins,metmin,metmax, "Offline H_{T}^{miss} [GeV]",
     	       "(trig[2]||trig[3]||trig[6]||trig[7])&&mht_ra2b/met>0.5&&mht_ra2b/met<2&&njets>=4", "trig[0]",
-    	       "Lep15_"+vvvl_or+", n_{j}#geq4", "PFHT350_PFMET100");
+    	       "Lep15_"+vvvl_or+", n_{j}#geq4", "HT350_MET100");
 
     // MET70, njets >= 4
     PlotTurnOn(&c_el, "met", metbins,metmin,metmax, "Offline E_{T}^{miss} [GeV]",
     	       "(trig[6]||trig[7])&&njets>=4", "trig[5]",
-    	       "Ele15_"+vvvl_or+", n_{j}#geq4", "Ele15_PFHT350_PFMET70");
+    	       "Ele15_"+vvvl_or+", n_{j}#geq4", "Ele15_HT350_MET70");
     PlotTurnOn(&c_mu, "met", metbins,metmin,metmax, "Offline E_{T}^{miss} [GeV]",
     	       "(trig[2]||trig[3])&&njets>=4", "trig[1]",
-    	       "Mu15_"+vvvl_or+", n_{j}#geq4", "Mu15_PFHT350_PFMET70");
+    	       "Mu15_"+vvvl_or+", n_{j}#geq4", "Mu15_HT350_MET70");
     PlotTurnOn(&c_lep, "met", metbins,metmin,metmax, "Offline E_{T}^{miss} [GeV]",
     	       "(trig[2]||trig[3]||trig[6]||trig[7])&&njets>=4", "trig[1]||trig[5]",
-    	       "Lep15_"+vvvl_or+", n_{j}#geq4", "Lep15_PFHT350_PFMET70");
+    	       "Lep15_"+vvvl_or+", n_{j}#geq4", "Lep15_HT350_MET70");
     PlotTurnOn(&c_el, "mht_ra2b", metbins,metmin,metmax, "Offline H_{T}^{miss} [GeV]",
     	       "(trig[6]||trig[7])&&mht_ra2b/met>0.5&&mht_ra2b/met<2&&njets>=4", "trig[5]",
-    	       "Ele15_"+vvvl_or+", n_{j}#geq4", "Ele15_PFHT350_PFMET70");
+    	       "Ele15_"+vvvl_or+", n_{j}#geq4", "Ele15_HT350_MET70");
     PlotTurnOn(&c_mu, "mht_ra2b", metbins,metmin,metmax, "Offline H_{T}^{miss} [GeV]",
     	       "(trig[2]||trig[3])&&mht_ra2b/met>0.5&&mht_ra2b/met<2&&njets>=4", "trig[1]",
-    	       "Mu15_"+vvvl_or+", n_{j}#geq4", "Mu15_PFHT350_PFMET70");
+    	       "Mu15_"+vvvl_or+", n_{j}#geq4", "Mu15_HT350_MET70");
     PlotTurnOn(&c_lep, "mht_ra2b", metbins,metmin,metmax, "Offline H_{T}^{miss} [GeV]",
     	       "(trig[2]||trig[3]||trig[6]||trig[7])&&mht_ra2b/met>0.5&&mht_ra2b/met<2&&njets>=4", 
-	       "trig[1]||trig[5]", "Lep15_"+vvvl_or+", n_{j}#geq4", "Lep15_PFHT350_PFMET70");
+	       "trig[1]||trig[5]", "Lep15_"+vvvl_or+", n_{j}#geq4", "Lep15_HT350_MET70");
   }
 
   ///////////////////////////////////////// HT /////////////////////////////////////////
@@ -129,45 +129,45 @@ int main(){
     float htmin(175), htmax(1000);
     int htbins(static_cast<int>((htmax-htmin)/12.5));
     PlotTurnOn(&c_met, "ht", htbins,htmin,htmax, "Offline H_{T} [GeV]",
-    	       "trig[14]&&nvleps==0", "trig[0]","PFMET170, no leptons", "PFHT350_PFMET100");
-    PlotTurnOn(&c_met, "ht_hlt", htbins,htmin,htmax, "Offline H_{T}^{HLT} [GeV]",
-    	       "trig[14]&&nvleps==0", "trig[0]","PFMET170, no leptons", "PFHT350_PFMET100");
+    	       "trig[14]&&nvleps==0", "trig[0]","MET170, no leptons", "HT350_MET100");
+    PlotTurnOn(&c_met, "ht_hlt", htbins,htmin,htmax, "Offline H_{T} [GeV]",
+    	       "trig[14]&&nvleps==0", "trig[0]","MET170, no leptons", "HT350_MET100");
     PlotTurnOn(&c_met, "ht", htbins,htmin,htmax, "Offline H_{T} [GeV]",
-    	       "trig[14]&&nvleps==0", "trig[0]","PFMET170, no leptons", "PFHT350_PFMET100",350);
-    PlotTurnOn(&c_met, "ht_hlt", htbins,htmin,htmax, "Offline H_{T}^{HLT} [GeV]",
-    	       "trig[14]&&nvleps==0", "trig[0]","PFMET170, no leptons", "PFHT350_PFMET100",350);
+    	       "trig[14]&&nvleps==0", "trig[0]","MET170, no leptons", "HT350_MET100",350);
+    PlotTurnOn(&c_met, "ht_hlt", htbins,htmin,htmax, "Offline H_{T} [GeV]",
+    	       "trig[14]&&nvleps==0", "trig[0]","MET170, no leptons", "HT350_MET100",350);
 
     htmin = 600; htmax = 1600; htbins = static_cast<int>((htmax-htmin)/25);
     PlotTurnOn(&c_jetht, "ht", htbins,htmin,htmax, "Offline H_{T} [GeV]",
-    	       "trig[11]&&nvleps==0", "trig[12]","PFHT475, no leptons", "PFHT800");
-    PlotTurnOn(&c_jetht, "ht_hlt", htbins,htmin,htmax, "Offline H_{T}^{HLT} [GeV]",
-    	       "trig[11]&&nvleps==0", "trig[12]","PFHT475, no leptons", "PFHT800");
+    	       "trig[11]&&nvleps==0", "trig[12]","HT475, no leptons", "HT800");
+    PlotTurnOn(&c_jetht, "ht_hlt", htbins,htmin,htmax, "Offline H_{T} [GeV]",
+    	       "trig[11]&&nvleps==0", "trig[12]","HT475, no leptons", "HT800");
     PlotTurnOn(&c_jetht, "ht", htbins,htmin,htmax, "Offline H_{T} [GeV]",
-    	       "trig[11]&&nvleps==0", "trig[12]","PFHT475, no leptons", "PFHT800",825);
-    PlotTurnOn(&c_jetht, "ht_hlt", htbins,htmin,htmax, "Offline H_{T}^{HLT} [GeV]",
-    	       "trig[11]&&nvleps==0", "trig[12]","PFHT475, no leptons", "PFHT800",825);
+    	       "trig[11]&&nvleps==0", "trig[12]","HT475, no leptons", "HT800",825);
+    PlotTurnOn(&c_jetht, "ht_hlt", htbins,htmin,htmax, "Offline H_{T} [GeV]",
+    	       "trig[11]&&nvleps==0", "trig[12]","HT475, no leptons", "HT800",825);
 
 
     htmin = 125; htmax = 1000; htbins = static_cast<int>((htmax-htmin)/25);
     PlotTurnOn(&c_met, "ht", htbins,htmin,htmax, "Offline H_{T} [GeV]",
-    	       "(trig[14])&&nels>=1&&onmaxel>15", "trig[5]","PFMET170, n_{e} #geq 1",
-    	       "Ele15_PFHT350_PFMET70");
+    	       "(trig[14])&&nels>=1&&onmaxel>15", "trig[5]","MET170, n_{e} #geq 1",
+    	       "Ele15_HT350_MET70");
     PlotTurnOn(&c_met, "ht", htbins,htmin,htmax, "Offline H_{T} [GeV]",
-    	       "(trig[13])&&(nmus)>=1&&onmaxmu>15", "trig[1]","PFMET120_Mu5, n_{#mu} #geq 1",
-    	       "Mu15_PFHT350_PFMET70");
+    	       "(trig[13])&&(nmus)>=1&&onmaxmu>15", "trig[1]","MET120_Mu5, n_{#mu} #geq 1",
+    	       "Mu15_HT350_MET70");
     htmin = 400; htmax = 1300; htbins = static_cast<int>((htmax-htmin)/25);
-    PlotTurnOn(&c_mu, "ht_hlt", htbins,htmin,htmax, "Offline H_{T}^{HLT} [GeV]",
-    	       "(trig[1])", "trig[2]","Mu15_PFHT350_PFMET70", "Mu15_PFHT600");
-    PlotTurnOn(&c_el, "ht_hlt", htbins,htmin,htmax, "Offline H_{T}^{HLT} [GeV]",
-    	       "(trig[5])", "trig[6]","Ele15_PFHT350_PFMET70", "Ele15_PFHT600");
+    PlotTurnOn(&c_mu, "ht_hlt", htbins,htmin,htmax, "Offline H_{T} [GeV]",
+    	       "(trig[1])", "trig[2]","Mu15_HT350_MET70", "Mu15_HT600");
+    PlotTurnOn(&c_el, "ht_hlt", htbins,htmin,htmax, "Offline H_{T} [GeV]",
+    	       "(trig[5])", "trig[6]","Ele15_HT350_MET70", "Ele15_HT600");
     PlotTurnOn(&c_mu, "ht", htbins,htmin,htmax, "Offline H_{T} [GeV]",
-    	       "(trig[1])", "trig[2]","Mu15_PFHT350_PFMET70", "Mu15_PFHT600");
+    	       "(trig[1])", "trig[2]","Mu15_HT350_MET70", "Mu15_HT600");
     PlotTurnOn(&c_el, "ht", htbins,htmin,htmax, "Offline H_{T} [GeV]",
-    	       "(trig[5])", "trig[6]","Ele15_PFHT350_PFMET70", "Ele15_PFHT600");
+    	       "(trig[5])", "trig[6]","Ele15_HT350_MET70", "Ele15_HT600");
     PlotTurnOn(&c_mu, "ht", htbins,htmin,htmax, "Offline H_{T} [GeV]",
-    	       "(trig[1])", "trig[2]","Mu15_PFHT350_PFMET70", "Mu15_PFHT600",600);
+    	       "(trig[1])", "trig[2]","Mu15_HT350_MET70", "Mu15_HT600",600);
     PlotTurnOn(&c_el, "ht", htbins,htmin,htmax, "Offline H_{T} [GeV]",
-    	       "(trig[5])", "trig[6]","Ele15_PFHT350_PFMET70", "Ele15_PFHT600",600);
+    	       "(trig[5])", "trig[6]","Ele15_HT350_MET70", "Ele15_HT600",600);
 
 
   } // if(do_ht)
@@ -233,7 +233,7 @@ void PlotTurnOn(TChain *data, TString var, int nbins, double minx, double maxx, 
   pname = "plots/turnon_"+format_tag(var)+"_"+format_tag(num)+"_"+format_tag(den);
   if(minfit>0) {pname += "_min"; pname += minfit; }
   pname += plot_type;
-  pname.ReplaceAll("json_golden_pass","");
+  pname.ReplaceAll("_json_golden_pass","");
 
   
   // Fitting turn on curve

@@ -17,7 +17,7 @@
 #include "utilities_macros.hpp"
 
 namespace {
-  TString metcut("met_nohf<50");
+  TString metcut("met<50");
   TString luminosity="0.0419"; // in ifb
   TString plot_type=".pdf";
   TString plot_style="CMSPaper";
@@ -30,7 +30,7 @@ int main(){
   TString folder_mc="/net/cms2/cms2r0/ald77/archive/2015_07_22/skim_ht1000/";
   TString folder_data="/net/cms2/cms2r0/ald77/archive/2015_07_26/skim_ht1000/";
   folder_mc = "/net/cms2/cms2r0/ald77/archive/2015_08_13/skim_ht1000/";
-  folder_data = "/net/cms2/cms2r0/ald77/archive/2015_08_13/skim_ht1000/";
+  folder_data = "/net/cms2/cms2r0/ald77/archive/2015_08_17/skim_ht1000/";
 
   vector<TString> s_data_ns;
   s_data_ns.push_back(folder_data+"*JetHT*");
@@ -110,7 +110,7 @@ int main(){
   for(unsigned int i=0; i<s_other.size(); i++) filesMC->Add(s_other.at(i));
 
   // make 2-d histograms for projections
-  TString cuts("ht>1000&&"+metcut+"&&(nmus+nels)==0");
+  TString cuts("ht>1000&&"+metcut+"&&(nvmus+nvels)==0");
   filesData->Project("jetmass_vs_pt_data", "jets_m:jets_pt", "weight*(trig[12] && json_golden && "+cuts+")");
   filesMC->Project("jetmass_vs_pt_MC", "jets_m:jets_pt", "weight*("+cuts+")");
 
@@ -154,7 +154,7 @@ int main(){
 
   pad->cd();
   MC->SetMinimum(0);
-  MC->GetYaxis()->SetRangeUser(0.,60.);
+  MC->GetYaxis()->SetRangeUser(0.,70.);
   MC->GetXaxis()->SetLabelOffset(1.5);
   MC->SetMarkerStyle(kFullCircle);
   MC->SetMarkerColor(kRed);

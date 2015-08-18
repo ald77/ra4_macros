@@ -18,7 +18,7 @@
 namespace {
   TString minjets("5");
   TString mjthresh("400");
-  TString metcut("met_nohf>150");
+  TString metcut("met_nohf>200");
   TString minht("400");
   TString minbm("1");
   TString luminosity="0.0419"; // in ifb
@@ -36,17 +36,19 @@ int main(){
   TString folder_1l = "/net/cms2/cms2r0/ald77/archive/2015_07_22/skim_1lht400/";
   TString folder_1ldata = "/net/cms2/cms2r0/ald77/archive/2015_07_26/skim_1lht400/";
   folder_1l = "/net/cms2/cms2r0/ald77/archive/2015_08_13/skim_1lht400/";
-  folder_1ldata = "/net/cms2/cms2r0/ald77/archive/2015_08_13/skim_1lht400/";
+  folder_1ldata = "/net/cms2/cms2r0/ald77/archive/2015_08_17/skim_1lht400/";
   TString folder_2l="/net/cms2/cms2r0/ald77/archive/2015_07_22/skim_2l/";
   TString folder_2ldata="/net/cms2/cms2r0/ald77/archive/2015_07_26/skim_2l/";
   folder_2l = "/net/cms2/cms2r0/ald77/archive/2015_08_13/skim_2l/";
-  folder_2ldata = "/net/cms2/cms2r0/ald77/archive/2015_08_13/skim_2l/";
+  folder_2ldata = "/net/cms2/cms2r0/ald77/archive/2015_08_17/skim_2l/";
 
   vector<TString> s_trig_htmht;
   s_trig_htmht.push_back(folder_1ldata+"*HTMHT*");
   vector<TString> s_trig_dl;
   s_trig_dl.push_back(folder_2ldata+"/*DoubleMu*");
   s_trig_dl.push_back(folder_2ldata+"/*DoubleE*");
+  vector<TString> s_trig_sl;
+  s_trig_sl.push_back(folder_2ldata+"/*Single*");
   vector<TString> s_trig_dmu;
   s_trig_dmu.push_back(folder_2ldata+"/*DoubleMu*");
   vector<TString> s_trig_del;
@@ -131,8 +133,10 @@ int main(){
   mj_sam.push_back(imj+1);
 
   int idl(Samples.size());
-  Samples.push_back(sfeats(s_trig_dl, "Data",kBlack,1,
-			   "(trig[10]||trig[9])&&json_golden")); Samples.back().isData = true;
+  // Samples.push_back(sfeats(s_trig_dl, "Data",kBlack,1,
+  // 			   "(trig[10]||trig[9])&&json_golden")); Samples.back().isData = true;
+  Samples.push_back(sfeats(s_trig_sl, "Data",kBlack,1,
+			   "(trig[18]||trig[22])&&json_golden")); Samples.back().isData = true;
   Samples.push_back(sfeats(s_DY, "Z+jets", dps::c_qcd));//12
   Samples.push_back(sfeats(s_tt_ns, "t#bar{t}, 2 true leptons", dps::c_tt_2l,1,"ntruleps>=2"));
   Samples.push_back(sfeats(s_tt_ns, "t#bar{t}, 1 true lepton", dps::c_tt_1l, 1,"ntruleps==1"));
@@ -188,24 +192,27 @@ int main(){
 
   vector<hfeats> vars;
 
+  // float minx, maxx; int nbins;
   /////////////////////////// MJ plots for the DPS////////////////////////////
-  vars.push_back(hfeats("fjets_m[0]",24,0,480, ra4_sam, "m(J_{1}) [GeV]",
+  vars.push_back(hfeats("fjets_m[0]",16,0,480, ra4_sam, "m(J_{1}) [GeV]",
   			"pass&&onht>350&&onmet>100&&(nvmus+nvels)==1&&ht>"+minht+
   			"&&"+metcut+"&&njets>=4&&nbm>=1"));
   vars.back().whichPlots = "2";  vars.back().normalize = true;
 
-  vars.push_back(hfeats("mj",30,0,600, ra4_sam, "m_{J} [GeV]",
+  vars.push_back(hfeats("mj",20,0,600, ra4_sam, "M_{J} [GeV]",
   			"pass&&onht>350&&onmet>100&&(nvmus+nvels)==1&&ht>"+minht+
   			"&&"+metcut+"&&njets>=4&&nbm>=1"));
   vars.back().whichPlots = "2";  vars.back().normalize = true;
 
-  TString mll("(mumuv_m*(mumuv_m>0)+elelv_m*(elelv_m>0))>80&&(mumuv_m*(mumuv_m>0)+elelv_m*(elelv_m>0))<100");
-  vars.push_back(hfeats("fjets_m[0]",12,0,480, dl_sam, "m(J_{1}) [GeV]",
-   			"pass&&onht>300&&ht>350&&(nvmus>=2||nvels>=2)&&njets>=4&&"+mll));
+  TString mll("(mumuv_m*(mumuv_m>0&&mumu_pt1>25)+elelv_m*(elelv_m>0&&elel_pt1>30))>80&&(mumuv_m*(mumuv_m>0&&mumu_pt1>25)+elelv_m*(elelv_m>0&&elel_pt1>30))<100");
+  minx=0.; maxx=500; nbins=static_cast<int>((maxx-minx)/25.);
+  vars.push_back(hfeats("fjets_m[0]",nbins,minx,maxx, dl_sam, "m(J_{1}) [GeV]",
+   			"pass&&ht>250&&(nvmus>=2||nvels>=2)&&njets>=4&&"+mll));
   vars.back().whichPlots = "2"; vars.back().normalize = true;
 
-  vars.push_back(hfeats("mj",15,0,600, dl_sam, "m_{J} [GeV]",
-   			"pass&&onht>300&&ht>350&&(nvmus>=2||nvels>=2)&&njets>=4&&"+mll));
+  minx=0.; maxx=600; nbins=static_cast<int>((maxx-minx)/25.);
+  vars.push_back(hfeats("mj",nbins,minx,maxx, dl_sam, "M_{J} [GeV]",
+   			"pass&&ht>250&&(nvmus>=2||nvels>=2)&&njets>=4&&"+mll));
   vars.back().whichPlots = "2"; vars.back().normalize = true;
 
   /////////////////////////// N-1 plots for the DPS////////////////////////////
