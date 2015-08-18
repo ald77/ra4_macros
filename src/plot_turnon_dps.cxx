@@ -24,8 +24,8 @@
 #include "utilities_macros.hpp"
 
 namespace  {
-  bool do_ht = false;
-  bool do_met = true;
+  bool do_ht = true;
+  bool do_met = false;
   TString plot_type = ".pdf";
 }
 
@@ -149,10 +149,10 @@ int main(){
 
 
     htmin = 125; htmax = 1000; htbins = static_cast<int>((htmax-htmin)/25);
-    PlotTurnOn(&c_met, "ht", htbins,htmin,htmax, "Offline H_{T} [GeV]",
+    PlotTurnOn(&c_met, "ht_hlt", htbins,htmin,htmax, "Offline H_{T} [GeV]",
     	       "(trig[14])&&nels>=1&&onmaxel>15", "trig[5]","MET170, n_{e} #geq 1",
     	       "Ele15_HT350_MET70");
-    PlotTurnOn(&c_met, "ht", htbins,htmin,htmax, "Offline H_{T} [GeV]",
+    PlotTurnOn(&c_met, "ht_hlt", htbins,htmin,htmax, "Offline H_{T} [GeV]",
     	       "(trig[13])&&(nmus)>=1&&onmaxmu>15", "trig[1]","MET120_Mu5, n_{#mu} #geq 1",
     	       "Mu15_HT350_MET70");
     htmin = 400; htmax = 1300; htbins = static_cast<int>((htmax-htmin)/25);

@@ -17,7 +17,7 @@
 #include "utilities_macros.hpp"
 
 namespace {
-  TString metcut("met<50");
+  TString metcut("met_nohf<50");
   TString luminosity="0.0419"; // in ifb
   TString plot_type=".pdf";
   TString plot_style="CMSPaper";

@@ -18,7 +18,7 @@
 namespace {
   TString minjets("5");
   TString mjthresh("400");
-  TString metcut("met_nohf>200");
+  TString metcut("met_nohf>175");
   TString minht("400");
   TString minbm("1");
   TString luminosity="0.0419"; // in ifb
@@ -192,7 +192,7 @@ int main(){
 
   vector<hfeats> vars;
 
-  // float minx, maxx; int nbins;
+  float minx, maxx; int nbins;
   /////////////////////////// MJ plots for the DPS////////////////////////////
   vars.push_back(hfeats("fjets_m[0]",16,0,480, ra4_sam, "m(J_{1}) [GeV]",
   			"pass&&onht>350&&onmet>100&&(nvmus+nvels)==1&&ht>"+minht+
