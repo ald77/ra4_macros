@@ -37,8 +37,6 @@ using namespace std;
 
 Double_t errorFun(Double_t *x, Double_t *par) {
   double value(0.5*par[0]*(1. + TMath::Erf( (x[0] - par[1]) / (sqrt(2.)*par[2]) )));
-  // if(x[0] > par[1]) value = 0.5*par[0]*(1. + TMath::Erf( (x[0] - par[1]) / (sqrt(2.)*par[2]) ));
-  // else value = 0.5*par[0]*(1. + TMath::Erf( (x[0] - par[1]) / (sqrt(2.)*par[3]) ));
   return value;
 }
 
@@ -51,30 +49,28 @@ int main(){
   gStyle->SetPadTickY(0);
 
   TString folder("/net/cms2/cms2r0/ald77/archive/2015_08_17/");
-  folder = "root/";
+  //folder = "root/";
 
   TChain c_jetht("tree"); c_jetht.Add(folder+"*JetHT*root");
   TChain c_met("tree"); c_met.Add(folder+"*MET*root");
   TChain c_mu("tree"); c_mu.Add(folder+"*SingleMuon*");
   TChain c_el("tree"); c_el.Add(folder+"*SingleElectron*");
   TChain c_lep("tree"); c_lep.Add(folder+"*Single*");
-  TChain c_eldl("tree"); c_eldl.Add(folder+"*SingleElectron*");c_eldl.Add(folder+"*DoubleEG*");
-
-  //Efficiency(&c_eldl, "(trig[22]||trig[26])&&njets_ra2b>=4&&ht_ra2b>500&&onht>350&&met>250", "trig[0]");
+  TChain c_eldl("tree"); c_eldl.Add(folder+"alldata/*root");
 
   if(do_dps){
     float metmin(0), metmax(460);
     int metbins(static_cast<int>((metmax-metmin)/20));
     TString vvvl_or("(HT400_Btag || HT600)");
     PlotTurnOn(&c_eldl, "met", metbins,metmin,metmax, "E_{T}^{miss}",
-    	       "(trig[22]||trig[26])&&mht_ra2b/met>0.5&&mht_ra2b/met<2&&njets_ra2b>=4&&ht_ra2b>500&&onht>350", "trig[0]",      
-    	       "(Ele27 || Ele24_22), n_{j} #geq 4, H_{T} > 500", "HT350_MET100");
+    	       "(trig[22]||trig[10])&&mht_ra2b/met>0.5&&mht_ra2b/met<2&&njets_ra2b>=4&&ht_ra2b>500&&onht>350", "trig[0]",      
+    	       "Ele27 || DoubleEle8, n_{j} #geq 4, H_{T} > 500", "HT350_MET100");
     PlotTurnOn(&c_el, "met", metbins,metmin,metmax, "E_{T}^{miss}",
     	       "(trig[6]||trig[7])&&mht_ra2b/met>0.5&&mht_ra2b/met<2&&njets>=4", "trig[5]",
     	       "Ele15_"+vvvl_or+", n_{j} #geq 4", "Ele15_HT350_MET70");
     PlotTurnOn(&c_eldl, "mht_ra2b", metbins,metmin,metmax, "H_{T}^{miss}",
-    	       "(trig[22]||trig[26])&&mht_ra2b/met>0.5&&mht_ra2b/met<2&&njets_ra2b>=4&&ht_ra2b>500&&onht>350", "trig[0]",
-    	       "(Ele27 || Ele24_22), n_{j} #geq 4, H_{T} > 500", "HT350_MET100");
+    	       "(trig[22]||trig[10])&&mht_ra2b/met>0.5&&mht_ra2b/met<2&&njets_ra2b>=4&&ht_ra2b>500&&onht>350", "trig[0]",
+    	       "Ele27 || DoubleEle8, n_{j} #geq 4, H_{T} > 500", "HT350_MET100");
 
 
     float htmin(175), htmax(850);
@@ -266,6 +262,7 @@ void PlotTurnOn(TChain *data, TString var, int nbins, double minx, double maxx, 
   hname = "num"; totCut = "("+den+")&&("+num+")";
   histo[1] = new TH1D(hname, "", nbins, minx, maxx);
   data->Project(hname, var, totCut);
+
   // Adding overflow bins
   for(unsigned his(0); his<2; his++)
     histo[his]->SetBinContent(nbins, histo[his]->GetBinContent(nbins)+histo[his]->GetBinContent(nbins+1));
@@ -278,7 +275,7 @@ void PlotTurnOn(TChain *data, TString var, int nbins, double minx, double maxx, 
   TString epsi("#scale[1.3]{#font[122]{e}}");
   //epsi = "Efficiency";
   // Ploting denominator
-  float hscaled(0.3), maxeff(1.32);
+  float hscaled(0.3), maxeff(1.42);
   float hfactor(hscaled/histo[1]->GetMaximum()), hmax(histo[1]->GetMaximum());
   float axismax(hmax*maxeff/hscaled);
   histo[1]->Scale(hfactor);
@@ -340,7 +337,7 @@ void PlotTurnOn(TChain *data, TString var, int nbins, double minx, double maxx, 
 
   float effic, errup, errdown;
   float var_plateau_f(floor((fitCurve->GetParameter(1)+3*fitCurve->GetParameter(2)+5)/10.)*10);
-  TString den_plateau(den), var_plateau(+RoundNumber(var_plateau_f, 0));
+  TString den_plateau(den), var_plateau(RoundNumber(var_plateau_f, 0));
   den_plateau += ("&&"+var+">"+var_plateau);
   Efficiency(data, den_plateau, num, effic, errup, errdown);
 
@@ -362,7 +359,7 @@ void PlotTurnOn(TChain *data, TString var, int nbins, double minx, double maxx, 
   label.DrawLatex(x2, y2, "Denom: #font[52]{"+title+"}");
   label.DrawLatex(x2, y2-ysingle,fitpar);
   fitpar = "98% of plateau at "+RoundNumber(p95,0)+" GeV";
-  //label.DrawLatex(x2, y2-2.3*ysingle,fitpar);
+  label.DrawLatex(x2, y2-2.3*ysingle,fitpar);
 
   // Drawing CMS preliminary
   label.SetNDC();  label.SetTextAlign(11); label.SetTextSize(0.045); 
@@ -379,8 +376,6 @@ void PlotTurnOn(TChain *data, TString var, int nbins, double minx, double maxx, 
 }
 
 TString Efficiency(TChain *data, TString den, TString num, float &effic, float &errup, float &errdown){
-  TCanvas can;
-  can.SetGrid();
   TH1D* histo[2];
   TString hname, totCut, pname;
   den = "("+den+")&&json_golden&&pass";
@@ -403,7 +398,7 @@ TString Efficiency(TChain *data, TString den, TString num, float &effic, float &
 
   den.ReplaceAll("&&json_golden","");
   if(denom) cout<<endl<<"Eff = "<<RoundNumber(numer*100,1,denom)<<"+"<<RoundNumber(errup*100,1)
-  		<<"-"<<RoundNumber(errdown*100,1)<<" for num "<<num<<" and "<<den<<" with "<<denom<<" entries"<<endl<<endl;
+  		<<"-"<<RoundNumber(errdown*100,1)<<" for num "<<num<<" and "<<den<<" with "<<denom<<" entries"<<endl;
   else cout<<"Denominator is zero"<<endl;
   
   TString efficiency(RoundNumber(numer*100,1,denom)+"^{+"+RoundNumber(errup*100,1)+
