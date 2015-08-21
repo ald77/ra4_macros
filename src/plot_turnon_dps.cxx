@@ -27,6 +27,7 @@
 #include "utilities_macros.hpp"
 
 namespace  {
+  bool do_lep = false;
   bool do_dps = true;
   bool do_ht = false;
   bool do_met = false;
@@ -56,19 +57,74 @@ int main(){
   TChain c_mu("tree"); c_mu.Add(folder+"*SingleMuon*");
   TChain c_el("tree"); c_el.Add(folder+"*SingleElectron*");
   TChain c_lep("tree"); c_lep.Add(folder+"*Single*");
-  TChain c_eldl("tree"); c_eldl.Add(folder+"alldata/*root");
+  TChain c_all("tree"); c_all.Add(folder+"alldata/*root");
+
+  if(do_lep){
+    float lmin(25), lmax(300);
+    int lbins(static_cast<int>((lmax-lmin)/12.5));
+
+    lmin = 0; lmax = 60; lbins = static_cast<int>((lmax-lmin)/2.5);
+    PlotTurnOn(&c_all, "Max$(mus_pt*(mus_sigid&&mus_miniso<0.2))-0.1", lbins,lmin,lmax, "#mu_{medium} p_{T}",
+    	       "(trig[0]||trig[12])", "trig[1]||trig[2]","HT800 || HT350_MET100", "Mu15_(HT350_MET70 || HT600)");
+    PlotTurnOn(&c_all, "Max$(els_pt*(els_sigid&&els_miniso<0.1))-0.1", lbins,lmin,lmax, "e_{medium} p_{T}",
+    	       "(trig[0]||trig[12])", "trig[5]||trig[6]","HT800 || HT350_MET100", "Ele15_(HT350_MET70 || HT600)");
+
+    lmin = 0; lmax = 300; lbins = static_cast<int>((lmax-lmin)/20);
+    PlotTurnOn(&c_all, "Max$(mus_pt*(mus_sigid&&mus_miniso<0.2&&abs(mus_eta)<1.4))-0.1", lbins,lmin,lmax, 
+    	       "#mu_{medium}^{|#eta|<1.4} p_{T}",
+    	       "(trig[0]||trig[12])", "trig[1]||trig[2]","HT800 || HT350_MET100", "Mu15_(HT350_MET70 || HT600)");
+    PlotTurnOn(&c_all, "Max$(mus_pt*(mus_sigid&&mus_miniso<0.2&&abs(mus_eta)>1.5))-0.1", lbins,lmin,lmax, 
+    	       "#mu_{medium}^{|#eta|>1.5} p_{T}",
+    	       "(trig[0]||trig[12])", "trig[1]||trig[2]","HT800 || HT350_MET100", "Mu15_(HT350_MET70 || HT600)");
+
+    PlotTurnOn(&c_all, "Max$(mus_pt*(mus_sigid&&mus_miniso<0.2&&abs(mus_eta)<1.4))-0.1", lbins,lmin,lmax, 
+    	       "#mu_{medium}^{|#eta|<1.4} p_{T}",
+    	       "(trig[0]||trig[12])", "trig[21]","HT800 || HT350_MET100", 
+	       "Mu50");
+    PlotTurnOn(&c_all, "Max$(mus_pt*(mus_sigid&&mus_miniso<0.2&&abs(mus_eta)>1.5))-0.1", lbins,lmin,lmax, 
+    	       "#mu_{medium}^{|#eta|>1.5} p_{T}",
+    	       "(trig[0]||trig[12])", "trig[21]","HT800 || HT350_MET100", 
+	       "Mu50");
+
+    PlotTurnOn(&c_all, "Max$(els_pt*(els_sigid&&els_miniso<0.1&&abs(els_eta)<1.4))-0.1", lbins,lmin,lmax, 
+    	       "e_{medium}^{|#eta|<1.4} p_{T}",
+    	       "(trig[0]||trig[12])", "trig[5]||trig[6]","HT800 || HT350_MET100", "Ele15_(HT350_MET70 || HT600)");
+    PlotTurnOn(&c_all, "Max$(els_pt*(els_sigid&&els_miniso<0.1&&abs(els_eta)>1.5))-0.1", lbins,lmin,lmax, 
+    	       "e_{medium}^{|#eta|>1.5} p_{T}",
+    	       "(trig[0]||trig[12])", "trig[5]||trig[6]","HT800 || HT350_MET100", "Ele15_(HT350_MET70 || HT600)");
+
+    PlotTurnOn(&c_all, "Max$(els_pt*(els_sigid&&els_miniso<0.1&&abs(els_eta)<1.4))-0.1", lbins,lmin,lmax, 
+    	       "e_{medium}^{|#eta|<1.4} p_{T}",
+    	       "(trig[0]||trig[12])", "trig[24]","HT800 || HT350_MET100", 
+	       "Ele105");
+    PlotTurnOn(&c_all, "Max$(els_pt*(els_sigid&&els_miniso<0.1&&abs(els_eta)>1.5))-0.1", lbins,lmin,lmax, 
+    	       "e_{medium}^{|#eta|>1.5} p_{T}",
+    	       "(trig[0]||trig[12])", "trig[24]","HT800 || HT350_MET100", 
+	       "Ele105");
+
+    float ltmin(0), ltmax(600);
+    int ltbins(static_cast<int>((ltmax-ltmin)/25));
+    PlotTurnOn(&c_jetht, "met_nohf+Sum$(mus_pt*(mus_sigid&&mus_miniso<0.2))", ltbins, ltmin, ltmax, "L_{T}",
+	       "Sum$((mus_pt>25&&mus_sigid&&mus_miniso<0.2))==1&&ht>500", "trig[1]||trig[21]",
+	       "JetHT, n_{#mu}^{25} = 1, H_{T} > 500","Mu15_HT350_MET70 || Mu50");
+
+    PlotTurnOn(&c_jetht, "met_nohf+Sum$(els_pt*(els_sigid&&els_miniso<0.1))", ltbins, ltmin, ltmax, "L_{T}",
+	       "Sum$((els_pt>25&&els_sigid&&els_miniso<0.1))==1&&ht>500", "trig[5]||trig[24]",
+	       "JetHT, n_{e}^{25} = 1, H_{T} > 500","Ele15_HT350_MET70 || Ele105");
+  } // if(do_lep)
+
 
   if(do_dps){
     float metmin(0), metmax(460);
     int metbins(static_cast<int>((metmax-metmin)/20));
     TString vvvl_or("(HT400_Btag || HT600)");
-    PlotTurnOn(&c_eldl, "met", metbins,metmin,metmax, "E_{T}^{miss}",
+    PlotTurnOn(&c_all, "met", metbins,metmin,metmax, "E_{T}^{miss}",
     	       "(trig[22]||trig[10])&&mht_ra2b/met>0.5&&mht_ra2b/met<2&&njets_ra2b>=4&&ht_ra2b>500&&onht>350", "trig[0]",      
     	       "Ele27 || DoubleEle8, n_{j} #geq 4, H_{T} > 500", "HT350_MET100");
     PlotTurnOn(&c_el, "met", metbins,metmin,metmax, "E_{T}^{miss}",
     	       "(trig[6]||trig[7])&&mht_ra2b/met>0.5&&mht_ra2b/met<2&&njets>=4", "trig[5]",
     	       "Ele15_"+vvvl_or+", n_{j} #geq 4", "Ele15_HT350_MET70");
-    PlotTurnOn(&c_eldl, "mht_ra2b", metbins,metmin,metmax, "H_{T}^{miss}",
+    PlotTurnOn(&c_all, "mht_ra2b", metbins,metmin,metmax, "H_{T}^{miss}",
     	       "(trig[22]||trig[10])&&mht_ra2b/met>0.5&&mht_ra2b/met<2&&njets_ra2b>=4&&ht_ra2b>500&&onht>350", "trig[0]",
     	       "Ele27 || DoubleEle8, n_{j} #geq 4, H_{T} > 500", "HT350_MET100");
 
@@ -90,7 +146,7 @@ int main(){
 
   }
 
-   ///////////////////////////////////////// MET /////////////////////////////////////////
+  ///////////////////////////////////////// MET /////////////////////////////////////////
   if(do_met){
     float metmin(0), metmax(500);
     int metbins(static_cast<int>((metmax-metmin)/20));
@@ -112,10 +168,10 @@ int main(){
     PlotTurnOn(&c_el, "mht_ra2b", metbins,metmin,metmax, "H_{T}^{miss}",
     	       "(trig[6])&&mht_ra2b/met>0.5&&mht_ra2b/met<2&&njets>=4", "trig[0]",
     	       "Ele15_"+vvvl_or+", n_{j}#geq4", "HT350_MET100");
-    PlotTurnOn(&c_eldl, "met", metbins,metmin,metmax, "E_{T}^{miss}",
+    PlotTurnOn(&c_all, "met", metbins,metmin,metmax, "E_{T}^{miss}",
     	       "(trig[22]||trig[26])&&njets_ra2b>=4&&ht_ra2b>500", "trig[0]",    	       
 	       "(Ele27 || Ele24_22), n_{j}#geq4, H_{T}>500", "HT350_MET100");
-    PlotTurnOn(&c_eldl, "mht_ra2b", metbins,metmin,metmax, "H_{T}^{miss}",
+    PlotTurnOn(&c_all, "mht_ra2b", metbins,metmin,metmax, "H_{T}^{miss}",
     	       "(trig[22]||trig[26])&&mht_ra2b/met>0.5&&mht_ra2b/met<2&&njets_ra2b>=4&&ht_ra2b>500", "trig[0]",
     	       "(Ele27 || Ele24_22), n_{j}#geq4, H_{T}>500", "HT350_MET100");
 
@@ -321,7 +377,7 @@ void PlotTurnOn(TChain *data, TString var, int nbins, double minx, double maxx, 
   histo[1]->Draw("axis same");
 
   float binw((maxx-minx)/static_cast<float>(nbins));
-  int digits(binw<20?1:0);
+  int digits((binw-floor(binw))>0?1:0);
   
   TString ntitle("Events/("+RoundNumber(maxx-minx,digits,nbins)+" GeV)");
   TGaxis *axis = new TGaxis(maxx,0, maxx, maxeff,0,axismax,508,"+L");
