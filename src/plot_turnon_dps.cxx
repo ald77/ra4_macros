@@ -27,11 +27,11 @@
 #include "utilities_macros.hpp"
 
 namespace  {
-  bool do_lep = false;
-  bool do_dps = true;
+  bool do_lep = true;
+  bool do_dps = false;
   bool do_ht = false;
   bool do_met = false;
-  TString plot_type = ".pdf";
+  TString plot_type = ".eps";
 }
 
 using namespace std;
@@ -49,9 +49,10 @@ int main(){
   styles style("HLTStyle"); style.setDefaultStyle();
   gStyle->SetPadTickY(0);
 
-  TString folder("/net/cms2/cms2r0/ald77/archive/2015_08_17/");
+  TString folder("/net/cms2/cms2r0/ald77/archive/2015_08_25/");
   //folder = "root/";
 
+  TChain c_tt("tree"); c_tt.Add("/cms2r0/ald77/archive/2015_08_13/small_quick_TTJets_TuneCUETP8M1_13TeV-madgraphMLM-pythia8_RunIISpring15DR74-Asympt50ns_MCRUN2_74_V9A-v1_MINIAODSIM_UCSB2650_v82_files20_batch*.root");
   TChain c_jetht("tree"); c_jetht.Add(folder+"*JetHT*root");
   TChain c_met("tree"); c_met.Add(folder+"*MET*root");
   TChain c_mu("tree"); c_mu.Add(folder+"*SingleMuon*");
@@ -63,11 +64,58 @@ int main(){
     float lmin(25), lmax(300);
     int lbins(static_cast<int>((lmax-lmin)/12.5));
 
+    lmin = 60; lmax = 160; lbins = static_cast<int>((lmax-lmin)/2.5);
+    PlotTurnOn(&c_all, "Max$(els_pt*(els_sigid&&els_miniso<0.1&&abs(els_eta)<1.4))-0.1", lbins,lmin,lmax, 
+    	       "e_{medium}^{|#eta|<1.4} p_{T}",
+    	       "(trig[0]||trig[12])", "trig[24]","HT800 || HT350_MET100", 
+	       "Ele105");
+    PlotTurnOn(&c_all, "Max$(els_pt*(els_sigid&&els_miniso<0.1&&abs(els_eta)>1.5))-0.1", lbins,lmin,lmax, 
+    	       "e_{medium}^{|#eta|>1.5} p_{T}",
+    	       "(trig[0]||trig[12])", "trig[24]","HT800 || HT350_MET100", 
+	       "Ele105");
+
+    lmin = 0; lmax = 100; lbins = static_cast<int>((lmax-lmin)/2.5);
+    PlotTurnOn(&c_all, "Max$(mus_pt*(mus_sigid&&mus_miniso<0.2))-0.1", lbins,lmin,lmax, "#mu_{medium} p_{T}",
+    	       "(trig[0]||trig[12])", "trig[21]","HT800 || HT350_MET100", "Mu50");
+
     lmin = 0; lmax = 60; lbins = static_cast<int>((lmax-lmin)/2.5);
+    PlotTurnOn(&c_all, "Max$(mus_pt*(mus_sigid&&mus_miniso<0.2))-0.1", lbins,lmin,lmax, "#mu_{medium} p_{T}",
+    	       "(trig[0]||trig[12])", "trig[18]","HT800 || HT350_MET100", "IsoMu20");
     PlotTurnOn(&c_all, "Max$(mus_pt*(mus_sigid&&mus_miniso<0.2))-0.1", lbins,lmin,lmax, "#mu_{medium} p_{T}",
     	       "(trig[0]||trig[12])", "trig[1]||trig[2]","HT800 || HT350_MET100", "Mu15_(HT350_MET70 || HT600)");
     PlotTurnOn(&c_all, "Max$(els_pt*(els_sigid&&els_miniso<0.1))-0.1", lbins,lmin,lmax, "e_{medium} p_{T}",
     	       "(trig[0]||trig[12])", "trig[5]||trig[6]","HT800 || HT350_MET100", "Ele15_(HT350_MET70 || HT600)");
+
+    lmin = 0; lmax = 300; lbins = static_cast<int>((lmax-lmin)/20);
+    PlotTurnOn(&c_el, "Max$(mus_pt*(mus_tight&&mus_reliso<0.12))-0.1", lbins,lmin,lmax, 
+    	       "#mu_{tight} p_{T}",
+    	       "(trig[22]||trig[26])", "trig[18]","Ele27 || Ele24_22", "IsoMu20");
+    PlotTurnOn(&c_el, "Max$(mus_pt*(mus_tight&&mus_miniso<0.2))-0.1", lbins,lmin,lmax, 
+    	       "#mu_{tight} p_{T}",
+    	       "(trig[22]||trig[26])", "trig[1]||trig[2]","Ele27 || Ele24_22", "Mu15_(HT350_MET70 || HT600)");
+    PlotTurnOn(&c_el, "Max$(mus_pt*(mus_tight&&mus_miniso<0.2))-0.1", lbins,lmin,lmax, 
+    	       "#mu_{tight} p_{T}",
+    	       "(trig[22]||trig[26])", "trig[21]","Ele27 || Ele24_22", "Mu50");
+
+    PlotTurnOn(&c_all, "Max$(mus_pt*(mus_tight&&mus_miniso<0.2))-0.1", lbins,lmin,lmax, 
+    	       "#mu_{tight} p_{T}",
+    	       "(trig[0]||trig[12])", "trig[18]","HT800 || HT350_MET100", "IsoMu20");
+    PlotTurnOn(&c_all, "Max$(mus_pt*(mus_tight&&mus_miniso<0.2))-0.1", lbins,lmin,lmax, 
+    	       "#mu_{tight} p_{T}",
+    	       "(trig[0]||trig[12])", "trig[1]||trig[2]","HT800 || HT350_MET100", "Mu15_(HT350_MET70 || HT600)");
+    PlotTurnOn(&c_all, "Max$(mus_pt*(mus_tight&&mus_miniso<0.2))-0.1", lbins,lmin,lmax, 
+    	       "#mu_{tight} p_{T}",
+    	       "(trig[0]||trig[12])", "trig[21]","HT800 || HT350_MET100", "Mu50");
+
+    PlotTurnOn(&c_all, "Max$(mus_pt*(mus_sigid&&mus_miniso<0.2))-0.1", lbins,lmin,lmax, 
+    	       "#mu_{medium} p_{T}",
+    	       "(trig[0]||trig[12])", "trig[18]","HT800 || HT350_MET100", "IsoMu20");
+    PlotTurnOn(&c_all, "Max$(mus_pt*(mus_sigid&&mus_miniso<0.2))-0.1", lbins,lmin,lmax, 
+    	       "#mu_{medium} p_{T}",
+    	       "(trig[0]||trig[12])", "trig[1]||trig[2]","HT800 || HT350_MET100", "Mu15_(HT350_MET70 || HT600)");
+    PlotTurnOn(&c_all, "Max$(mus_pt*(mus_sigid&&mus_miniso<0.2))-0.1", lbins,lmin,lmax, 
+    	       "#mu_{medium} p_{T}",
+    	       "(trig[0]||trig[12])", "trig[21]","HT800 || HT350_MET100", "Mu50");
 
     lmin = 0; lmax = 300; lbins = static_cast<int>((lmax-lmin)/20);
     PlotTurnOn(&c_all, "Max$(mus_pt*(mus_sigid&&mus_miniso<0.2&&abs(mus_eta)<1.4))-0.1", lbins,lmin,lmax, 
@@ -101,6 +149,51 @@ int main(){
     	       "e_{medium}^{|#eta|>1.5} p_{T}",
     	       "(trig[0]||trig[12])", "trig[24]","HT800 || HT350_MET100", 
 	       "Ele105");
+
+    float htmin(175), htmax(1000);
+    int htbins(static_cast<int>((htmax-htmin)/12.5));
+    htmin = 0; htmax = 2400; htbins = static_cast<int>((htmax-htmin)/200);
+    PlotTurnOn(&c_tt, "ht_reliso", htbins,htmin,htmax, "H_{T}",
+    	       "Max$(mus_pt*(mus_sigid&&mus_tru_tm&&mus_reliso<0.12))>40", 
+	       "trig[18]","n_{#mu,40,reliso} #geq 1", "IsoMu20", -100);
+    PlotTurnOn(&c_tt, "ht_reliso", htbins,htmin,htmax, "H_{T}",
+    	       "Max$(mus_pt*(mus_sigid&&mus_tru_tm&&mus_reliso<0.12))>25", 
+	       "trig[18]","n_{#mu,25,reliso} #geq 1", "IsoMu20", -100);
+    PlotTurnOn(&c_tt, "ht", htbins,htmin,htmax, "H_{T}",
+    	       "Max$(mus_pt*(mus_sigid&&mus_tru_tm&&mus_miniso<0.2))>25", 
+	       "trig[18]","n_{#mu,25,miniso} #geq 1", "IsoMu20", -100);
+    PlotTurnOn(&c_tt, "ht_reliso", htbins,htmin,htmax, "H_{T}",
+    	       "Max$(mus_pt*(mus_sigid&&mus_tru_tm&&mus_reliso<0.2))>25", 
+	       "trig[18]","n_{#mu,25,reliso} #geq 1", "IsoMu20", -100);
+
+    PlotTurnOn(&c_tt, "ht", htbins,htmin,htmax, "H_{T}",
+    	       "Max$(mus_pt*(mus_sigid&&mus_tru_tm))>25", 
+	       "Max$(mus_pt*(mus_sigid&&mus_tru_tm&&mus_miniso<0.2))>25","n_{#mu,25} #geq 1", 
+	       "n_{#mu,25,miniso} #geq 1", -100);
+    PlotTurnOn(&c_tt, "ht_reliso", htbins,htmin,htmax, "H_{T}",
+    	       "Max$(mus_pt*(mus_sigid&&mus_tru_tm))>25", 
+	       "Max$(mus_pt*(mus_sigid&&mus_tru_tm&&mus_reliso<0.2))>25","n_{#mu,25} #geq 1", 
+	       "n_{#mu,25,reliso} #geq 1", -100);
+    PlotTurnOn(&c_tt, "ht_reliso", htbins,htmin,htmax, "H_{T}",
+    	       "Max$(mus_pt*(mus_sigid&&mus_tru_tm))>25", 
+	       "Max$(mus_pt*(mus_sigid&&mus_tru_tm&&mus_reliso<0.12))>25","n_{#mu,25} #geq 1", 
+	       "n_{#mu,25,reliso} #geq 1", -100);
+    PlotTurnOn(&c_tt, "ht", htbins,htmin,htmax, "H_{T}",
+    	       "Max$(mus_pt*(mus_sigid&&mus_tru_tm))>25", 
+	       "Max$(mus_pt*(mus_sigid&&mus_tru_tm&&mus_miniso<0.2))>25&&trig[18]","n_{#mu,25} #geq 1", 
+	       "n_{#mu,25,miniso} #geq 1, IsoMu20", -100);
+    PlotTurnOn(&c_tt, "ht_reliso", htbins,htmin,htmax, "H_{T}",
+    	       "Max$(mus_pt*(mus_sigid&&mus_tru_tm))>25", 
+	       "Max$(mus_pt*(mus_sigid&&mus_tru_tm&&mus_reliso<0.2))>25&&trig[18]","n_{#mu,25} #geq 1", 
+	       "n_{#mu,25,reliso} #geq 1, IsoMu20", -100);
+    PlotTurnOn(&c_tt, "ht_reliso", htbins,htmin,htmax, "H_{T}",
+    	       "Max$(mus_pt*(mus_sigid&&mus_tru_tm))>25", 
+	       "Max$(mus_pt*(mus_sigid&&mus_tru_tm&&mus_reliso<0.12))>25&&trig[18]","n_{#mu,25} #geq 1", 
+	       "n_{#mu,25,reliso} #geq 1, IsoMu20", -100);
+    PlotTurnOn(&c_tt, "ht_reliso", htbins,htmin,htmax, "H_{T}",
+    	       "Max$(mus_pt*(mus_sigid&&mus_tru_tm))>40", 
+	       "Max$(mus_pt*(mus_sigid&&mus_tru_tm&&mus_reliso<0.12))>40&&trig[18]","n_{#mu,40} #geq 1", 
+	       "n_{#mu,40,reliso} #geq 1, IsoMu20", -100);
 
     float ltmin(0), ltmax(600);
     int ltbins(static_cast<int>((ltmax-ltmin)/25));
@@ -306,6 +399,7 @@ TString format_tag(TString tag){
 void PlotTurnOn(TChain *data, TString var, int nbins, double minx, double maxx, TString xtitle, 
 		TString den, TString num, TString title, TString ytitle, float minfit){
   styles style("HLTStyle"); gStyle->SetPadTickY(0);
+  bool dofit(minfit>=-1);
   TCanvas can;
   //can.SetGrid();
   TH1D* histo[2];
@@ -370,7 +464,7 @@ void PlotTurnOn(TChain *data, TString var, int nbins, double minx, double maxx, 
   fitCurve->SetParNames("#epsilon","#mu","#sigma");
   fitCurve->SetLineColor(2);
   fitCurve->SetLineWidth(2);
-  heff.Fit("fitCurve","QEM+","",minfit, maxx);
+  if(dofit) heff.Fit("fitCurve","QEM+","",minfit, maxx);
   //heff.Fit(fitCurve,"QR+");
   
   heff.Draw("p");
@@ -393,12 +487,13 @@ void PlotTurnOn(TChain *data, TString var, int nbins, double minx, double maxx, 
 
   float effic, errup, errdown;
   float var_plateau_f(floor((fitCurve->GetParameter(1)+3*fitCurve->GetParameter(2)+5)/10.)*10);
+  if(!dofit) var_plateau_f = 500;
   TString den_plateau(den), var_plateau(RoundNumber(var_plateau_f, 0));
   den_plateau += ("&&"+var+">"+var_plateau);
   Efficiency(data, den_plateau, num, effic, errup, errdown);
 
   // 98th percentile of Gaussian from Wolfram Alpha
-  float p95(fitCurve->GetParameter(1)+2.05*fitCurve->GetParameter(2));
+  float p98(fitCurve->GetParameter(1)+2.05*fitCurve->GetParameter(2));
   float eplateau(fitCurve->GetParError(0)*100);
   if(eplateau<0.1) cout<<"Error on plateau "<<eplateau<<"%"<<endl;
   epsi.ToLower();
@@ -414,15 +509,17 @@ void PlotTurnOn(TChain *data, TString var, int nbins, double minx, double maxx, 
   float x2(maxx-0.04*range), y2(maxeff-0.07), ysingle(0.1);
   label.DrawLatex(x2, y2, "Denom: #font[52]{"+title+"}");
   label.DrawLatex(x2, y2-ysingle,fitpar);
-  fitpar = "98% of plateau at "+RoundNumber(p95,0)+" GeV";
-  label.DrawLatex(x2, y2-2.3*ysingle,fitpar);
+  fitpar = "98% of plateau at "+RoundNumber(p98,0)+" GeV";
+  if(dofit) label.DrawLatex(x2, y2-2.3*ysingle,fitpar);
 
   // Drawing CMS preliminary
   label.SetNDC();  label.SetTextAlign(11); label.SetTextSize(0.045); 
-  label.DrawLatex(0.13, 0.93, "#font[61]{CMS} #scale[0.8]{#font[52]{Preliminary}}");
+  if(dofit) label.DrawLatex(0.13, 0.93, "#font[61]{CMS} #scale[0.8]{#font[52]{Preliminary}}");
+  else label.DrawLatex(0.13, 0.93, "#font[61]{CMS} #scale[0.8]{#font[52]{Simulation}}");
   // Drawing luminosity
   label.SetTextAlign(31); 
-  label.DrawLatex(0.85, 0.93, "42 pb^{-1} (13 TeV)");
+  if(dofit) label.DrawLatex(0.85, 0.93, "42 pb^{-1} (13 TeV)");
+  else label.DrawLatex(0.85, 0.93, "Spring15 t#bar{t}");
 
   can.SaveAs(pname);
   
