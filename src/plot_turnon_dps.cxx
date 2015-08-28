@@ -42,7 +42,7 @@ Double_t errorFun(Double_t *x, Double_t *par) {
 }
 
 void PlotTurnOn(TChain *data, TString var, int nbins, double minx, double maxx, TString xtitle, 
-		TString den, TString num, TString title="", TString ytitle="", float minfit=-1.);
+		TString den, TString num, TString title="", TString ytitle="", float minfit=-1., bool isData=true);
 TString Efficiency(TChain *data, TString den, TString num, float &effic, float &errup, float &errdown);
 
 int main(){ 
@@ -64,20 +64,63 @@ int main(){
     float lmin(25), lmax(300);
     int lbins(static_cast<int>((lmax-lmin)/12.5));
 
-    lmin = 60; lmax = 160; lbins = static_cast<int>((lmax-lmin)/2.5);
+    // Truth-matched plateaus
+    lmin = 0; lmax = 300; lbins = static_cast<int>((lmax-lmin)/20);
+    PlotTurnOn(&c_tt, "Max$(mus_pt*(mus_sigid&&mus_reliso<0.12&&mus_tru_tm))-0.1", lbins,lmin,lmax, 
+    	       "#mu_{medium, reliso} p_{T}","1", "trig[18]","TM medium #mu, I_{R=0.4} < 0.12", "IsoMu20",-40,false);
+    PlotTurnOn(&c_tt, "Max$(mus_pt*(mus_sigid&&mus_reliso<0.2&&mus_tru_tm))-0.1", lbins,lmin,lmax, 
+    	       "#mu_{medium, reliso} p_{T}","1", "trig[18]","TM medium #mu, I_{R=0.4} < 0.2", "IsoMu20",-40,false);
+    PlotTurnOn(&c_tt, "Max$(mus_pt*(mus_sigid&&mus_miniso<0.2&&mus_tru_tm))-0.1", lbins,lmin,lmax, 
+    	       "#mu_{medium, miniso} p_{T}","1", "trig[18]","TM medium #mu, I_{mini} < 0.2", "IsoMu20",-40,false);
+    PlotTurnOn(&c_tt, "Max$(mus_pt*(mus_sigid&&mus_reliso<0.12&&mus_tru_tm))-0.1", lbins,lmin,lmax, 
+    	       "#mu_{medium, reliso} p_{T}","1", "trig[21]","TM medium #mu, I_{R=0.4} < 0.12", "Mu50",-60,false);
+    PlotTurnOn(&c_tt, "Max$(mus_pt*(mus_sigid&&mus_miniso<0.2&&mus_tru_tm))-0.1", lbins,lmin,lmax, 
+    	       "#mu_{medium, miniso} p_{T}","1", "trig[21]","TM medium #mu, I_{mini} < 0.2", "Mu50",-60,false);
+
+    PlotTurnOn(&c_tt, "Max$(els_pt*(els_sigid&&els_miniso<0.1&&els_tru_tm&&abs(els_eta)<1.4))-0.1", 
+	       lbins,lmin,lmax, "e_{medium}^{|#eta|<1.4} p_{T}","1", "trig[24]",
+	       "TM medium e, I_{mini} < 0.1", "Ele105",-120,false);
+    PlotTurnOn(&c_tt, "Max$(els_pt*(els_sigid&&els_miniso<0.1&&els_tru_tm&&abs(els_eta)>1.5))-0.1", 
+	       lbins,lmin,lmax, "e_{medium}^{|#eta|>1.5} p_{T}","1", "trig[24]",
+	       "TM medium e, I_{mini} < 0.1", "Ele105",-120,false);
+
+    // Truth-matched turn-ons
+    lmin = 5; lmax = 50; lbins = static_cast<int>((lmax-lmin)/1);
+    PlotTurnOn(&c_tt, "Max$(mus_pt*(mus_sigid&&mus_reliso<0.12&&mus_tru_tm))-0.1", lbins,lmin,lmax, 
+    	       "#mu_{medium, reliso} p_{T}","1", "trig[18]","TM medium #mu, I_{R=0.4} < 0.12", 
+	       "IsoMu20",-1,false);
+    PlotTurnOn(&c_tt, "Max$(mus_pt*(mus_sigid&&mus_reliso<0.2&&mus_tru_tm))-0.1", lbins,lmin,lmax, 
+    	       "#mu_{medium, reliso} p_{T}","1", "trig[18]","TM medium #mu, I_{R=0.4} < 0.2", 
+	       "IsoMu20",-1,false);
+    PlotTurnOn(&c_tt, "Max$(mus_pt*(mus_sigid&&mus_miniso<0.2&&mus_tru_tm))-0.1", lbins,lmin,lmax, 
+    	       "#mu_{medium, reliso} p_{T}","1", "trig[18]","TM medium #mu, I_{mini} < 0.2", 
+	       "IsoMu20",-1,false);
+    lmin = 25; lmax = 100; lbins = static_cast<int>((lmax-lmin)/1);
+    PlotTurnOn(&c_tt, "Max$(mus_pt*(mus_sigid&&mus_tru_tm&&mus_miniso<0.2))-0.1", lbins,lmin,lmax, 
+	       "#mu_{medium} p_{T}","1", "trig[21]","TM medium #mu, I_{mini} < 0.2", "Mu50",48,false);
+    lmin = 70; lmax = 160; lbins = static_cast<int>((lmax-lmin)/2.5);
+    PlotTurnOn(&c_tt, "Max$(els_pt*(els_sigid&&els_miniso<0.1&&els_tru_tm&&abs(els_eta)<1.4))-0.1", 
+	       lbins,lmin,lmax, "e_{medium}^{|#eta|<1.4} p_{T}",
+    	       "1", "trig[24]","TM medium e, I_{mini} < 0.1", "Ele105",-1,false);
+    PlotTurnOn(&c_tt, "Max$(els_pt*(els_sigid&&els_miniso<0.1&&els_tru_tm&&abs(els_eta)>1.5))-0.1", 
+	       lbins,lmin,lmax, "e_{medium}^{|#eta|>1.5} p_{T}",
+    	       "1", "trig[24]","TM medium e, I_{mini} < 0.1", "Ele105",-1,false);
+
+
+    // Turn-ons Ele105/Mu50
+    lmin = 60; lmax = 160; lbins = static_cast<int>((lmax-lmin)/5);
     PlotTurnOn(&c_all, "Max$(els_pt*(els_sigid&&els_miniso<0.1&&abs(els_eta)<1.4))-0.1", lbins,lmin,lmax, 
     	       "e_{medium}^{|#eta|<1.4} p_{T}",
-    	       "(trig[0]||trig[12])", "trig[24]","HT800 || HT350_MET100", 
-	       "Ele105");
+    	       "(trig[0]||trig[12])", "trig[24]","HT800 || HT350_MET100", "Ele105");
     PlotTurnOn(&c_all, "Max$(els_pt*(els_sigid&&els_miniso<0.1&&abs(els_eta)>1.5))-0.1", lbins,lmin,lmax, 
     	       "e_{medium}^{|#eta|>1.5} p_{T}",
-    	       "(trig[0]||trig[12])", "trig[24]","HT800 || HT350_MET100", 
-	       "Ele105");
+    	       "(trig[0]||trig[12])", "trig[24]","HT800 || HT350_MET100", "Ele105");
 
     lmin = 0; lmax = 100; lbins = static_cast<int>((lmax-lmin)/2.5);
     PlotTurnOn(&c_all, "Max$(mus_pt*(mus_sigid&&mus_miniso<0.2))-0.1", lbins,lmin,lmax, "#mu_{medium} p_{T}",
     	       "(trig[0]||trig[12])", "trig[21]","HT800 || HT350_MET100", "Mu50");
 
+    // Turn-ons IsoMu20, VVVL
     lmin = 0; lmax = 60; lbins = static_cast<int>((lmax-lmin)/2.5);
     PlotTurnOn(&c_all, "Max$(mus_pt*(mus_sigid&&mus_miniso<0.2))-0.1", lbins,lmin,lmax, "#mu_{medium} p_{T}",
     	       "(trig[0]||trig[12])", "trig[18]","HT800 || HT350_MET100", "IsoMu20");
@@ -86,8 +129,12 @@ int main(){
     PlotTurnOn(&c_all, "Max$(els_pt*(els_sigid&&els_miniso<0.1))-0.1", lbins,lmin,lmax, "e_{medium} p_{T}",
     	       "(trig[0]||trig[12])", "trig[5]||trig[6]","HT800 || HT350_MET100", "Ele15_(HT350_MET70 || HT600)");
 
+    // Plateaus
     lmin = 0; lmax = 300; lbins = static_cast<int>((lmax-lmin)/20);
     PlotTurnOn(&c_el, "Max$(mus_pt*(mus_tight&&mus_reliso<0.12))-0.1", lbins,lmin,lmax, 
+    	       "#mu_{tight} p_{T}",
+    	       "(trig[22]||trig[26])", "trig[18]","Ele27 || Ele24_22", "IsoMu20");
+    PlotTurnOn(&c_el, "Max$(mus_pt*(mus_tight&&mus_miniso<0.2))-0.1", lbins,lmin,lmax, 
     	       "#mu_{tight} p_{T}",
     	       "(trig[22]||trig[26])", "trig[18]","Ele27 || Ele24_22", "IsoMu20");
     PlotTurnOn(&c_el, "Max$(mus_pt*(mus_tight&&mus_miniso<0.2))-0.1", lbins,lmin,lmax, 
@@ -155,45 +202,45 @@ int main(){
     htmin = 0; htmax = 2400; htbins = static_cast<int>((htmax-htmin)/200);
     PlotTurnOn(&c_tt, "ht_reliso", htbins,htmin,htmax, "H_{T}",
     	       "Max$(mus_pt*(mus_sigid&&mus_tru_tm&&mus_reliso<0.12))>40", 
-	       "trig[18]","n_{#mu,40,reliso} #geq 1", "IsoMu20", -100);
+	       "trig[18]","n_{#mu,40,reliso} #geq 1", "IsoMu20", -500,false);
     PlotTurnOn(&c_tt, "ht_reliso", htbins,htmin,htmax, "H_{T}",
     	       "Max$(mus_pt*(mus_sigid&&mus_tru_tm&&mus_reliso<0.12))>25", 
-	       "trig[18]","n_{#mu,25,reliso} #geq 1", "IsoMu20", -100);
+	       "trig[18]","n_{#mu,25,reliso} #geq 1", "IsoMu20", -500,false);
     PlotTurnOn(&c_tt, "ht", htbins,htmin,htmax, "H_{T}",
     	       "Max$(mus_pt*(mus_sigid&&mus_tru_tm&&mus_miniso<0.2))>25", 
-	       "trig[18]","n_{#mu,25,miniso} #geq 1", "IsoMu20", -100);
+	       "trig[18]","n_{#mu,25,miniso} #geq 1", "IsoMu20", -500,false);
     PlotTurnOn(&c_tt, "ht_reliso", htbins,htmin,htmax, "H_{T}",
     	       "Max$(mus_pt*(mus_sigid&&mus_tru_tm&&mus_reliso<0.2))>25", 
-	       "trig[18]","n_{#mu,25,reliso} #geq 1", "IsoMu20", -100);
+	       "trig[18]","n_{#mu,25,reliso} #geq 1", "IsoMu20", -500,false);
 
     PlotTurnOn(&c_tt, "ht", htbins,htmin,htmax, "H_{T}",
     	       "Max$(mus_pt*(mus_sigid&&mus_tru_tm))>25", 
 	       "Max$(mus_pt*(mus_sigid&&mus_tru_tm&&mus_miniso<0.2))>25","n_{#mu,25} #geq 1", 
-	       "n_{#mu,25,miniso} #geq 1", -100);
+	       "n_{#mu,25,miniso} #geq 1", -500,false);
     PlotTurnOn(&c_tt, "ht_reliso", htbins,htmin,htmax, "H_{T}",
     	       "Max$(mus_pt*(mus_sigid&&mus_tru_tm))>25", 
 	       "Max$(mus_pt*(mus_sigid&&mus_tru_tm&&mus_reliso<0.2))>25","n_{#mu,25} #geq 1", 
-	       "n_{#mu,25,reliso} #geq 1", -100);
+	       "n_{#mu,25,reliso} #geq 1", -500,false);
     PlotTurnOn(&c_tt, "ht_reliso", htbins,htmin,htmax, "H_{T}",
     	       "Max$(mus_pt*(mus_sigid&&mus_tru_tm))>25", 
 	       "Max$(mus_pt*(mus_sigid&&mus_tru_tm&&mus_reliso<0.12))>25","n_{#mu,25} #geq 1", 
-	       "n_{#mu,25,reliso} #geq 1", -100);
+	       "n_{#mu,25,reliso} #geq 1", -500,false);
     PlotTurnOn(&c_tt, "ht", htbins,htmin,htmax, "H_{T}",
     	       "Max$(mus_pt*(mus_sigid&&mus_tru_tm))>25", 
 	       "Max$(mus_pt*(mus_sigid&&mus_tru_tm&&mus_miniso<0.2))>25&&trig[18]","n_{#mu,25} #geq 1", 
-	       "n_{#mu,25,miniso} #geq 1, IsoMu20", -100);
+	       "n_{#mu,25,miniso} #geq 1, IsoMu20", -500,false);
     PlotTurnOn(&c_tt, "ht_reliso", htbins,htmin,htmax, "H_{T}",
     	       "Max$(mus_pt*(mus_sigid&&mus_tru_tm))>25", 
 	       "Max$(mus_pt*(mus_sigid&&mus_tru_tm&&mus_reliso<0.2))>25&&trig[18]","n_{#mu,25} #geq 1", 
-	       "n_{#mu,25,reliso} #geq 1, IsoMu20", -100);
+	       "n_{#mu,25,reliso} #geq 1, IsoMu20", -500,false);
     PlotTurnOn(&c_tt, "ht_reliso", htbins,htmin,htmax, "H_{T}",
     	       "Max$(mus_pt*(mus_sigid&&mus_tru_tm))>25", 
 	       "Max$(mus_pt*(mus_sigid&&mus_tru_tm&&mus_reliso<0.12))>25&&trig[18]","n_{#mu,25} #geq 1", 
-	       "n_{#mu,25,reliso} #geq 1, IsoMu20", -100);
+	       "n_{#mu,25,reliso} #geq 1, IsoMu20", -500,false);
     PlotTurnOn(&c_tt, "ht_reliso", htbins,htmin,htmax, "H_{T}",
     	       "Max$(mus_pt*(mus_sigid&&mus_tru_tm))>40", 
 	       "Max$(mus_pt*(mus_sigid&&mus_tru_tm&&mus_reliso<0.12))>40&&trig[18]","n_{#mu,40} #geq 1", 
-	       "n_{#mu,40,reliso} #geq 1, IsoMu20", -100);
+	       "n_{#mu,40,reliso} #geq 1, IsoMu20", -500,false);
 
     float ltmin(0), ltmax(600);
     int ltbins(static_cast<int>((ltmax-ltmin)/25));
@@ -397,7 +444,7 @@ TString format_tag(TString tag){
 }
 
 void PlotTurnOn(TChain *data, TString var, int nbins, double minx, double maxx, TString xtitle, 
-		TString den, TString num, TString title, TString ytitle, float minfit){
+		TString den, TString num, TString title, TString ytitle, float minfit, bool isData){
   styles style("HLTStyle"); gStyle->SetPadTickY(0);
   bool dofit(minfit>=-1);
   TCanvas can;
@@ -456,7 +503,7 @@ void PlotTurnOn(TChain *data, TString var, int nbins, double minx, double maxx, 
 
   
   // Fitting turn on curve
-  if(minfit<0) minfit = minx;
+  if(minfit<0 && dofit) minfit = minx;
   TF1 *fitCurve = new TF1("fitCurve",errorFun,minx,maxx,3);
   Double_t params[] = {0.99,minx+(maxx-minx)/4.,50., 50.};    
   //Double_t params[] = {0.99,880,50.};    
@@ -465,7 +512,6 @@ void PlotTurnOn(TChain *data, TString var, int nbins, double minx, double maxx, 
   fitCurve->SetLineColor(2);
   fitCurve->SetLineWidth(2);
   if(dofit) heff.Fit("fitCurve","QEM+","",minfit, maxx);
-  //heff.Fit(fitCurve,"QR+");
   
   heff.Draw("p");
   histo[1]->Draw("axis same");
@@ -486,8 +532,10 @@ void PlotTurnOn(TChain *data, TString var, int nbins, double minx, double maxx, 
 
 
   float effic, errup, errdown;
-  float var_plateau_f(floor((fitCurve->GetParameter(1)+3*fitCurve->GetParameter(2)+5)/10.)*10);
-  if(!dofit) var_plateau_f = 500;
+  float mu(fitCurve->GetParameter(1)), sigma(fitCurve->GetParameter(2));
+  float rgev(mu>200?10:5);
+  float var_plateau_f(floor((mu+3*sigma+5)/rgev)*rgev);
+  if(!dofit) var_plateau_f = fabs(minfit);
   TString den_plateau(den), var_plateau(RoundNumber(var_plateau_f, 0));
   den_plateau += ("&&"+var+">"+var_plateau);
   Efficiency(data, den_plateau, num, effic, errup, errdown);
@@ -495,7 +543,7 @@ void PlotTurnOn(TChain *data, TString var, int nbins, double minx, double maxx, 
   // 98th percentile of Gaussian from Wolfram Alpha
   float p98(fitCurve->GetParameter(1)+2.05*fitCurve->GetParameter(2));
   float eplateau(fitCurve->GetParError(0)*100);
-  if(eplateau<0.1) cout<<"Error on plateau "<<eplateau<<"%"<<endl;
+  if(eplateau<0.1 && dofit) cout<<"Error on plateau "<<eplateau<<"%"<<endl;
   epsi.ToLower();
   // TString fitpar("Plateau "+epsi+"  = ("+RoundNumber(fitCurve->GetParameter(0)*100,1)+" #pm "+
   // 		 RoundNumber(eplateau,1)+")%");
@@ -514,11 +562,11 @@ void PlotTurnOn(TChain *data, TString var, int nbins, double minx, double maxx, 
 
   // Drawing CMS preliminary
   label.SetNDC();  label.SetTextAlign(11); label.SetTextSize(0.045); 
-  if(dofit) label.DrawLatex(0.13, 0.93, "#font[61]{CMS} #scale[0.8]{#font[52]{Preliminary}}");
+  if(isData) label.DrawLatex(0.13, 0.93, "#font[61]{CMS} #scale[0.8]{#font[52]{Preliminary}}");
   else label.DrawLatex(0.13, 0.93, "#font[61]{CMS} #scale[0.8]{#font[52]{Simulation}}");
   // Drawing luminosity
   label.SetTextAlign(31); 
-  if(dofit) label.DrawLatex(0.85, 0.93, "42 pb^{-1} (13 TeV)");
+  if(isData) label.DrawLatex(0.85, 0.93, "42 pb^{-1} (13 TeV)");
   else label.DrawLatex(0.85, 0.93, "Spring15 t#bar{t}");
 
   can.SaveAs(pname);
