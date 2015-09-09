@@ -126,5 +126,6 @@ double intGaus(double mean, double sigma, double minX, double maxX);
 double calcKappa(std::vector<std::vector<float> > &entries, std::vector<std::vector<float> > &weights,
 		 std::vector<float> &powers, float &mSigma, float &pSigma, bool do_data=false, 
 		 bool verbose=false, bool do_plot=false, int nrep=100000);
+float Efficiency(float den, float num, float &errup, float &errdown);
 
 #endif

@@ -26,6 +26,7 @@
 #include "TMath.h"
 #include "TRandom3.h"
 #include "TStyle.h"
+#include "TEfficiency.h"
 
 #include "styles.hpp"
 #include "utilities.hpp"
@@ -1025,5 +1026,20 @@ double calcKappa(vector<vector<float> > &entries, vector<vector<float> > &weight
                   <<". Mode = "<<mode<<". Median = "<<median<<endl;
 
   return stdval;
+}
+
+float Efficiency(float num, float den, float &errup, float &errdown){
+  if(den<=0){cout<<"Denominator is "<<den<<". Exiting"<<endl; return -1.;}
+
+  TH1D hnum("hnum","",1,0,1);
+  hnum.SetBinContent(1,num);
+  TH1D hden("hden","",1,0,1);
+  hden.SetBinContent(1,den);
+
+  TEfficiency heff(hnum, hden);
+
+  errup = heff.GetEfficiencyErrorUp(1); 
+  errdown = heff.GetEfficiencyErrorLow(1);
+  return num/den;
 }
 

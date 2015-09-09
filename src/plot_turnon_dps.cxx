@@ -27,11 +27,12 @@
 #include "utilities_macros.hpp"
 
 namespace  {
-  bool do_lep = true;
+  bool do_si = true;
+  bool do_lep = false;
   bool do_dps = false;
   bool do_ht = false;
   bool do_met = false;
-  TString plot_type = ".eps";
+  TString plot_type = ".pdf";
 }
 
 using namespace std;
@@ -46,6 +47,7 @@ void PlotTurnOn(TChain *data, TString var, int nbins, double minx, double maxx, 
 TString Efficiency(TChain *data, TString den, TString num, float &effic, float &errup, float &errdown);
 
 int main(){ 
+
   styles style("HLTStyle"); style.setDefaultStyle();
   gStyle->SetPadTickY(0);
 
@@ -59,6 +61,54 @@ int main(){
   TChain c_el("tree"); c_el.Add(folder+"*SingleElectron*");
   TChain c_lep("tree"); c_lep.Add(folder+"*Single*");
   TChain c_all("tree"); c_all.Add(folder+"alldata/*root");
+
+  if(do_si){
+    float lmin(25), lmax(300);
+    int lbins(static_cast<int>((lmax-lmin)/12.5));
+
+    // TM turn-ons IsoMu20
+    lmin = 0; lmax = 100; lbins = static_cast<int>((lmax-lmin)/2);
+    PlotTurnOn(&c_tt, "Max$(mus_pt*(mus_sigid&&mus_miniso<0.2&&mus_tru_tm))-0.1", lbins,lmin,lmax, 
+    	       "#mu_{medium, miniso} p_{T}","1", "trig[18]","TM medium #mu, I_{mini} < 0.2", 
+	       "IsoMu20",-50,false);
+    PlotTurnOn(&c_tt, "Max$(mus_pt*(mus_sigid&&mus_reliso<0.12&&mus_tru_tm))-0.1", lbins,lmin,lmax, 
+    	       "#mu_{medium, reliso} p_{T}","1", "trig[18]","TM medium #mu, I_{R=0.4} < 0.12", 
+	       "IsoMu20",-50,false);
+    PlotTurnOn(&c_tt, "Max$(mus_pt*(mus_sigid&&mus_reliso<0.2&&mus_tru_tm))-0.1", lbins,lmin,lmax, 
+    	       "#mu_{medium, reliso} p_{T}","1", "trig[18]","TM medium #mu, I_{R=0.4} < 0.2", 
+	       "IsoMu20",-50,false);
+
+    float effic, errup, errdown;
+    Efficiency(&c_tt, "Max$(mus_pt*(mus_sigid&&mus_tru_tm&&mus_miniso<0.2))>50","trig[18]",effic, errup, errdown);
+    Efficiency(&c_tt, "Max$(mus_pt*(mus_sigid&&mus_tru_tm&&mus_miniso<0.2))>50&&ht>500","trig[18]",effic, errup, errdown);
+    Efficiency(&c_tt, "Max$(mus_pt*(mus_sigid&&mus_tru_tm&&mus_miniso<0.2))>50&&ht>1000","trig[18]",effic, errup, errdown);
+    Efficiency(&c_tt, "Max$(mus_pt*(mus_sigid&&mus_tru_tm&&mus_miniso<0.2))>50&&ht>1500","trig[18]",effic, errup, errdown);
+
+    Efficiency(&c_tt, "Max$(mus_pt*(mus_sigid&&mus_tru_tm&&mus_reliso<0.2))>50","trig[18]",effic, errup, errdown);
+    Efficiency(&c_tt, "Max$(mus_pt*(mus_sigid&&mus_tru_tm&&mus_reliso<0.2))>50&&ht>500","trig[18]",effic, errup, errdown);
+    Efficiency(&c_tt, "Max$(mus_pt*(mus_sigid&&mus_tru_tm&&mus_reliso<0.2))>50&&ht>1000","trig[18]",effic, errup, errdown);
+    Efficiency(&c_tt, "Max$(mus_pt*(mus_sigid&&mus_tru_tm&&mus_reliso<0.2))>50&&ht>1500","trig[18]",effic, errup, errdown);
+
+    Efficiency(&c_tt, "Max$(mus_pt*(mus_sigid&&mus_tru_tm&&mus_reliso<0.12))>50","trig[18]",effic, errup, errdown);
+    Efficiency(&c_tt, "Max$(mus_pt*(mus_sigid&&mus_tru_tm&&mus_reliso<0.12))>50&&ht>500","trig[18]",effic, errup, errdown);
+    Efficiency(&c_tt, "Max$(mus_pt*(mus_sigid&&mus_tru_tm&&mus_reliso<0.12))>50&&ht>1000","trig[18]",effic, errup, errdown);
+    Efficiency(&c_tt, "Max$(mus_pt*(mus_sigid&&mus_tru_tm&&mus_reliso<0.12))>50&&ht>1500","trig[18]",effic, errup, errdown);
+
+    float htmin(175), htmax(1000);
+    int htbins(static_cast<int>((htmax-htmin)/12.5));
+    htmin = 0; htmax = 2400; htbins = static_cast<int>((htmax-htmin)/200);
+    PlotTurnOn(&c_tt, "ht_reliso", htbins,htmin,htmax, "H_{T}",
+    	       "Max$(mus_pt*(mus_sigid&&mus_tru_tm&&mus_reliso<0.12))>50", 
+	       "trig[18]","n_{#mu,50,reliso} #geq 1", "IsoMu20", -500,false);
+    PlotTurnOn(&c_tt, "ht", htbins,htmin,htmax, "H_{T}",
+    	       "Max$(mus_pt*(mus_sigid&&mus_tru_tm&&mus_miniso<0.2))>50", 
+	       "trig[18]","n_{#mu,50,miniso} #geq 1", "IsoMu20", -500,false);
+    PlotTurnOn(&c_tt, "ht_reliso", htbins,htmin,htmax, "H_{T}",
+    	       "Max$(mus_pt*(mus_sigid&&mus_tru_tm&&mus_reliso<0.2))>50", 
+	       "trig[18]","n_{#mu,50,reliso} #geq 1", "IsoMu20", -500,false);
+
+
+  }
 
   if(do_lep){
     float lmin(25), lmax(300);
@@ -429,20 +479,6 @@ int main(){
 
 }
 
-TString format_tag(TString tag){
-  tag.ReplaceAll(".","");
-  tag.ReplaceAll("(",""); tag.ReplaceAll("$","");  tag.ReplaceAll(")","");
-  tag.ReplaceAll("[",""); tag.ReplaceAll("]",""); tag.ReplaceAll("||","_");
-  tag.ReplaceAll("/","_"); tag.ReplaceAll("*",""); tag.ReplaceAll("&&","_");
-  tag.ReplaceAll(">=","ge"); tag.ReplaceAll("<=","se");
-  tag.ReplaceAll(">","g"); tag.ReplaceAll("<","s"); tag.ReplaceAll("=","");
-  tag.ReplaceAll("+",""); tag.ReplaceAll("&","");
-  tag.ReplaceAll("!","not");
-  tag.ReplaceAll("#",""); tag.ReplaceAll("{",""); tag.ReplaceAll("}","");
-
-  return tag;
-}
-
 void PlotTurnOn(TChain *data, TString var, int nbins, double minx, double maxx, TString xtitle, 
 		TString den, TString num, TString title, TString ytitle, float minfit, bool isData){
   styles style("HLTStyle"); gStyle->SetPadTickY(0);
@@ -496,8 +532,11 @@ void PlotTurnOn(TChain *data, TString var, int nbins, double minx, double maxx, 
   histo[0]->SetLineWidth(2);
   histo[0]->Draw("same");
 
-  pname = "plots/turnon_"+format_tag(var)+"_"+format_tag(num)+"_"+format_tag(den);
+  pname = "plots/turnon_"+format_tag(var)+"_";
+  pname += maxx; pname += "_"+format_tag(num)+"_"+format_tag(den);
   if(minfit>0) {pname += "_min"; pname += minfit; }
+  if(isData) pname += "_data";
+  else pname += "_mc";
   pname += plot_type;
   pname.ReplaceAll("_json_golden_pass","");
 
