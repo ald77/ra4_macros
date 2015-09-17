@@ -36,7 +36,7 @@ using namespace std;
 
 void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString luminosity, 
                         TString filetype, TString namestyle, TString dir, bool doRatio){
-  bool showcuts(false);
+  bool showcuts(true);
   if (doRatio) namestyle = "CMSPaper";
   styles style(namestyle);
   if(namestyle.Contains("CMSPaper")) style.nDivisions = 706;
@@ -226,7 +226,7 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
           //histo[0][var][sam]->SetMarkerColor(Samples[isam].color);
           histo[0][var][sam]->SetMarkerSize(1.2);
           histo[0][var][sam]->SetLineStyle(abs(Samples[isam].style));
-          histo[0][var][2]->SetFillColorAlpha(Samples[2].color, 0.5);
+          if(Nsam>=3) histo[0][var][2]->SetFillColorAlpha(Samples[2].color, 0.5);
         }
         double maxval(histo[0][var][sam]->GetMaximum());
         if(maxhisto < maxval)  maxhisto = maxval;
@@ -288,7 +288,7 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
         unsigned ndatasam(0);
         for(unsigned sam(Nsam-1); sam < Nsam; sam--) {
           int isam = vars[var].samples[sam];
-          if (Samples[isam].isData) {
+          if (Samples[isam].isData || (Samples[isam].mcerr && sam==0)) {
             if (ndatasam==0) hdata = static_cast<TH1D*>(histo[0][var][sam]->Clone());
             else hdata->Add(histo[0][var][sam]); //in case the different PDs are put in as separate samples
             ndatasam++;
@@ -387,6 +387,8 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
         } else{
           leg[ileg].SetX1NDC(0.24); leg[ileg].SetX2NDC(0.7);
           leg[ileg].SetTextSize(0.75*style.LegendSize);
+	  if(vars[var].varname.Contains("tks")) leghisto +=  "[N_{tks} = " + RoundNumber(nentries[sam],1) + ", from N_{events} = "
+            +RoundNumber(vars[var].nevents.at(sam),1)+"]";
         }
       }
       
@@ -434,7 +436,7 @@ void plot_2D_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString 
   can.cd();
   TPad *pad(NULL);
   pad = static_cast<TPad *>(can.cd());
-
+  pad->SetBottomMargin(0.02);
   // Reading ntuples
   vector<TChain *> chain;
   for(unsigned sam(0); sam < Samples.size(); sam++){
@@ -519,6 +521,7 @@ void plot_2D_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString 
 TString cuts2title(TString title){
   if(title=="1") title = "";
   title.ReplaceAll("1==1", "Full Sample");
+  title.ReplaceAll("el_tks_chg*lep_charge<0", "OS");title.ReplaceAll("mu_tks_chg*lep_charge<0", "OS");title.ReplaceAll("had_tks_chg*lep_charge<0", "OS");
   title.ReplaceAll("Sum$(abs(mc_id)==11)","n^{true}_{e}");
   title.ReplaceAll("Sum$(abs(mc_id)==13)","n^{true}_{#mu}");
   title.ReplaceAll("Sum$(genels_pt>0)", "n^{true}_{e}");
@@ -547,7 +550,8 @@ TString cuts2title(TString title){
 
   title.ReplaceAll("onmet", "MET^{on}"); title.ReplaceAll("onht", "H_{T}^{on}");  
   title.ReplaceAll("njets30","n_{jets}^{30}"); 
-  title.ReplaceAll("els_pt","p^{e}_{T}");title.ReplaceAll("mus_pt","p^{#mu}_{T}");title.ReplaceAll("jets_pt","p^{jet}_{T}");
+  title.ReplaceAll("els_pt","p^{e}_{T}"); title.ReplaceAll("mus_pt","p^{#mu}_{T}");
+  title.ReplaceAll("(fjets_pt*cosh(fjets_eta))","p_{fatjet}"); title.ReplaceAll("fjets_pt","p^{fatjet}_{T}"); title.ReplaceAll("jets_pt","p^{jet}_{T}");
   title.ReplaceAll("mus_reliso","RelIso"); title.ReplaceAll("els_reliso","RelIso");
   title.ReplaceAll("mus_miniso_tr15","MiniIso"); title.ReplaceAll("els_miniso_tr15","MiniIso");
   title.ReplaceAll("njets","n_{jets}");title.ReplaceAll("abs(lep_id)==13&&","");
@@ -561,7 +565,10 @@ TString cuts2title(TString title){
   title.ReplaceAll("nbl","n_{b,l}");
   title.ReplaceAll("mj", " M_{J}");
   
-
+  title.ReplaceAll("el_tks_mt", "Track m_{T}"); title.ReplaceAll("mu_tks_mt", "Track m_{T}"); title.ReplaceAll("had_tks_mt", "Track m_{T}");
+  title.ReplaceAll("el_tks_pt", "Track p_{T}"); title.ReplaceAll("mu_tks_pt", "Track p_{T}"); title.ReplaceAll("had_tks_pt", "Track p_{T}");
+  title.ReplaceAll("el_tks_miniso", "Track miniso"); title.ReplaceAll("mu_tks_miniso", "Track miniso"); title.ReplaceAll("had_tks_miniso", "Track miniso");
+  title.ReplaceAll("el_tks_chg_miniso", "Track charged miniso"); title.ReplaceAll("mu_tks_chg_miniso", "Track charged miniso"); title.ReplaceAll("had_tks_chg_miniso", "Track charged miniso"); 
   return title;
 }
 
@@ -670,6 +677,7 @@ void hfeats::format_tag(){
   if(tagname!="") tag.Prepend(tagname+"_");
 
   tag.ReplaceAll("1==1", "full_sample");
+  tag.ReplaceAll("el_tks_chg*lep_charge<0", "OS");tag.ReplaceAll("mu_tks_chg*lep_charge<0", "OS");tag.ReplaceAll("had_tks_chg*lep_charge<0", "OS");
   tag.ReplaceAll(".","");
   tag.ReplaceAll("(",""); tag.ReplaceAll("$","");  tag.ReplaceAll(")","");
   tag.ReplaceAll("[",""); tag.ReplaceAll("]",""); tag.ReplaceAll("||","_");
@@ -703,6 +711,12 @@ void hfeats::format_tag(){
   tag.ReplaceAll("mintks_mini_ch,tks_r02_ch","rel_02_mini_iso_chg");
   tag.ReplaceAll("mintks_mini_ch,tks_r05_ch","rel_05_mini_iso_chg");
   tag.ReplaceAll("tks_mini_ch","rel_untruncated_mini_iso_chg");
+
+ 
+  tag.ReplaceAll("el_tks_mt", "Track_mT"); tag.ReplaceAll("mu_tks_mt", "Track_mT"); tag.ReplaceAll("had_tks_mt", "Track_mT");
+  tag.ReplaceAll("el_tks_pt", "Track_pT"); tag.ReplaceAll("mu_tks_pt", "Track_pT"); tag.ReplaceAll("had_tks_pt", "Track_pT");
+  tag.ReplaceAll("el_tks_miniso", "Track_miniso"); tag.ReplaceAll("mu_tks_miniso", "Track_miniso"); tag.ReplaceAll("had_tks_miniso", "Track_miniso");
+  tag.ReplaceAll("el_tks_chg_miniso", "Track_chg_miniso"); tag.ReplaceAll("mu_tks_chg_miniso", "Track_chg_miniso"); tag.ReplaceAll("had_tks_chg_miniso", "Track_chg_miniso"); 
   
   
 }
