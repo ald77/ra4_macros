@@ -217,6 +217,10 @@ void DrawPie(const pfeats &pfeat, const vector<sfeats> &samples, const vector<TC
   pie.SetLabelFormat("");
   pie.SetCircle(0.5, 0.5, 0.49);
   pie.Draw();
+  pie.SetLabelFormat("%perc");
+  pie.SetValueFormat("%0.1f");
+  pie.Draw();
+  c.Print("plots/pies/perc_"+name+plot_type);
   c.Print("plots/pies/plain_"+name+plot_type);
 }
 

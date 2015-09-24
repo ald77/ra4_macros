@@ -25,17 +25,18 @@
 #include "utilities_macros.hpp"
 
 namespace  {
-  TString ntuple_date("2015_05_25");
+  TString ntuple_date("2015_09_14");
   TString lumi("10");
-  int method(1);
   int nrep = 100000;    // Fluctuations of Gamma distribution
   bool do_2l(false);  // Calculate dilepton closure stat uncertainty
   bool do_1ltt(false); // Kappa just for 1l ttbar
   bool do_2ltt(false); // Kappa just for 2l ttbar
   bool do_ttbar(true); // Include ttbar in kappa
-  bool do_other(false); // Include other in kappa
+  bool do_mj200(false);
   TString plot_type=".pdf";
   bool do_sigma_avError(true); 
+
+  TString mjthresh("400"); 
 }
 
 using namespace std;
@@ -49,19 +50,25 @@ int main(int argc, char *argv[]){
   time(&begtime);
 
   int c(0);
-  while((c=getopt(argc, argv, "m:n:to"))!=-1){
+  while((c=getopt(argc, argv, "m:n:to12j"))!=-1){
     switch(c){
     case 'm':
-      method=atoi(optarg);
+      mjthresh=optarg;
       break;
     case 'n':
       nrep=atoi(optarg);
       break;
     case 't':
-      do_ttbar = false;
+      do_ttbar = true;
       break;
-    case 'o':
-      do_other = false;
+    case '1':
+      do_1ltt = true;
+      break;
+    case '2':
+      do_2ltt = true;
+      break;
+    case 'j':
+      do_mj200 = true;
       break;
     default:
       break;
@@ -71,48 +78,33 @@ int main(int argc, char *argv[]){
   styles style("RA4long"); //style.LabelSize = 0.05;
   style.setDefaultStyle();
 
-  TString folder="/cms5r0/ald77/archive/"+ntuple_date+"/skim/";
-  TString folder_ns="/cms5r0/ald77/archive/"+ntuple_date+"/";
+  TString folder="/cms5r0/rohan/archive/"+ntuple_date+"/skim/";
+  TString folder_1l="/cms5r0/rohan/archive/"+ntuple_date+"/skim_1l/";
+  TString folder_2l="/cms5r0/rohan/archive/"+ntuple_date+"/skim_2l/";
+  TString folder_genht="/cms5r0/rohan/archive/"+ntuple_date+"/skim_genht/";
 
   vector<TString> s_tt;
-  s_tt.push_back(folder+"*_TTJet*");
-  vector<TString> s_singlet;
-  s_singlet.push_back(folder+"*_T*t-channel*");
-  s_singlet.push_back(folder+"*_T*s-channel*");
-  s_singlet.push_back(folder+"*_T*W-channel*");
-  vector<TString> s_other;
-  s_other.push_back(folder+"*QCD_HT*");
-  s_other.push_back(folder+"*_ZJet*");
-  s_other.push_back(folder+"*DY*");
-  s_other.push_back(folder+"*WH_HToBB*");
-  s_other.push_back(folder+"*TTW*");
-  s_other.push_back(folder+"*TTZ*");
-  s_other.push_back(folder+"*_WJets*");
-
-  // Reading ntuples
-  vector<sfeats> Samples; 
-  if(do_1ltt) Samples.push_back(sfeats(s_tt, "t#bar{t}, 1 l", ra4::c_tt_1l, 1,"ntruleps==1"));
-  else {
-    if(do_2ltt) Samples.push_back(sfeats(s_tt, "t#bar{t}, 2 l", ra4::c_tt_2l,1,"ntruleps>=2"));
-    else {
-      if(do_ttbar) Samples.push_back(sfeats(s_tt, "t#bar{t}, 2 l", ra4::c_tt_2l,1));
-      if(do_other){
-	Samples.push_back(sfeats(s_singlet, "Single t", ra4::c_singlet));
-	Samples.push_back(sfeats(s_other, "Other", ra4::c_other, 1)); 
-      }
-    }
+  if(do_1ltt) {
+    s_tt.push_back(folder+"*_TTJets*SingleLept*");
+    s_tt.push_back(folder_1l+"*_TTJets*HT*");
   }
+  else if(do_2ltt){
+    s_tt.push_back(folder+"*_TTJets*DiLept*");
+    s_tt.push_back(folder_2l+"*_TTJets*HT*");
+  }
+  else{
+    s_tt.push_back(folder+"*_TTJets*HT*");
+    s_tt.push_back(folder_genht+"*_TTJets*Lept*");
+  }
+  // Reading ntuples
+  vector<sfeats> Samples;
+  Samples.push_back(sfeats(s_tt, "t#bar{t}", 46,1));
+  
   // Adding non-skimmed samples
   vector<int> ra4_sam, ra4_sam_ns;
   unsigned nsam(Samples.size());
   for(unsigned sam(0); sam < nsam; sam++){
     ra4_sam.push_back(sam);
-    ra4_sam_ns.push_back(nsam+sam);
-    vector<TString> sam_files = Samples[sam].file;
-    for(unsigned ifile(0); ifile < sam_files.size(); ifile++)
-      sam_files[ifile].ReplaceAll(folder, folder_ns);
-    Samples.push_back(sfeats(sam_files, Samples[sam].label, Samples[sam].color, Samples[sam].style,
-			     Samples[sam].cut));
   } // Loop over samples
 
   // Reading ntuples
@@ -123,10 +115,6 @@ int main(int argc, char *argv[]){
       chain[sam]->Add(Samples[sam].file[insam]);
   }
 
-  
-
-  TString mjthresh("400");
-  if(method==1) mjthresh = "600";
   float mSigma, pSigma;
   vector<float> powersk;
   vector<TString> cuts;
@@ -138,11 +126,12 @@ int main(int argc, char *argv[]){
     powersk.push_back(1);  cuts.push_back("mj>"+mjthresh);   // R4
   }
 
-  TString baseline("(nmus+nels)==1&&ht>500&&met>200&&nbm>=1");
+  TString baseline("ht>500&&met>200&&(nmus+nels)==1");
+  if(do_mj200) baseline += "&&mj>200";
   if(do_2l) baseline = "(nmus+nels)==2&&ht>500&&met>200&&njets>=6&&nbm>=1";
-  vector<TString> metcuts, njcuts, nbcuts, metnames, njnames;
-  metcuts.push_back("mj<=400");
-  metcuts.push_back("mj>400");
+  vector<TString> mjcuts, njcuts, nbcuts, mjnames, njnames;
+  mjcuts.push_back("mj<="+mjthresh);
+  mjcuts.push_back("mj>"+mjthresh);
   if(!do_2l){
     njcuts.push_back("njets==4");
     njcuts.push_back("njets==5");
@@ -150,8 +139,10 @@ int main(int argc, char *argv[]){
     njcuts.push_back("njets==7");
     njcuts.push_back("njets==8");
     njcuts.push_back("njets==9");
-    njcuts.push_back("njets>=10");
-     //njcuts.push_back("njets>=11");
+    njcuts.push_back("njets==10");
+    njcuts.push_back("njets>=11");
+    //njcuts.push_back("njets==11");
+    //    njcuts.push_back("njets>=12");
   } else {
     njcuts.push_back("njets<=7");
     njcuts.push_back("njets>=8");
@@ -159,21 +150,16 @@ int main(int argc, char *argv[]){
   if(do_2l) nbcuts.push_back("nbm<=2");
   else {
     nbcuts.push_back("nbm==1");
-    if(method==1 || method==2) nbcuts.push_back("nbm>=2");
-    else {
-      nbcuts.push_back("nbm==2");
-      nbcuts.push_back("nbm>=3");
-      nbcuts.push_back("nbm>=2");
-    }
+    nbcuts.push_back("nbm>=2");
+    //nbcuts.push_back("nbm==2");
+    //nbcuts.push_back("nbm>=3");   
   }
-  for(unsigned imet(0); imet<metcuts.size(); imet++){
-    metnames.push_back(metcuts[imet]);
-    metnames[imet].ReplaceAll("mj","M_{J}");
-    metnames[imet].ReplaceAll("<="," #leq ");
-    metnames[imet].ReplaceAll("=="," = ");
-    metnames[imet].ReplaceAll(">"," > ");
-    //if(!metnames[imet].Contains("-")) metnames[imet] += "+";
-    //metnames[imet] = "#splitline{MET}{"+metnames[imet]+"}";
+  for(unsigned imj(0); imj<mjcuts.size(); imj++){
+    mjnames.push_back(mjcuts[imj]);
+    mjnames[imj].ReplaceAll("mj","M_{J}");
+    mjnames[imj].ReplaceAll("<="," #leq ");
+    mjnames[imj].ReplaceAll("=="," = ");
+    mjnames[imj].ReplaceAll(">"," > ");
   }
 
   for(unsigned inj(0); inj<njcuts.size(); inj++){
@@ -181,14 +167,12 @@ int main(int argc, char *argv[]){
     njnames[inj].ReplaceAll("njets","n_{j}");
     njnames[inj].ReplaceAll(">="," #geq ");
     njnames[inj].ReplaceAll("=="," = ");
-    //njnames[inj] = "#splitline{NJ}{"+njnames[inj]+"}";
   }
 
-  float minh(0), maxh(metcuts.size()*njcuts.size()), wtot(maxh-minh);
-  float wmet(wtot/static_cast<float>(metcuts.size()));
-  float wnj(wmet/static_cast<float>(njcuts.size()));
+  float minh(0), maxh(mjcuts.size()*njcuts.size()), wtot(maxh-minh);
+  float wmj(wtot/static_cast<float>(mjcuts.size()));
+  float wnj(wmj/static_cast<float>(njcuts.size()));
   float wnb(wnj/static_cast<float>(nbcuts.size()+4));
-  if(method==3) wnb = wmet/static_cast<float>(nbcuts.size()+4-1);
   // These vectors have indices vx[4][nbsize][njsize*metsize]
   // The first index is: 0 -> k MC, 1 -> k data, 2 -> N4 MC, 3 -> N4 data
   vector<vector<vector<double> > > vx, vy, vexl, vexh, veyl, veyh;
@@ -213,27 +197,20 @@ int main(int argc, char *argv[]){
   time(&begtime);
   
   TString totcut("");
-  for(unsigned imet(0); imet<metcuts.size(); imet++){
+  for(unsigned imj(0); imj<mjcuts.size(); imj++){
     for(unsigned inj(0); inj<njcuts.size(); inj++){
       for(unsigned inb(0); inb<nbcuts.size(); inb++){
-	if(method==3 && ((imet==0&&inb==3) || (imet==1&& (inb==1||inb==2)))) if(!do_2l) continue;
-	//if(!(inb==3&&imet==1&&inj==1)) continue; // Calculate just one kappa
 	vector<vector<float> > entries;
 	vector<vector<float> > weights;
 	for(unsigned obs(0); obs < powersk.size(); obs++) {
 	  entries.push_back(vector<float>());
 	  weights.push_back(vector<float>());
-	  // totcut = lumi+"*weight*("+baseline+"&&"+nbcuts[inb]+"&&"+metcuts[imet]+"&&"+cuts[obs];
-	  // if(method==1 || obs%2==1) totcut += "&&"+njcuts[inj];
-	  // totcut += ")";
-	  // cout << totcut<<endl;
 	  float yield_singlet(0);
 	  for(unsigned sam(0); sam < ra4_sam.size(); sam++) {
-	    totcut = (lumi+"*weight*("+baseline+"&&"+nbcuts[inb]+"&&"+metcuts[imet]+"&&"+cuts[obs]+
+	    totcut = (lumi+"*weight*("+baseline+"&&"+nbcuts[inb]+"&&"+mjcuts[imj]+"&&"+cuts[obs]+
 		      "&&"+Samples[ra4_sam[sam]].cut);
-	    if(method==1 || obs%2==1) totcut += "&&"+njcuts[inj];
-	    totcut += ")";
-	    //cout << totcut<<endl;
+	    totcut += "&&"+njcuts[inj]+")";
+	    cout << totcut<<endl;
 	    double yield(0.), sigma(0.), avWeight(1.);
 	    int Nentries(0);
 	    Nentries = getYieldErr(*chain[ra4_sam[sam]], totcut, yield, sigma);
@@ -248,10 +225,10 @@ int main(int argc, char *argv[]){
 	      if(do_sigma_avError) entries[obs].push_back(yield*yield/pow(sigma,2));	    
 	      else entries[obs].push_back(Nentries);	    
 	    }
-	    if(Nentries==0){ // If no entries, find averate weight in signal bin
+	    if(Nentries==0){ // If no entries, find average weight in signal bin
 	      totcut = (lumi+"*weight*("+baseline+"&&"+cuts[obs]+")");
 	      Nentries = getYieldErr(*chain[ra4_sam[sam]], totcut, yield, sigma);
-	      // If no entries, find averate weight in baseline region
+	      // If no entries, find average weight in baseline region
 	      if(Nentries==0){
 		totcut = (lumi+"*weight*("+baseline+")");
 		Nentries = getYieldErr(*chain[ra4_sam[sam]], totcut, yield, sigma);
@@ -270,8 +247,7 @@ int main(int argc, char *argv[]){
 	  if(do_2l && idata>=2) continue;
 	  double kappa(0);
 	  kappa = calcKappa(entries, weights, powersk, mSigma, pSigma, (idata%2)==1, false);  
-	  float xpoint = inj*wnj+imet*wmet+(inb+2)*wnb;
-	  if(method==3 && inb==3) xpoint = inj*wnj+imet*wmet+(inb)*wnb;
+	  float xpoint = inj*wnj+imj*wmj+(inb+2)*wnb;
 	  vx[idata][inb].push_back(xpoint);
 	  vy[idata][inb].push_back(kappa);
 	  vexl[idata][inb].push_back(0);
@@ -285,25 +261,18 @@ int main(int argc, char *argv[]){
     } // Loop over met cuts
   } // Loop over nj cuts
 
-
   vector<unsigned> ind(nbcuts.size(),0);
   if(do_2l) {
-    for(unsigned imet(0); imet<metcuts.size(); imet++){
+    for(unsigned imj(0); imj<mjcuts.size(); imj++){
       for(unsigned inj(0); inj<njcuts.size(); inj++){
 	unsigned inb(0);
-	if(method==3 && ((imet==0&&inb==3) || (imet==1&& (inb==1||inb==2)))) continue;
 	float MC(vy[0][inb][ind[inb]]), Data(vy[1][inb][ind[inb]]);
 	float epMC(veyh[0][inb][ind[inb]]), emMC(veyl[0][inb][ind[inb]]);
 	float epData(veyh[1][inb][ind[inb]]), emData(veyl[1][inb][ind[inb]]);
 	float epTotal(sqrt(pow(epMC/MC,2)+pow(epData/Data,2))), emTotal(sqrt(pow(emMC/MC,2)+pow(emData/Data,2)));
 
-	metcuts[imet].ReplaceAll("met>200&&","");
-	TString cutname = njcuts[inj]+", "+metcuts[imet];
-	if(method==3) cutname += ", "+nbcuts[inb];
-	// cutname.ReplaceAll("njets","n_{\\rm j}");
-	// cutname.ReplaceAll("<=","\\leq "); cutname.ReplaceAll(">=","\\geq "); 
-	// cutname.ReplaceAll("met","{\\rm MET}"); cutname.ReplaceAll("nbm","n_b");
-	// cutname.ReplaceAll("==","="); 
+	mjcuts[imj].ReplaceAll("mj>200&&","");
+	TString cutname = njcuts[inj]+", "+mjcuts[imj];
 
 	cout<<endl<<cutname<<": Data +"<<RoundNumber(epData*100,1,Data)<<"% -"<<RoundNumber(emData*100,1,Data)
 	    <<"%\t  MC +"<<RoundNumber(epMC*100,1,MC)<<"% -"<<RoundNumber(emMC*100,1,MC)
@@ -314,72 +283,10 @@ int main(int argc, char *argv[]){
     return 0;
   }
 
-  // /////////////////////// TABLE  ///////////////////////////
-  // int digits(1), digper(0);
-  // TString pname = "txt/kappa_method", cutname; pname += method;
-  // if(do_1ltt) pname += "_1ltt";
-  // else {
-  //   if(do_2ltt) pname += "_2ltt";
-  //   else {
-  //     if(do_ttbar) pname += "_tt";
-  //     if(do_other) {
-  // 	pname += "_other";
-  // 	if(t_other) pname += "t";
-  //     }
-  //   }
-  // }
-  // pname += ".tex";
-  // ifstream header("txt/header.tex");
-  // ifstream footer("txt/footer.tex");
-  // ofstream file(pname);
-  // file<<header.rdbuf();
-  // file << "{\\renewcommand{\\arraystretch}{1.4}}"<<endl;
-  // file << "\n\\begin{tabular}[tbp!]{ l | rc | rc | r}\\hline\\hline\n";
-  // file << " \\multicolumn{1}{c|}{${\\cal L} = "<<lumi<<"$ fb$^{-1}$} ";
-  // file << " & $N_{\\rm R2}\\frac{N_{\\rm R3}}{N_{\\rm R1}}$ & Data stat. [\\%] \n";
-  // file << "& $\\kappa^{\\rm MC}$ & MC stat. [\\%] & \\multicolumn{1}{c}{$\\hat{N}_{\\rm R4}$} \\\\ \\hline\n";
-  // for(unsigned inj(0); inj<njcuts.size(); inj++){
-  //   for(unsigned imet(0); imet<metcuts.size(); imet++){
-  //     for(unsigned inb(1); inb<nbcuts.size(); inb++){
-  // 	if(method==3 && ((imet==0&&inb==3) || (imet==1&& (inb==1||inb==2)))) continue;
-  // 	metcuts[imet].ReplaceAll("met>200&&","");
-  // 	cutname = "$"+njcuts[inj]+", "+metcuts[imet];
-  // 	if(method==3) cutname += ", "+nbcuts[inb];
-  // 	cutname += "$";
-  // 	cutname.ReplaceAll("njets","n_{\\rm j}");
-  // 	cutname.ReplaceAll("<=","\\leq "); cutname.ReplaceAll(">=","\\geq "); 
-  // 	cutname.ReplaceAll("met","{\\rm MET}"); cutname.ReplaceAll("nbm","n_b");
-  // 	cutname.ReplaceAll("==","="); 
-  // 	float Kappa(vy[0][inb][ind[inb]]), N4(vy[3][inb][ind[inb]]);
-  // 	float epKappa(veyh[0][inb][ind[inb]]), emKappa(veyl[0][inb][ind[inb]]);
-  // 	float epN4(veyh[3][inb][ind[inb]]), emN4(veyl[3][inb][ind[inb]]);
-  // 	file << cutname << " \t& $" <<RoundNumber(N4,digits)<<"^{+"<<RoundNumber(epN4,digits)
-  // 	     <<"}_{-"<<RoundNumber(emN4,digits)<<"}$ & ${}^{+"<<RoundNumber(epN4*100,digper,N4)
-  // 	     <<"}_{-"<<RoundNumber(emN4*100,digper,N4)<<"}$ & $"
-  // 	     <<RoundNumber(Kappa,digits+1)<<"^{+"<<RoundNumber(epKappa,digits+1)
-  // 	     <<"}_{-"<<RoundNumber(emKappa,digits+1)<<"}$ & ${}^{+"<<RoundNumber(epKappa*100,digper,Kappa)
-  // 	     <<"}_{-"<<RoundNumber(emKappa*100,digper,Kappa)<<"}$  & $"
-  // 	     <<RoundNumber(N4*Kappa,digits)<<"^{+"<<RoundNumber(epN4*Kappa,digits)
-  // 	     <<"+"<<RoundNumber(N4*epKappa,digits)<<"}_{-"<<RoundNumber(emN4*Kappa,digits)
-  // 	     <<"-"<<RoundNumber(N4*emKappa,digits)<<"}$ \\\\"<<endl;
-  // 	ind[inb]++;
-  //     } // Loop over nb cuts
-  //   } // Loop over met cuts
-  //   if(inj==0) file<<"\\hline"<<endl;
-  // } // Loop over nj cuts
-
-
-  // file<< "\\hline\\hline\n\\end{tabular}"<<endl<<endl;
-  // /////////////////////// TABLE  ///////////////////////////
-  // file<<footer.rdbuf();
-  // file.close();
-  // cout<<endl<<"Written "<<pname<<endl;
-
-
-  TH1D histo("histo",cuts2title(baseline),njcuts.size()*metcuts.size(), minh, maxh);
-  for(unsigned imet(0); imet<metcuts.size(); imet++)
+  TH1D histo("histo",cuts2title(baseline),njcuts.size()*mjcuts.size(), minh, maxh);
+  for(unsigned imj(0); imj<mjcuts.size(); imj++)
     for(unsigned inj(0); inj<njcuts.size(); inj++)
-      histo.GetXaxis()->SetBinLabel(1+inj+imet*njcuts.size(), njnames[inj]);
+      histo.GetXaxis()->SetBinLabel(1+inj+imj*njcuts.size(), njnames[inj]);
   for(unsigned idata(0); idata<1; idata++)
     plotKappa(vx[idata], vy[idata], vexl[idata], vexh[idata], veyl[idata], veyh[idata], idata, histo, nbcuts);
 
@@ -460,8 +367,8 @@ void plotKappa(vector<vector<double> > &vx, vector<vector<double> > &vy, vector<
   leg.Draw();
   label.SetNDC(kTRUE); label.SetTextAlign(22); label.SetTextColor(1);
   TString cutname;
-  label.DrawLatex(0.37,0.03,"M_{J} #leq 400");
-  label.DrawLatex(0.73,0.03,"M_{J} > 400");
+  label.DrawLatex(0.37,0.03,"M_{J} #leq "+mjthresh);
+  label.DrawLatex(0.73,0.03,"M_{J} > "+mjthresh);
 
   TString pname = "plots/ratio_mt"; 
   if(do_1ltt) pname += "_1ltt";
@@ -469,16 +376,13 @@ void plotKappa(vector<vector<double> > &vx, vector<vector<double> > &vy, vector<
     if(do_2ltt) pname += "_2ltt";
     else {
       if(do_ttbar) pname += "_tt";
-      if(do_other) {
-	pname += "_other";
-      }
     }
   }
+  if(do_mj200) pname += +"_mj200";
   if(do_data) pname += "_data";
   else  pname += "_mc";
   pname += plot_type;
   if(do_pred) pname.ReplaceAll("kappa","npred");
   can.SaveAs(pname);
-
 }
 

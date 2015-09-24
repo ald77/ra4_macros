@@ -25,11 +25,11 @@
 #include "utilities_macros.hpp"
 
 namespace  {
-  bool do_rmt(true); 
+  bool do_rmt(true);
   bool do_rmj(!(do_rmt)); // if do_rmt is true, do_rmj is false and vice versa
-  TString ntuple_date("2015_05_25");
+  TString ntuple_date("2015_09_14");
   TString lumi("10");
-  int method(3);
+  int method(1);
   int nrep = 100000;    // Fluctuations of Gamma distribution
   bool do_2l(false);
   bool do_1ltt(false); // Kappa just for 1l ttbar
@@ -51,7 +51,7 @@ int main(int argc, char *argv[]){
   time(&begtime);
 
   int c(0);
-  while((c=getopt(argc, argv, "r:m:n:to"))!=-1){
+  while((c=getopt(argc, argv, "r:m:n:to12"))!=-1){
     switch(c){
     case 'r':
       if(strcmp(optarg,"mt")==0){ do_rmt = true; do_rmj = false; } 
@@ -68,6 +68,12 @@ int main(int argc, char *argv[]){
     case 't':
       do_ttbar = true;
       break;
+    case '1':
+      do_1ltt = true;
+      break;
+    case '2':
+      do_2ltt = true;
+      break;
     case 'o':
       do_other = true;
       break;
@@ -79,49 +85,39 @@ int main(int argc, char *argv[]){
   styles style("RA4"); //style.LabelSize = 0.05;
   style.setDefaultStyle();
 
-  TString folder, folder_ns;  
-  folder="/cms5r0/ald77/archive/"+ntuple_date+"/skim/";
-  folder_ns="/cms5r0/ald77/archive/"+ntuple_date+"/";
-  vector<TString> s_tt;
-  if(!(ntuple_date=="Spring15_Pow")) s_tt.push_back(folder+"*_TTJet*");
-  else s_tt.push_back(folder+"*_TT*");
-  vector<TString> s_singlet;
-  s_singlet.push_back(folder+"*_T*t-channel*");
-  s_singlet.push_back(folder+"*_T*s-channel*");
-  s_singlet.push_back(folder+"*_T*W-channel*");
-  vector<TString> s_other;
-  s_other.push_back(folder+"*QCD_HT*");
-  s_other.push_back(folder+"*_ZJet*");
-  s_other.push_back(folder+"*DY*");
-  s_other.push_back(folder+"*WH_HToBB*");
-  s_other.push_back(folder+"*TTW*");
-  s_other.push_back(folder+"*TTZ*");
-  s_other.push_back(folder+"*_WJets*");
+  TString folder="/cms5r0/rohan/archive/"+ntuple_date+"/skim/";
+  TString folder_1l="/cms5r0/rohan/archive/"+ntuple_date+"/skim_1l/";
+  TString folder_2l="/cms5r0/rohan/archive/"+ntuple_date+"/skim_2l/";
+  TString folder_genht="/cms5r0/rohan/archive/"+ntuple_date+"/skim_genht/";
 
-  // Reading ntuples
-  vector<sfeats> Samples; 
-  if(do_1ltt) Samples.push_back(sfeats(s_tt, "t#bar{t}, 1 l", ra4::c_tt_1l, 1,"ntruleps==1"));
-  else {
-    if(do_2ltt) Samples.push_back(sfeats(s_tt, "t#bar{t}, 2 l", ra4::c_tt_2l,1,"ntruleps>=2"));
-    else {
-      if(do_ttbar) Samples.push_back(sfeats(s_tt, "t#bar{t}, 2 l", ra4::c_tt_2l,1));
-      if(do_other){
-	Samples.push_back(sfeats(s_singlet, "Single t", ra4::c_singlet));
-	Samples.push_back(sfeats(s_other, "Other", ra4::c_other, 1)); 
-      }
-    }
+  vector<TString> s_tt;
+  if(do_1ltt) {
+    s_tt.push_back(folder+"*_TTJets*SingleLept*");
+    s_tt.push_back(folder_1l+"*_TTJets*HT*");
   }
+  else if(do_2ltt){
+    s_tt.push_back(folder+"*_TTJets*DiLept*");
+    s_tt.push_back(folder_2l+"*_TTJets*HT*");
+  }
+  else{
+    s_tt.push_back(folder+"*_TTJets*HT*");
+    s_tt.push_back(folder_genht+"*_TTJets*Lept*");
+  }
+  // Reading ntuples
+  vector<sfeats> Samples;
+  Samples.push_back(sfeats(s_tt, "t#bar{t}", 46,1));
+
   // Adding non-skimmed samples
   vector<int> ra4_sam, ra4_sam_ns;
   unsigned nsam(Samples.size());
   for(unsigned sam(0); sam < nsam; sam++){
     ra4_sam.push_back(sam);
-    ra4_sam_ns.push_back(nsam+sam);
-    vector<TString> sam_files = Samples[sam].file;
-    for(unsigned ifile(0); ifile < sam_files.size(); ifile++)
-      sam_files[ifile].ReplaceAll(folder, folder_ns);
-    Samples.push_back(sfeats(sam_files, Samples[sam].label, Samples[sam].color, Samples[sam].style,
-			     Samples[sam].cut));
+    //    ra4_sam_ns.push_back(nsam+sam);
+    //    vector<TString> sam_files = Samples[sam].file;
+    //    for(unsigned ifile(0); ifile < sam_files.size(); ifile++)
+    //      sam_files[ifile].ReplaceAll(folder, folder_ns);
+    //    Samples.push_back(sfeats(sam_files, Samples[sam].label, Samples[sam].color, Samples[sam].style,
+    //			     Samples[sam].cut));
   } // Loop over samples
 
   // Reading ntuples
@@ -145,7 +141,7 @@ int main(int argc, char *argv[]){
     powersk.push_back(1);  cuts.push_back("mj>"+mjthresh);   // R2 & R4
   }
 
-  TString baseline("ht>500&&met>200&&njets>=7&&nbm>=2&&(nmus+nels)==1");
+  TString baseline("ht>500&&met>200&&njets>=7&&nbm>=2&&nleps==1");
   vector<TString> njcuts, metcuts, extcuts, njnames, metnames;
   njcuts.push_back("njets<=8");
   njcuts.push_back("njets>=9"); 
@@ -342,11 +338,14 @@ void plotKappa(vector<vector<double> > &vx, vector<vector<double> > &vy, vector<
   if(do_pred&&do_rmt) ytitle = "R_{mT}"; 
   else if(do_pred&&do_rmj) ytitle = "R_{MJ}"; 
   histo.SetYTitle(ytitle);
-  histo.SetMaximum(max_axis);
+  //  histo.SetMaximum(max_axis);
+  if(do_rmt) histo.SetMaximum(0.25);
+  if(do_rmj) histo.SetMaximum(1.5);
   style.moveYAxisLabel(&histo, 1000, false);
   if(!do_pred) line.DrawLine(minh, 1, maxh, 1);
   line.SetLineColor(1); line.SetLineWidth(2); 
-  line.DrawLine(minh+wtot/2., 0, minh+wtot/2, max_axis);
+  if(do_rmt)  line.DrawLine(minh+wtot/2., 0, minh+wtot/2, 0.25);
+  if(do_rmj)  line.DrawLine(minh+wtot/2., 0, minh+wtot/2, 1.5);
 
   double legX(style.PadLeftMargin+0.0), legY(0.88), legSingle = 0.052;
   double legW = 0.29, legH = legSingle*nbsize;
@@ -381,8 +380,8 @@ void plotKappa(vector<vector<double> > &vx, vector<vector<double> > &vy, vector<
   can.SetGridy(1);
 
   TString pname;
-  if(do_rmt) pname = "plots/ratio_mt"; 
-  if(do_rmj) pname = "plots/ratio_mj"; 
+  if(do_rmt) pname = "plots/rmt"; 
+  if(do_rmj) pname = "plots/rmj"; 
   pname += "_"+ntuple_date; pname += "_method"+TString::Itoa(method,10);
   if(do_1ltt) pname += "_1ltt";
   else {

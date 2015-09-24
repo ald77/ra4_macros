@@ -24,18 +24,20 @@
 #include "utilities_macros.hpp"
 
 namespace  {
-  TString ntuple_date("2015_05_25");
+  TString ntuple_date("2015_09_14");
   TString lumi("10");
-  int method(3);
+  int method(1);
   int nrep = 100000;    // Fluctuations of Gamma distribution
   bool do_2l(false);  // Calculate dilepton closure stat uncertainty
   bool do_1ltt(false); // Kappa just for 1l ttbar
   bool do_2ltt(false); // Kappa just for 2l ttbar
   bool do_ttbar(true); // Include ttbar in kappa
-  bool do_other(true); // Include other in kappa
-  bool t_other(true); // Merges single t and other
+  bool do_other(false); // Include other in kappa
+  bool t_other(false); // Merges single t and other
   TString plot_type=".pdf";
   bool do_sigma_avError(true); 
+
+  bool morejets(false);
 }
 
 using namespace std;
@@ -49,7 +51,7 @@ int main(int argc, char *argv[]){
   time(&begtime);
 
   int c(0);
-  while((c=getopt(argc, argv, "m:n:to"))!=-1){
+  while((c=getopt(argc, argv, "m:n:toj12"))!=-1){
     switch(c){
     case 'm':
       method=atoi(optarg);
@@ -58,60 +60,58 @@ int main(int argc, char *argv[]){
       nrep=atoi(optarg);
       break;
     case 't':
-      do_ttbar = false;
+      do_ttbar = true;
+      break;
+    case '1':
+      do_1ltt = true;
+      break;
+    case '2':
+      do_2ltt = true;
       break;
     case 'o':
       do_other = false;
       break;
+    case 'j':
+      morejets = true;
     default:
       break;
     }
   }
 
-  styles style("RA4"); //style.LabelSize = 0.05;
-  style.setDefaultStyle();
-
-  TString folder="/cms5r0/ald77/archive/"+ntuple_date+"/skim/";
-  TString folder_ns="/cms5r0/ald77/archive/"+ntuple_date+"/";
+  TString folder="/cms5r0/rohan/archive/"+ntuple_date+"/skim/";
+  TString folder_1l="/cms5r0/rohan/archive/"+ntuple_date+"/skim_1l/";
+  TString folder_2l="/cms5r0/rohan/archive/"+ntuple_date+"/skim_2l/";
+  TString folder_genht="/cms5r0/rohan/archive/"+ntuple_date+"/skim_genht/";
+  
   vector<TString> s_tt;
-  s_tt.push_back(folder+"*_TTJet*");
-  vector<TString> s_singlet;
-  s_singlet.push_back(folder+"*_T*t-channel*");
-  s_singlet.push_back(folder+"*_T*s-channel*");
-  s_singlet.push_back(folder+"*_T*W-channel*");
-  vector<TString> s_other;
-  s_other.push_back(folder+"*QCD_HT*");
-  s_other.push_back(folder+"*_ZJet*");
-  s_other.push_back(folder+"*DY*");
-  s_other.push_back(folder+"*WH_HToBB*");
-  s_other.push_back(folder+"*TTW*");
-  s_other.push_back(folder+"*TTZ*");
-  s_other.push_back(folder+"*_WJets*");
-
+  if(do_1ltt) {
+    s_tt.push_back(folder+"*_TTJets*SingleLept*");
+    s_tt.push_back(folder_1l+"*_TTJets*HT*");
+  }
+  else if(do_2ltt){
+    s_tt.push_back(folder+"*_TTJets*DiLept*");
+    s_tt.push_back(folder_2l+"*_TTJets*HT*");
+  }
+  else{
+    s_tt.push_back(folder+"*_TTJets*HT*");
+    s_tt.push_back(folder_genht+"*_TTJets*Lept*");
+  }
   // Reading ntuples
   vector<sfeats> Samples; 
-  if(do_1ltt) Samples.push_back(sfeats(s_tt, "t#bar{t}, 1 l", ra4::c_tt_1l, 1,"ntruleps==1"));
-  else {
-    if(do_2ltt) Samples.push_back(sfeats(s_tt, "t#bar{t}, 2 l", ra4::c_tt_2l,1,"ntruleps>=2"));
-    else {
-      if(do_ttbar) Samples.push_back(sfeats(s_tt, "t#bar{t}, 2 l", ra4::c_tt_2l,1));
-      if(do_other){
-	Samples.push_back(sfeats(s_singlet, "Single t", ra4::c_singlet));
-	Samples.push_back(sfeats(s_other, "Other", ra4::c_other, 1)); 
-      }
-    }
-  }
+  Samples.push_back(sfeats(s_tt, "t#bar{t}", 46,1));
+  
+    
   // Adding non-skimmed samples
   vector<int> ra4_sam, ra4_sam_ns;
   unsigned nsam(Samples.size());
   for(unsigned sam(0); sam < nsam; sam++){
     ra4_sam.push_back(sam);
-    ra4_sam_ns.push_back(nsam+sam);
-    vector<TString> sam_files = Samples[sam].file;
-    for(unsigned ifile(0); ifile < sam_files.size(); ifile++)
-      sam_files[ifile].ReplaceAll(folder, folder_ns);
-    Samples.push_back(sfeats(sam_files, Samples[sam].label, Samples[sam].color, Samples[sam].style,
-			     Samples[sam].cut));
+    //    ra4_sam_ns.push_back(nsam+sam);
+    //vector<TString> sam_files = Samples[sam].file;
+    //for(unsigned ifile(0); ifile < sam_files.size(); ifile++)
+    //sam_files[ifile].ReplaceAll(folder, folder_ns);
+    //Samples.push_back(sfeats(sam_files, Samples[sam].label, Samples[sam].color, Samples[sam].style,
+    //			     Samples[sam].cut));
   } // Loop over samples
 
   // Reading ntuples
@@ -120,9 +120,8 @@ int main(int argc, char *argv[]){
     chain.push_back(new TChain("tree"));
     for(unsigned insam(0); insam < Samples[sam].file.size(); insam++)
       chain[sam]->Add(Samples[sam].file[insam]);
+    //    cout<<"Label: "<<Samples[sam].label<<" Chains: "<<chain[sam]->GetNtrees()<<" Entries: "<<chain[sam]->GetEntries()<<endl;
   }
-
-  
 
   TString mjthresh("400");
   if(method==1) mjthresh = "600";
@@ -142,20 +141,25 @@ int main(int argc, char *argv[]){
   powersn.push_back(-1);  
   powersn.push_back(1); 
   powersn.push_back(1); 
-  //powersn.push_back(1);  
 
-
-  TString baseline("(nmus+nels)==1&&ht>500&&met>200&&njets>=7&&nbm>=1");
+  TString baseline("ht>500&&met>200&&nbm>=1&&(nmus+nels)==1&&njets>=7");
+  if(morejets) baseline="ht>500&&met>200&&nbm>=1&&(nmus+nels)==1&&njets>=5";
   if(do_2l) baseline = "(nmus+nels)==2&&ht>500&&met>200&&njets>=6&&nbm>=1";
   vector<TString> metcuts, njcuts, nbcuts, metnames;
-  // metcuts.push_back("met>100&&met<=200");
-  // metcuts.push_back("met>200&&met<=300");
-  // metcuts.push_back("met>300&&met<=400");
   metcuts.push_back("met>200&&met<=400");
   metcuts.push_back("met>400");
   if(!do_2l){
-    njcuts.push_back("njets<=8");
-    njcuts.push_back("njets>=9");
+    if(morejets){
+      //njcuts.push_back("njets>=5&&njets<=6");
+      njcuts.push_back("njets==5");
+      njcuts.push_back("njets==6");
+      njcuts.push_back("njets>=7&&njets<=8");
+      njcuts.push_back("njets>=9");
+    }
+    else{
+      njcuts.push_back("njets<=8");
+      njcuts.push_back("njets>=9");
+    }
   } else {
     njcuts.push_back("njets<=7");
     njcuts.push_back("njets>=8");
@@ -212,20 +216,17 @@ int main(int argc, char *argv[]){
     for(unsigned imet(0); imet<metcuts.size(); imet++){
       for(unsigned inb(0); inb<nbcuts.size(); inb++){
 	if(method==3 && ((imet==0&&inb==3) || (imet==1&& (inb==1||inb==2)))) if(!do_2l) continue;
-	//if(!(inb==3&&imet==1&&inj==1)) continue; // Calculate just one kappa
 	vector<vector<float> > entries;
 	vector<vector<float> > weights;
 	for(unsigned obs(0); obs < powersk.size(); obs++) {
 	  entries.push_back(vector<float>());
 	  weights.push_back(vector<float>());
-	  // totcut = lumi+"*weight*("+baseline+"&&"+nbcuts[inb]+"&&"+metcuts[imet]+"&&"+cuts[obs];
-	  // if(method==1 || obs%2==1) totcut += "&&"+njcuts[inj];
-	  // totcut += ")";
 	  // cout << totcut<<endl;
 	  float yield_singlet(0);
 	  for(unsigned sam(0); sam < ra4_sam.size(); sam++) {
 	    totcut = (lumi+"*weight*("+baseline+"&&"+nbcuts[inb]+"&&"+metcuts[imet]+"&&"+cuts[obs]+
 		      "&&"+Samples[ra4_sam[sam]].cut);
+	    //cout<<"Cut: "<<totcut<<endl;
 	    if(method==1 || obs%2==1) totcut += "&&"+njcuts[inj];
 	    totcut += ")";
 	    //cout << totcut<<endl;
@@ -243,10 +244,10 @@ int main(int argc, char *argv[]){
 	      if(do_sigma_avError) entries[obs].push_back(yield*yield/pow(sigma,2));	    
 	      else entries[obs].push_back(Nentries);	    
 	    }
-	    if(Nentries==0){ // If no entries, find averate weight in signal bin
+	    if(Nentries==0){ // If no entries, find average weight in signal bin
 	      totcut = (lumi+"*weight*("+baseline+"&&"+cuts[obs]+")");
 	      Nentries = getYieldErr(*chain[ra4_sam[sam]], totcut, yield, sigma);
-	      // If no entries, find averate weight in baseline region
+	      // If no entries, find average weight in baseline region
 	      if(Nentries==0){
 		totcut = (lumi+"*weight*("+baseline+")");
 		Nentries = getYieldErr(*chain[ra4_sam[sam]], totcut, yield, sigma);
@@ -255,7 +256,7 @@ int main(int argc, char *argv[]){
 	    if(do_sigma_avError) avWeight = sigma*sigma/yield;
 	    else avWeight = fabs(yield/static_cast<double>(Nentries));
 	    weights[obs].push_back(avWeight);
-	    //cout<<obs<<","<<sam<<": entries "<<entries[obs][sam]<<", weight "<<avWeight<<", yield "<<yield<<endl;
+	    //	    cout<<obs<<","<<sam<<": entries "<<entries[obs][sam]<<", weight "<<avWeight<<", yield "<<yield<<endl;
 	  } // Loop over samples
 	} // Loop over number of observables going into kappa
    
@@ -391,7 +392,9 @@ void plotKappa(vector<vector<double> > &vx, vector<vector<double> > &vy, vector<
 	       unsigned idata, TH1D &histo, vector<TString> &nbcuts){
 
   bool do_data((idata%2)==1), do_pred(idata>=2);
-  styles style("RA4"); //style.LabelSize = 0.05;
+  TString stylename = "RA4";
+  if(morejets) stylename = "RA4long";
+  styles style(stylename);
   style.setDefaultStyle();
   float max_axis(3.2), max_kappa(0.);
   unsigned nbsize(vx.size());
@@ -462,9 +465,9 @@ void plotKappa(vector<vector<double> > &vx, vector<vector<double> > &vy, vector<
   }
   if(do_data) pname += "_data";
   else  pname += "_mc";
+  if(morejets) pname += "_ext";
   pname += plot_type;
   if(do_pred) pname.ReplaceAll("kappa","npred");
   can.SaveAs(pname);
 
 }
-
