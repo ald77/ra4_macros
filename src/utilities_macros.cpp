@@ -42,8 +42,8 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
   if(namestyle.Contains("CMSPaper")) style.nDivisions = 706;
   if (doRatio){
     style.LabelSize    *= 1.1;
-    style.LegendSize   *= 1.2;
-    style.TitleSize    *= 1.2;
+    style.LegendSize   *= 1.1;
+    style.TitleSize    *= 1.1;
     style.yTitleOffset /= 1.3;
     style.xTitleOffset /= 1.08;
 
@@ -170,7 +170,8 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
       //// Plotting lumi-weighted distributions in histo[0], and then area-normalized in histo[1] ///
       int bkgind(-1);
       unsigned int last_hist=9999;
-      float normalization_ratio=1;
+      float normalization_ratio=1; 
+      cout << Nsam << endl; // FIXME
       for(unsigned sam(Nsam-1); sam < Nsam; sam--){
         int isam = vars[var].samples[sam];
         bool noStack = Samples[isam].isSig || Samples[isam].isData;
@@ -209,8 +210,9 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
 	normalization_ratio = num/den; //I want this to crash if den=0
 	double err_tot(den/num*sqrt(pow(err_num/num,2)+pow(err_den/den,2)));
 	err_tot = num/den*sqrt(pow(err_num/num,2)+pow(err_den/den,2));
-	// cout<<"Histogram [MC] is ("<<RoundNumber((den/num-1)*100,1)
-	//   <<" +- "<<RoundNumber(err_tot*100,1)<<")% larger than markers [data]"<<endl;
+	//cout<<"Histogram [MC] is ("<<RoundNumber((den/num-1)*100,1)
+	//    <<" +- "<<RoundNumber(err_tot*100,1)<<")% larger than markers [data]"<<endl; 
+    cout << num << "/" << den << endl; // FIXME
 	norm_s = "("+RoundNumber((num/den)*100,1)+"#pm"+RoundNumber(err_tot*100,1)+")%";
 	cout<<"Markers [data] are ("<<RoundNumber((num/den)*100,1)
 	    <<" +- "<<RoundNumber(err_tot*100,1)<<")% the histogram [MC]. Data yield is "<<num<<endl;
