@@ -17,8 +17,8 @@
 #include "utilities_macros.hpp"
 
 namespace {
-  TString metcut("met_nohf<50");
-  TString luminosity="0.0419"; // in ifb
+  TString metcut("met<50");
+  TString luminosity="0.1157"; // in ifb
   TString plot_type=".pdf";
   TString plot_style="CMSPaper";
 }
@@ -31,11 +31,14 @@ int main(){
   TString folder_data="/net/cms2/cms2r0/ald77/archive/2015_07_26/skim_ht1000/";
   folder_mc = "/net/cms2/cms2r0/ald77/archive/2015_08_13/skim_ht1000/";
   folder_data = "/net/cms2/cms2r0/ald77/archive/2015_08_17/skim_ht1000/";
+  folder_mc   = "/cms24r0/jaehyeok/susy_cfa_babies/2015_09_28/skim_ht1000/";
+  folder_data = "/cms24r0/jaehyeok/susy_cfa_babies/2015_09_30/";
 
   vector<TString> s_data_ns;
   s_data_ns.push_back(folder_data+"*JetHT*");
   vector<TString> s_tt;
-  s_tt.push_back(folder_mc+"*_TTJet*50ns*");
+  s_tt.push_back(folder_mc+"*TTJets_SingleLeptFromT*25ns*");
+  s_tt.push_back(folder_mc+"*TTJets_DiLept*25ns*");
   vector<TString> s_singlet;
   s_singlet.push_back(folder_mc+"*ST*");
   vector<TString> s_qcd;
@@ -51,7 +54,7 @@ int main(){
 
   // Reading ntuples
   vector<sfeats> Samples; 
-  Samples.push_back(sfeats(s_data_ns, "Data", 1, -1, "trig[12] && json_golden")); Samples.back().isData = true;
+  Samples.push_back(sfeats(s_data_ns, "Data", 1, -1, "trig[12] && json")); Samples.back().isData = true;
   Samples.push_back(sfeats(s_qcd, "QCD", dps::c_qcd));
   Samples.push_back(sfeats(s_tt, "t#bar{t}", dps::c_tt_1l, 1));
   Samples.push_back(sfeats(s_singlet, "Single top", dps::c_singlet));
@@ -111,7 +114,7 @@ int main(){
 
   // make 2-d histograms for projections
   TString cuts("ht>1000&&"+metcut+"&&(nvmus+nvels)==0");
-  filesData->Project("jetmass_vs_pt_data", "jets_m:jets_pt", "weight*(trig[12] && json_golden && "+cuts+")");
+  filesData->Project("jetmass_vs_pt_data", "jets_m:jets_pt", "weight*(trig[12] && json && "+cuts+")");
   filesMC->Project("jetmass_vs_pt_MC", "jets_m:jets_pt", "weight*("+cuts+")");
 
   styles style("CMSPaper"); 
@@ -208,6 +211,6 @@ int main(){
   l1->SetLineStyle(2);
   l1->Draw("same");
 
-  can->SaveAs("plots/1d/mass_versus_pt2.pdf");
+  can->SaveAs("plots/1d_2015d/mass_versus_pt2.pdf");
 
 }
