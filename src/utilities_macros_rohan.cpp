@@ -437,8 +437,6 @@ void plot_2D_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString 
   style.setDefaultStyle();
   TCanvas can;
   can.cd();
-  TPad *pad(NULL);
-  pad = static_cast<TPad *>(can.cd());
 
   // Reading ntuples
   vector<TChain *> chain;

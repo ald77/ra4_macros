@@ -338,7 +338,7 @@ void plotKappa(vector<vector<double> > &vx, vector<vector<double> > &vy, vector<
   if(do_pred&&do_rmt) ytitle = "R_{mT}"; 
   else if(do_pred&&do_rmj) ytitle = "R_{MJ}"; 
   histo.SetYTitle(ytitle);
-  //  histo.SetMaximum(max_axis);
+  if(false)  histo.SetMaximum(max_axis);
   if(do_rmt) histo.SetMaximum(0.25);
   if(do_rmj) histo.SetMaximum(1.5);
   style.moveYAxisLabel(&histo, 1000, false);

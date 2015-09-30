@@ -124,13 +124,14 @@ void styles::testGlobalStyle(bool fixY, float scale) {
   if(nPads == 3) c.Divide(3);
   if(nPads == 4) c.Divide(2,2);
   if(nPads == 6) c.Divide(3,2);
-  TPad *cPad = static_cast<TPad *>(c.cd(1)); h->Draw();
+  c.cd(1);
+  h->Draw();
   if(fixY) moveYAxisLabel(h,100);
   setTitles(h, "D^{(*)0/+} channels", "xlabel^{2}_{miss} (GeV^{2})", "Events/(10 MeV^{2})");
   float scales[] = {0.1, 10, 0.01};
   for(int pads = 2; pads<=4; pads++){
     if(nPads>=pads){
-      cPad = static_cast<TPad*>(c.cd(pads)); 
+      c.cd(pads);
       hc[pads-2] = static_cast<TH1F*>(h->Clone());
       hc[pads-2]->Scale(scales[pads-2]); 
       if(fixY) moveYAxisLabel(hc[pads-2],hc[pads-2]->GetMaximum());
