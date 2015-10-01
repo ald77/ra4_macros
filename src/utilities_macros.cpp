@@ -42,7 +42,7 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
   if(namestyle.Contains("CMSPaper")) style.nDivisions = 706;
   if (doRatio){
     style.LabelSize    *= 1.1;
-    style.LegendSize   *= 1.1;
+    style.LegendSize   *= 1.0;
     style.TitleSize    *= 1.1;
     style.yTitleOffset /= 1.3;
     style.xTitleOffset /= 1.08;
@@ -111,9 +111,11 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
     if(namestyle.Contains("CMSPaper") && !showcuts) title = "";
     for(unsigned his(0); his < 2; his++){
       varhisto.resize(0);
-      for(unsigned sam(0); sam < Nsam; sam++){
-        hname = "histo"; hname += var; hname += his; hname += sam;
-        varhisto.push_back(new TH1D(hname, title, vars[var].nbins, vars[var].minx, vars[var].maxx));
+      for(unsigned sam(0); sam < Nsam; sam++){ 
+        hname = "histo"; hname += var; hname += his; hname += sam;  
+        if((sizeof(vars[var].binning)/sizeof(*(vars[var].binning)))>2)  // trying non-uniform bin size, but not working
+            varhisto.push_back(new TH1D(hname, title, vars[var].nbins, vars[var].binning));
+        else varhisto.push_back(new TH1D(hname, title, vars[var].nbins, vars[var].minx, vars[var].maxx));
       }
       histo[his].push_back(varhisto);
     }
@@ -171,7 +173,6 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
       int bkgind(-1);
       unsigned int last_hist=9999;
       float normalization_ratio=1; 
-      cout << Nsam << endl; // FIXME
       for(unsigned sam(Nsam-1); sam < Nsam; sam--){
         int isam = vars[var].samples[sam];
         bool noStack = Samples[isam].isSig || Samples[isam].isData;
@@ -212,7 +213,6 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
 	err_tot = num/den*sqrt(pow(err_num/num,2)+pow(err_den/den,2));
 	//cout<<"Histogram [MC] is ("<<RoundNumber((den/num-1)*100,1)
 	//    <<" +- "<<RoundNumber(err_tot*100,1)<<")% larger than markers [data]"<<endl; 
-    cout << num << "/" << den << endl; // FIXME
 	norm_s = "("+RoundNumber((num/den)*100,1)+"#pm"+RoundNumber(err_tot*100,1)+")%";
 	cout<<"Markers [data] are ("<<RoundNumber((num/den)*100,1)
 	    <<" +- "<<RoundNumber(err_tot*100,1)<<")% the histogram [MC]. Data yield is "<<num<<endl;
@@ -533,13 +533,22 @@ TString cuts2title(TString title){
   title.ReplaceAll("nvmus==1&&nmus==1&&nvels==0","1 #mu");
   title.ReplaceAll("nvmus10==0&&nvels10==0", "0 leptons");  
   title.ReplaceAll("(nmus+nels)", "n_{lep}");  
+  title.ReplaceAll("(nels+nmus)", "n_{lep}");  
   title.ReplaceAll("(nvmus+nvels)", "n^{veto}_{lep}");  
   title.ReplaceAll("(nvmus>=2||nvels>=2)","n^{veto}_{lep} #geq 2"); 
   title.ReplaceAll("(mumu_m*(mumu_m>0)+elel_m*(elel_m>0))>80&&(mumu_m*(mumu_m>0)+elel_m*(elel_m>0))<100", 
 		   "80<m_{ll}<100");  
   title.ReplaceAll("(mumuv_m*(mumuv_m>0)+elelv_m*(elelv_m>0))>80&&(mumuv_m*(mumuv_m>0)+elelv_m*(elelv_m>0))<100", 
 		   "80<m_{ll}<100");  
+  title.ReplaceAll("(mumuv_m*(mumuv_m>0&&mumu_pt1>25)+elelv_m*(elelv_m>0&&elel_pt1>30))>80&&(mumuv_m*(mumuv_m>0&&mumu_pt1>25)+elelv_m*(elelv_m>0&&elel_pt1>30))<100", 
+		   "80<m_{ll}<100");  
   title.ReplaceAll("onht>350&&onmet>100&&","");
+  title.ReplaceAll("jets_islep[0]==0","");
+  title.ReplaceAll("(nels==0&&nmus==1)","n_{#mu}=1");
+  title.ReplaceAll("(nels==1&&nmus==0)","n_{#font[12]{e}}=1");
+  title.ReplaceAll("Max$(abs(els_eta)*(els_sigid&&els_miniso<0.1&&els_pt>20))<1.479","barrel #font[12]{e}");
+  title.ReplaceAll("Max$(abs(els_eta)*(els_sigid&&els_miniso<0.1&&els_pt>20))>1.479","endcap #font[12]{e}");
+
 
   title.ReplaceAll("nmus", "n_{#mu}");  
   title.ReplaceAll("nels", "n_{e}");  
