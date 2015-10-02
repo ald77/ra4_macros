@@ -510,29 +510,29 @@ int main(){
   // ZpT : elel and mumu separately
   
   // (nvmus>=2||nvels>=2)
-  vars.push_back(hfeats("mumuv_zpt*(mumuv_zpt>0)+elelv_zpt*(elelv_zpt>0)",10,0,500, dl_sam, "p_{T}(ll) [GeV]",
+  vars.push_back(hfeats("mumuv_zpt*(mumuv_zpt>0)+elelv_zpt*(elelv_zpt>0)",10,0,500, dl_sam, "p_{T}(#font[12]{ll}) [GeV]",
    			"ht>350&&(nvmus>=2||nvels>=2)&&"+mll));
   vars.back().whichPlots = "2"; // vars.back().normalize = true;
   
-  vars.push_back(hfeats("mumuv_zpt*(mumuv_zpt>0)+elelv_zpt*(elelv_zpt>0)",10,0,500, dl_sam, "p_{T}(ll) [GeV]",
+  vars.push_back(hfeats("mumuv_zpt*(mumuv_zpt>0)+elelv_zpt*(elelv_zpt>0)",10,0,500, dl_sam, "p_{T}(#font[12]{ll}) [GeV]",
    			"ht>350&&(nvmus>=2||nvels>=2)&&njets>=4&&"+mll));
   vars.back().whichPlots = "2"; // vars.back().normalize = true;
   
   // (nvels>=2) 
-  vars.push_back(hfeats("elelv_zpt*(elelv_zpt>0)",10,0,500, dl_sam, "p_{T}(ll) [GeV]",
+  vars.push_back(hfeats("elelv_zpt*(elelv_zpt>0)",10,0,500, dl_sam, "p_{T}(#font[12]{ee}) [GeV]",
    			"ht>350&&(nvels>=2)&&"+mll));
   vars.back().whichPlots = "2"; // vars.back().normalize = true;
   
-  vars.push_back(hfeats("elelv_zpt*(elelv_zpt>0)",10,0,500, dl_sam, "p_{T}(ll) [GeV]",
+  vars.push_back(hfeats("elelv_zpt*(elelv_zpt>0)",10,0,500, dl_sam, "p_{T}(#font[12]{ee}) [GeV]",
    			"ht>350&&(nvels>=2)&&njets>=4&&"+mll));
   vars.back().whichPlots = "2"; // vars.back().normalize = true;
   
   // (nvmus>=2) 
-  vars.push_back(hfeats("mumuv_zpt*(mumuv_zpt>0)",10,0,500, dl_sam, "p_{T}(ll) [GeV]",
+  vars.push_back(hfeats("mumuv_zpt*(mumuv_zpt>0)",10,0,500, dl_sam, "p_{T}(#mu#mu) [GeV]",
    			"ht>350&&(nvmus>=2)&&"+mll));
   vars.back().whichPlots = "2"; // vars.back().normalize = true;
   
-  vars.push_back(hfeats("mumuv_zpt*(mumuv_zpt>0)",10,0,500, dl_sam, "p_{T}(ll) [GeV]",
+  vars.push_back(hfeats("mumuv_zpt*(mumuv_zpt>0)",10,0,500, dl_sam, "p_{T}(#mu#mu) [GeV]",
    			"ht>350&&(nvmus>=2)&&njets>=4&&"+mll));
   vars.back().whichPlots = "2"; // vars.back().normalize = true;
   
