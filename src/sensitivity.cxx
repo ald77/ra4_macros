@@ -21,7 +21,7 @@ using namespace std;
 
 namespace{
   enum UncertSet{
-    kNormal, kNoSyst
+    kNormal, kNoSyst, kContaminated
   };
   UncertSet uncert_set = kNormal;
   int method = 1;
@@ -69,6 +69,20 @@ int main(int argc, char *argv[]){
     m3_signif_nc.push_back(1.321850); m3_limit_nc.push_back(0.329102); m3_signif_c.push_back(0.); m3_limit_c.push_back(0.);
     m3_signif_nc.push_back(1.477870); m3_limit_nc.push_back(0.263672); m3_signif_c.push_back(0.); m3_limit_c.push_back(0.);
     m3_signif_nc.push_back(1.618920); m3_limit_nc.push_back(0.219727); m3_signif_c.push_back(0.); m3_limit_c.push_back(0.);
+    break;
+  case kContaminated:
+    m1_signif_nc.push_back(0.651089); m1_limit_nc.push_back(2.835940); m1_signif_c.push_back(0.); m1_limit_c.push_back(0.);
+    m1_signif_nc.push_back(0.884065); m1_limit_nc.push_back(1.417970); m1_signif_c.push_back(0.); m1_limit_c.push_back(0.);
+    m1_signif_nc.push_back(1.033470); m1_limit_nc.push_back(0.949219); m1_signif_c.push_back(0.); m1_limit_c.push_back(0.);
+    m1_signif_nc.push_back(1.143830); m1_limit_nc.push_back(0.708984); m1_signif_c.push_back(0.); m1_limit_c.push_back(0.);
+    m1_signif_nc.push_back(1.230040); m1_limit_nc.push_back(0.568359); m1_signif_c.push_back(0.); m1_limit_c.push_back(0.);
+    m1_signif_nc.push_back(1.299850); m1_limit_nc.push_back(0.474609); m1_signif_c.push_back(0.); m1_limit_c.push_back(0.);
+    m3_signif_nc.push_back(0.660744); m3_limit_nc.push_back(1.835940); m3_signif_c.push_back(0.); m3_limit_c.push_back(0.);
+    m3_signif_nc.push_back(0.885141); m3_limit_nc.push_back(0.917969); m3_signif_c.push_back(0.); m3_limit_c.push_back(0.);
+    m3_signif_nc.push_back(1.048840); m3_limit_nc.push_back(0.611328); m3_signif_c.push_back(0.); m3_limit_c.push_back(0.);
+    m3_signif_nc.push_back(1.176520); m3_limit_nc.push_back(0.458984); m3_signif_c.push_back(0.); m3_limit_c.push_back(0.);
+    m3_signif_nc.push_back(1.282110); m3_limit_nc.push_back(0.367188); m3_signif_c.push_back(0.); m3_limit_c.push_back(0.);
+    m3_signif_nc.push_back(1.372740); m3_limit_nc.push_back(0.305664); m3_signif_c.push_back(0.); m3_limit_c.push_back(0.);
     break;
   default: break;
   }
@@ -174,6 +188,7 @@ int main(int argc, char *argv[]){
   switch(uncert_set){
   case kNormal: oss << "_normal"; break;
   case kNoSyst: oss << "_nosyst"; break;
+  case kContaminated: oss << "_contam"; break;
   default: break;
   }
   oss << "_method_" << method << ".pdf" << flush;
@@ -199,6 +214,7 @@ void GetOptions(int argc, char *argv[]){
       switch(atoi(optarg)){
       case 0: uncert_set = kNormal; break;
       case 1: uncert_set = kNoSyst; break;
+      case 2: uncert_set = kContaminated; break;
       default: break;
       }
       break;
