@@ -17,8 +17,9 @@
 #include "utilities_macros.hpp"
 
 namespace  {
-  TString ntuple_date("2015_05_25");
+  TString ntuple_date("2015_10_05");
   TString luminosity="10";
+  TString tag = "";
   bool do_1b=false;
   bool do_2l=false;
   bool do_ttbaronly = true;
@@ -34,31 +35,54 @@ using std::endl;
 
 TString YieldsCut(TString title, TString cuts, vector<TChain*> chain, vector<sfeats> Samples, int nsig);
 
-int main(){
+int main(int argc, char *argv[]){
+
+  int c(0);
+  while((c=getopt(argc, argv, "m:oz:t:"))!=-1){
+    switch(c){
+    case 'm':
+      method=atoi(optarg);
+      break;
+    case 'o':
+      do_ttbaronly = false;
+      break; 
+    case 'z':
+      if(0==atoi(optarg)) do_zbi=false;
+      if(1==atoi(optarg)) do_zbi=true;
+      break;
+    case 't':
+      tag = optarg;
+      break;
+   default:
+      break;
+    }
+  }
 
   // Reading ntuples
-  TString folder, folder_ns;  
-  folder="/cms5r0/ald77/archive/"+ntuple_date+"/skim/";   
-  folder_ns="/cms5r0/ald77/archive/"+ntuple_date+"/";
+  TString folder_tt_skim, folder_tt_genht, folder_other;
+  folder_tt_skim="~/archive/"+ntuple_date+"/skim_1recolep/";
+  folder_tt_genht="~/archive/"+ntuple_date+"/skim_genht_1recolep/";
+  folder_other="/afs/cern.ch/user/a/ald77/workspace/public/ntuples/2015_09_28_ana/skim/";
   vector<TString> s_tt;
-  if(!(ntuple_date=="Spring15_Pow")) s_tt.push_back(folder+"*_TTJet*");
-  else s_tt.push_back(folder+"*_TT*");
+  s_tt.push_back(folder_tt_skim+"*_TTJets*HT*");
+  s_tt.push_back(folder_tt_genht+"*_TTJets*Lept*");
   vector<TString> s_wjets;
+  s_wjets.push_back(folder_other+"*_WJets*");
   vector<TString> s_single;
-  s_single.push_back(folder+"*_T*channel*");
+  s_single.push_back(folder_other+"*_ST_*");
   vector<TString> s_ttv;
+  s_ttv.push_back(folder_other+"*TTW*");
+  s_ttv.push_back(folder_other+"*TTZ*");
+  s_ttv.push_back(folder_other+"*TTHJetTobb*");
   vector<TString> s_other;
-  s_other.push_back(folder+"*QCD*");
-  s_other.push_back(folder+"*_ZJet*");
-  s_other.push_back(folder+"*DY*");
-  s_other.push_back(folder+"*WH_HToBB*");
-  s_other.push_back(folder+"*TTW*");
-  s_other.push_back(folder+"*TTZ*");
-  s_other.push_back(folder+"*_WJets*");
+  s_other.push_back(folder_other+"*_QCD_*");
+  s_other.push_back(folder_other+"*_ZJet*");
+  s_other.push_back(folder_other+"*DY*");
+  s_other.push_back(folder_other+"*WW*");
   vector<TString> s_t1t;
-  s_t1t.push_back(folder+"*T1tttt*1500_*PU20*");
+  s_t1t.push_back(folder_other+"*T1tttt*1500_*");
   vector<TString> s_t1tc;
-  s_t1tc.push_back(folder+"*T1tttt*1200_*PU20*");
+  s_t1tc.push_back(folder_other+"*T1tttt*1200_*");
 
   vector<TChain *> chain;
   vector<sfeats> Samples; 
@@ -91,7 +115,7 @@ int main(){
   minjets_2l += (minjets.Atoi()-1); midjets_2l += (midjets.Atoi()-1); 
   TString fom("$Z_{\\rm bi}$");
   if(!do_zbi) fom = "S/B";
-  TString outname = "txt/yields_mj"+mjthresh+"_met"+highmet+"_njets"+minjets+midjets+"_lumi"+luminosity+"_"+ntuple_date+".tex";
+  TString outname = "txt/yields_mj"+mjthresh+"_met"+highmet+"_njets"+minjets+midjets+"_lumi"+luminosity+"_"+ntuple_date+tag+".tex";
   if(do_1b) outname.ReplaceAll("yields","yields_1b");
   if(do_2l) outname.ReplaceAll("yields","yields_2l");
   if(do_zbi) outname.ReplaceAll("yields","yields_zbi");
@@ -117,14 +141,14 @@ int main(){
   file << "\n\\begin{tabular}[tbp!]{ l | ";
   for(unsigned sam(0); sam < Samples.size()-nsig; sam++) file << "r";
   file<<" | r ";
-  for(int sam(0); sam < nsig; sam++) file<<"| r ";
+  for(int sam(0); sam < nsig; sam++) file<<"| r | r";
   file<<"}\\hline\\hline\n";
   file << " \\multicolumn{1}{c|}{${\\cal L} = "<<luminosity<<"$ fb$^{-1}$} ";
   for(unsigned sam(0); sam < Samples.size()-nsig; sam++)
     file << " & "<<Samples[sam].label;
   file<< " & SM bkg. ";
   for(unsigned sam(Samples.size()-nsig); sam < Samples.size(); sam++)
-    file << " & "<<Samples[sam].label;//<< " & "+fom;
+    file << " & "<<Samples[sam].label<< " & "+fom;
   file << "\\\\ \\hline \n ";
 
   TString mtcut, mjcut;
@@ -273,7 +297,7 @@ int main(){
     file << " & "<<Samples[sam].label;
   file<< " & SM bkg. ";
   for(unsigned sam(Samples.size()-nsig); sam < Samples.size(); sam++)
-    file << " & "<<Samples[sam].label;//<< " & "+fom;
+    file << " & "<<Samples[sam].label<< " & "+fom;
   file << "\\\\ \n ";
 
   file<< "\\hline\\hline\n\\end{tabular}"<<endl<<endl;
@@ -296,7 +320,7 @@ TString YieldsCut(TString title, TString cuts, vector<TChain*> chain, vector<sfe
       if(yield[sam]>0) bkg += yield[sam];
       bkg_err = sqrt(pow(bkg_err,2)+pow(err,2));
     }
-    cout<<sam<<": yield "<<Samples[sam].label<<" "<<yield[sam]<<", n "<<entries<<" \t "<<totCut<<endl;
+    //    cout<<sam<<": yield "<<Samples[sam].label<<" "<<yield[sam]<<", n "<<entries<<" \t "<<totCut<<endl;
   }
   
   cout<<title<<": B = "<<(RoundNumber(bkg,1)+" +- "+RoundNumber(bkg_err,1));
@@ -305,10 +329,10 @@ TString YieldsCut(TString title, TString cuts, vector<TChain*> chain, vector<sfe
   out += (" \t &  $"+RoundNumber(bkg,1))+" \\pm "+RoundNumber(bkg_err,1)+"$";
   for(int sam(nsam-nsig); sam < nsam; sam++) {
     float fracerr(sqrt(pow(bkg_err/bkg,2)+0.3*0.3+0.24*0.24));
-    out += (" \t& $" + RoundNumber(yield[sam],1)+" \\pm "+RoundNumber(error[sam],1))+"$";// + "$ \t& ");
-    // if(do_zbi) out += RoundNumber(RooStats::NumberCountingUtils::BinomialExpZ(yield[sam], bkg, fracerr),2);
-    // else out += RoundNumber(yield[sam],2,bkg);
-	    
+    out += (" \t& $" + RoundNumber(yield[sam],1)+" \\pm "+RoundNumber(error[sam],1) + "$ \t& ");
+    if(do_zbi) out += RoundNumber(RooStats::NumberCountingUtils::BinomialExpZ(yield[sam], bkg, fracerr),2);
+    else out += RoundNumber(yield[sam],2,bkg);   
+    
     cout<<", S = "<<RoundNumber(yield[sam],1)+" +- "+RoundNumber(error[sam],1)<<" with Zbi = ";
     cout<<RoundNumber(RooStats::NumberCountingUtils::BinomialExpZ(yield[sam], bkg, fracerr),2);
   }
