@@ -92,16 +92,16 @@ int main(int argc, char *argv[]){
 
   vector<TString> s_tt;
   if(do_1ltt) {
-    s_tt.push_back(folder+"*_TTJets*SingleLept*");
+    s_tt.push_back(folder_genht+"*_TTJets*SingleLept*");
     s_tt.push_back(folder_1l+"*_TTJets*HT*");
   }
   else if(do_2ltt){
-    s_tt.push_back(folder+"*_TTJets*DiLept*");
+    s_tt.push_back(folder_genht+"*_TTJets*DiLept*");
     s_tt.push_back(folder_2l+"*_TTJets*HT*");
   }
   else{
-    s_tt.push_back(folder+"*_TTJets*HT*");
     s_tt.push_back(folder_genht+"*_TTJets*Lept*");
+    s_tt.push_back(folder+"*_TTJets*HT*");
   }
   // Reading ntuples
   vector<sfeats> Samples;
