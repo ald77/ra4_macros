@@ -25,6 +25,10 @@ int main(){
   TChain* tt = new TChain("tree");
   tt->Add("/afs/cern.ch/work/r/rbhandar/public/archive/"+ntuple_date+"/skim_1l/*HT*");
   tt->Add("/afs/cern.ch/work/r/rbhandar/public/archive/"+ntuple_date+"/skim_1l_genht/*SingleLept*");
+  
+  //  tt->Add("/afs/cern.ch/user/a/ana/public/babies/151016_155721/htbin/*.root");
+  //  tt->Add("/afs/cern.ch/user/a/ana/public/babies/151016_155721/leptbin/*.root");
+
 
   //TString cuts
   TString Baseline = "ht>500&&met>200&&njets>=7&&nbm>=2&&(nels+nmus)==1";
@@ -131,17 +135,17 @@ void maketable(const vector<double> &tot_entries, const vector<vector<vector<dou
     //
     file<< "\\begin{tabular}[tbp!]{l|c|c|c} \\hline \\hline"<<endl;
 
-    if(iNb==0) file << "Baseline + $N_{b}=1$ & Reco Lepton & $N_{Data}$ (out of "<<RoundNumber(tot_entries[0],3)<<") & \\% (for both flavors) \\\\"<<endl;
-    if(iNb==1) file << "Baseline & Reco Lepton & $N_{Data}$ (out of "<<RoundNumber(tot_entries[1],3)<<") & \\% (for both flavors) \\\\"<<endl;
+    if(iNb==0) file << "Baseline + N_{b}=1 (${\\cal L} = "<<lumi<<"$ fb$^{-1}$) $ & Reco Lepton & MC Predicted Events  & \\% (for both flavors) \\\\"<<endl;
+    if(iNb==1) file << "Baseline (${\\cal L} = "<<lumi<<"$ fb$^{-1}$) & Reco Lepton & MC Predicted Events & \\% (for both flavors) \\\\"<<endl;
     file << "\\hline \\hline"<<endl;
-    file << "Lost-Fake & e & "<<RoundNumber(entries[iNb][0][0],3)<<" & \\multirow{2}{*}{"<<RoundNumber((entries[iNb][0][0]+entries[iNb][0][1])/tot_entries[iNb]*100.,1)<<"\\%} \\\\"<<endl;
-    file << "& $\\mu$ & "<<RoundNumber(entries[iNb][0][1],3)<<" & \\\\"<<endl;
+    file << "Lost-Fake Lepton & e & "<<RoundNumber(entries[iNb][0][0],1)<<" & \\multirow{2}{*}{"<<RoundNumber((entries[iNb][0][0]+entries[iNb][0][1])/tot_entries[iNb]*100.,1)<<"\\%} \\\\"<<endl;
+    file << "& $\\mu$ & "<<RoundNumber(entries[iNb][0][1],1)<<" & \\\\"<<endl;
     file << "\\hline"<<endl;
-    file << "Reco Effects & e & "<<RoundNumber(entries[iNb][1][0],3)<<" & \\multirow{2}{*}{"<<RoundNumber((entries[iNb][1][0]+entries[iNb][1][1])/tot_entries[iNb]*100.,1)<<"\\%} \\\\"<<endl;
-    file << "& $\\mu$ & "<<RoundNumber(entries[iNb][1][1],3)<<" & \\\\"<<endl;
+    file << "Jet Mismeasurement & e & "<<RoundNumber(entries[iNb][1][0],1)<<" & \\multirow{2}{*}{"<<RoundNumber((entries[iNb][1][0]+entries[iNb][1][1])/tot_entries[iNb]*100.,1)<<"\\%} \\\\"<<endl;
+    file << "& $\\mu$ & "<<RoundNumber(entries[iNb][1][1],1)<<" & \\\\"<<endl;
     file << "\\hline"<<endl;
-    file << "Other & e & "<<RoundNumber(entries[iNb][2][0],3)<<" & \\multirow{2}{*}{"<<RoundNumber((entries[iNb][2][0]+entries[iNb][2][1])/tot_entries[iNb]*100.,1)<<"\\%} \\\\"<<endl;
-  file << "& $\\mu$ & "<<RoundNumber(entries[iNb][2][1],3)<<" & \\\\"<<endl;
+    file << "Non-Prompt Neutrinos & e & "<<RoundNumber(entries[iNb][2][0],1)<<" & \\multirow{2}{*}{"<<RoundNumber((entries[iNb][2][0]+entries[iNb][2][1])/tot_entries[iNb]*100.,1)<<"\\%} \\\\"<<endl;
+  file << "& $\\mu$ & "<<RoundNumber(entries[iNb][2][1],1)<<" & \\\\"<<endl;
   file << "\\hline \\hline"<<endl;      
 
     file << "\\end{tabular}"<<endl;
