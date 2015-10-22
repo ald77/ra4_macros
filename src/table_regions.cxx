@@ -5,6 +5,8 @@
 #include <cmath>
 #include <string>
 #include <sstream>
+#include <unistd.h> // getopt in Macs
+
 #include "TChain.h"
 #include "TFile.h"
 #include "TString.h"
@@ -18,19 +20,20 @@
 
 namespace  {
   TString ntuple_date("2015_10_19");
-  TString luminosity="3";
+  TString luminosity="2.5";
   TString tag = "";
   bool do_1b=false;
   bool do_2l=false;
-  bool do_ttbaronly = true;
+  bool do_ttbaronly = false;
   bool do_note=true;
-  bool do_zbi=false;
+  bool do_zbi=true;
+  bool print_full(false);
 
   int method = 0; // Only methods 1 and 2 currently supported
 
   TString minjets("7");
-  TString midjets("8");
-  TString mjthresh("600");
+  TString highjets("9");
+  TString mjthresh("400");
   TString highmet("400"); 
   int do_nb_binning=0; // 0 = No Nb binning. 1 = Nb binning at low MET. 2 = Nb binning at all MET. 
 }
@@ -44,13 +47,13 @@ TString YieldsCut(TString title, TString cuts, vector<TChain*> chain, vector<sfe
 int main(int argc, char *argv[]){
 
   int c(0);
-  while((c=getopt(argc, argv, "m:oz:t:j:d:f:e:b:"))!=-1){
+  while((c=getopt(argc, argv, "m:oz:t:j:h:f:e:b:p:"))!=-1){
     switch(c){
     case 'm':
       method=atoi(optarg);
       break;
     case 'o':
-      do_ttbaronly = false;
+      do_ttbaronly = true;
       break; 
     case 'z':
       if(0==atoi(optarg)) do_zbi=false;
@@ -59,8 +62,8 @@ int main(int argc, char *argv[]){
     case 'j':
       minjets = optarg;
       break;
-    case 'd':
-      midjets = optarg;
+    case 'h':
+      highjets = optarg;
       break;
     case 'f':
       mjthresh = optarg;
@@ -74,13 +77,18 @@ int main(int argc, char *argv[]){
     case 't':
       tag = optarg;
       break;
-   default:
+    case 'p':
+      print_full = true;
+      break; 
+  default:
       break;
     }
   }
 
   // Reading ntuples
-  TString folder = "~manuelf/work/babies/"+ntuple_date+"/mc/skim_1lht400mc/";
+  TString folder = "~manuelf/work/babies/"+ntuple_date+"/mc/skim_1lht500met200/";
+  //folder = "archive/2015_10_19/mc/skim_1lht500met200/";
+
   vector<TString> s_tt;
   s_tt.push_back(folder+"*_TTJets*HT*");
   s_tt.push_back(folder+"*_TTJets*Lept*");
@@ -124,15 +132,17 @@ int main(int argc, char *argv[]){
       chain[sam]->Add(Samples[sam].file[insam]);
   }
 
-  if(method==1) {  minjets = "7"; midjets="8"; mjthresh="600"; highmet="400"; do_nb_binning=0; } 
-  if(method==2) {  minjets ="7"; midjets="8"; mjthresh="400"; highmet="400"; do_nb_binning=1; }  
+  if(method==1) {  minjets = "7"; highjets="9"; mjthresh="600"; highmet="400"; do_nb_binning=0; } 
+  if(method==2) {  minjets ="7"; highjets="9"; mjthresh="400"; highmet="400"; do_nb_binning=1; }  
 
 
+  TString midjets(""); midjets += (highjets.Atoi()-1); 
   TString minjets_2l(""), midjets_2l("");
   minjets_2l += (minjets.Atoi()-1); midjets_2l += (midjets.Atoi()-1); 
   TString fom("$Z_{\\rm bi}$");
   if(!do_zbi) fom = "S/B";
-  TString outname = "txt/yields_mj"+mjthresh+"_met"+highmet+"_njets"+minjets+midjets+"_lumi"+luminosity+"_"+ntuple_date+tag+".tex";
+  TString lumi_s(luminosity); lumi_s.ReplaceAll(".","p");
+  TString outname = "txt/yields_mj"+mjthresh+"_met"+highmet+"_njets"+minjets+highjets+"_lumi"+lumi_s+"_"+ntuple_date+tag+".tex";
   if(do_1b) outname.ReplaceAll("yields","yields_1b");
   if(do_2l) outname.ReplaceAll("yields","yields_2l");
   if(do_zbi) outname.ReplaceAll("yields","yields_zbi");
@@ -178,12 +188,11 @@ int main(int argc, char *argv[]){
       TString name("Bin "); name += bin; name += ": ";
       binnames.push_back(name);
     }
-  TString higjets(""); higjets += (midjets.Atoi()+1);
   TString lownj("$n_j\\leq "+midjets+"$");
-  TString hignj("$n_j\\geq "+higjets+"$");
+  TString hignj("$n_j\\geq "+highjets+"$");
   TString lownj_2l("$n_j\\leq "+midjets_2l+"$");
-  TString higjets_2l(""); higjets_2l += (midjets_2l.Atoi()+1);
-  TString hignj_2l("$n_j\\geq "+higjets_2l+"$");
+  TString highjets_2l(""); highjets_2l += (midjets_2l.Atoi()+1);
+  TString hignj_2l("$n_j\\geq "+highjets_2l+"$");
   TString lowmet("$\\text{MET}\\leq "+highmet+"$");
   TString higmet("$\\text{MET}> "+highmet+"$");
   TString letter("R"); 
@@ -195,32 +204,37 @@ int main(int argc, char *argv[]){
   if(!do_2l){
     file << " \\multicolumn{"<< Samples.size()+1<<"}{c}{"<< cuts_1ltex  <<"} \\\\ \\hline \\hline\n";
 
+    // R1 region
     mjcut="mj<="+mjthresh; mtcut="mt<=140"; 
     file << YieldsCut(regions[0]+": $m_T  \\leq 140,M_J\\leq "+mjthresh+"$", mjcut+"&&"+mtcut+"&&"+cuts_1l, chain, Samples, nsig);
     file <<"\\hline\n";
-    if(do_nb_binning==0){
-      file << YieldsCut(indent+lownj+", "+lowmet, mjcut+"&&"+mtcut+"&&njets<="+midjets+"&&met<="+highmet+"&&"+cuts_1l, chain, Samples, nsig);
-      file << YieldsCut(indent+lownj+", "+higmet, mjcut+"&&"+mtcut+"&&njets<="+midjets+"&&met>"+highmet+"&&" +cuts_1l, chain, Samples, nsig);
-      file << YieldsCut(indent+hignj+", "+lowmet, mjcut+"&&"+mtcut+"&&njets>"+midjets+"&&met<="+highmet+"&&" +cuts_1l, chain, Samples, nsig);
-      file << YieldsCut(indent+hignj+", "+higmet, mjcut+"&&"+mtcut+"&&njets>"+midjets+"&&met>"+highmet+"&&"  +cuts_1l, chain, Samples, nsig);
-    } 
-    else if(do_nb_binning==1) {
-      file << YieldsCut(indent+lowmet+", $n_b=2$", mjcut+"&&"+mtcut+"&&met<="+highmet+"&&nbm==2&&"+cuts_1l, chain, Samples, nsig);
-      file << YieldsCut(indent+lowmet+", $n_b\\geq 3$", mjcut+"&&"+mtcut+"&&met<="+highmet+"&&nbm>=3&&"+cuts_1l, chain, Samples, nsig);
-      file << YieldsCut(indent+higmet, mjcut+"&&"+mtcut+"&&met>"+highmet+"&&" +cuts_1l, chain, Samples, nsig);
-    }
-    else if(do_nb_binning==2) {
-      file << YieldsCut(indent+lowmet+", $n_b=2$", mjcut+"&&"+mtcut+"&&met<="+highmet+"&&nbm==2&&"+cuts_1l, chain, Samples, nsig);
-      file << YieldsCut(indent+lowmet+", $n_b\\geq 3$", mjcut+"&&"+mtcut+"&&met<="+highmet+"&&nbm>=3&&"+cuts_1l, chain, Samples, nsig);
-      file << YieldsCut(indent+higmet+", $n_b=2$", mjcut+"&&"+mtcut+"&&met>"+highmet+"&&nbm==2&&" +cuts_1l, chain, Samples, nsig);
-      file << YieldsCut(indent+higmet+", $n_b\\geq 3$", mjcut+"&&"+mtcut+"&&met>"+highmet+"&&nbm>=3&&" +cuts_1l, chain, Samples, nsig);
-    }
-    file <<"\\hline\n";
+    if(print_full){
+      if(do_nb_binning==0){
+	file << YieldsCut(indent+lownj+", "+lowmet, mjcut+"&&"+mtcut+"&&njets<="+midjets+"&&met<="+highmet+"&&"+cuts_1l, chain, Samples, nsig);
+	file << YieldsCut(indent+lownj+", "+higmet, mjcut+"&&"+mtcut+"&&njets<="+midjets+"&&met>"+highmet+"&&" +cuts_1l, chain, Samples, nsig);
+	file << YieldsCut(indent+hignj+", "+lowmet, mjcut+"&&"+mtcut+"&&njets>"+midjets+"&&met<="+highmet+"&&" +cuts_1l, chain, Samples, nsig);
+	file << YieldsCut(indent+hignj+", "+higmet, mjcut+"&&"+mtcut+"&&njets>"+midjets+"&&met>"+highmet+"&&"  +cuts_1l, chain, Samples, nsig);
+      } 
+      else if(do_nb_binning==1) {
+	file << YieldsCut(indent+lowmet+", $n_b=2$", mjcut+"&&"+mtcut+"&&met<="+highmet+"&&nbm==2&&"+cuts_1l, chain, Samples, nsig);
+	file << YieldsCut(indent+lowmet+", $n_b\\geq 3$", mjcut+"&&"+mtcut+"&&met<="+highmet+"&&nbm>=3&&"+cuts_1l, chain, Samples, nsig);
+	file << YieldsCut(indent+higmet, mjcut+"&&"+mtcut+"&&met>"+highmet+"&&" +cuts_1l, chain, Samples, nsig);
+      }
+      else if(do_nb_binning==2) {
+	file << YieldsCut(indent+lowmet+", $n_b=2$", mjcut+"&&"+mtcut+"&&met<="+highmet+"&&nbm==2&&"+cuts_1l, chain, Samples, nsig);
+	file << YieldsCut(indent+lowmet+", $n_b\\geq 3$", mjcut+"&&"+mtcut+"&&met<="+highmet+"&&nbm>=3&&"+cuts_1l, chain, Samples, nsig);
+	file << YieldsCut(indent+higmet+", $n_b=2$", mjcut+"&&"+mtcut+"&&met>"+highmet+"&&nbm==2&&" +cuts_1l, chain, Samples, nsig);
+	file << YieldsCut(indent+higmet+", $n_b\\geq 3$", mjcut+"&&"+mtcut+"&&met>"+highmet+"&&nbm>=3&&" +cuts_1l, chain, Samples, nsig);
+      }
+      file <<"\\hline\n";
+    } // if(print_full)
 
+    // R2 region
     mjcut="mj>"+mjthresh; mtcut="mt<=140"; 
     file << YieldsCut(regions[1]+": $m_T  \\leq 140,M_J> "+mjthresh+"$", mjcut+"&&"+mtcut+"&&"+cuts_1l, chain, Samples, nsig);
     file <<"\\hline\n";
 
+    if(print_full){
     if(do_nb_binning==0){
       file << YieldsCut(indent+lownj+", "+lowmet, mjcut+"&&"+mtcut+"&&njets<="+midjets+"&&met<="+highmet+"&&"+cuts_1l, chain, Samples, nsig);
       file << YieldsCut(indent+lownj+", "+higmet, mjcut+"&&"+mtcut+"&&njets<="+midjets+"&&met>"+highmet+"&&" +cuts_1l, chain, Samples, nsig);
@@ -247,7 +261,9 @@ int main(int argc, char *argv[]){
     }
 
     file <<"\\hline\n";
+    } // if(print_full)
 
+    // R3 region
     mjcut="mj<="+mjthresh; mtcut="mt>140"; 
     file << YieldsCut(regions[2]+": $m_T  > 140,M_J \\leq "+mjthresh+"$", mjcut+"&&"+mtcut+"&&"+cuts_1l, chain, Samples, nsig);
     file <<"\\hline\n";
@@ -274,6 +290,7 @@ int main(int argc, char *argv[]){
     file <<"\\hline\n";
 
 
+    // R4 region
     mjcut="mj>"+mjthresh; mtcut="mt>140"; 
     file << YieldsCut(regions[3]+": $m_T  > 140,M_J > "+mjthresh+"$", mjcut+"&&"+mtcut+"&&"+cuts_1l, chain, Samples, nsig);
     file <<"\\hline\n";
@@ -360,7 +377,7 @@ int main(int argc, char *argv[]){
   file<< "\\hline\\hline\n\\end{tabular}"<<endl<<endl;
   file<<footer.rdbuf();
   file.close();
-  cout<<endl<<"Written "<<outname<<endl;
+  cout<<endl<<" pdflatex "<<outname<<endl<<endl;
 }
 
 TString YieldsCut(TString title, TString cuts, vector<TChain*> chain, vector<sfeats> Samples, int nsig){
@@ -380,17 +397,18 @@ TString YieldsCut(TString title, TString cuts, vector<TChain*> chain, vector<sfe
     //    cout<<sam<<": yield "<<Samples[sam].label<<" "<<yield[sam]<<", n "<<entries<<" \t "<<totCut<<endl;
   }
   
-  cout<<title<<": B = "<<(RoundNumber(bkg,1)+" +- "+RoundNumber(bkg_err,1));
+  int digits(2);
+  cout<<title<<": B = "<<(RoundNumber(bkg,digits)+" +- "+RoundNumber(bkg_err,digits));
   out = title;
-  for(int sam(0); sam < nsam-nsig; sam++) out += (" \t & " + RoundNumber(yield[sam],1));
-  out += (" \t &  $"+RoundNumber(bkg,1))+" \\pm "+RoundNumber(bkg_err,1)+"$";
+  for(int sam(0); sam < nsam-nsig; sam++) out += (" \t & " + RoundNumber(yield[sam],digits));
+  out += (" \t &  $"+RoundNumber(bkg,digits))+" \\pm "+RoundNumber(bkg_err,digits)+"$";
   for(int sam(nsam-nsig); sam < nsam; sam++) {
     float fracerr(sqrt(pow(bkg_err/bkg,2)+0.3*0.3+0.24*0.24));
-    out += (" \t& $" + RoundNumber(yield[sam],1)+" \\pm "+RoundNumber(error[sam],1) + "$ \t& ");
+    out += (" \t& $" + RoundNumber(yield[sam],digits)+" \\pm "+RoundNumber(error[sam],digits) + "$ \t& ");
     if(do_zbi) out += RoundNumber(RooStats::NumberCountingUtils::BinomialExpZ(yield[sam], bkg, fracerr),2);
     else out += RoundNumber(yield[sam],2,bkg);   
     
-    cout<<", S = "<<RoundNumber(yield[sam],1)+" +- "+RoundNumber(error[sam],1)<<" with Zbi = ";
+    cout<<", S = "<<RoundNumber(yield[sam],digits)+" +- "+RoundNumber(error[sam],digits)<<" with Zbi = ";
     cout<<RoundNumber(RooStats::NumberCountingUtils::BinomialExpZ(yield[sam], bkg, fracerr),2);
   }
   out += " \\\\ \n";
