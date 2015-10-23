@@ -1,0 +1,26 @@
+
+[1mRooFit v3.60 -- Developed by Wouter Verkerke and David Kirkby[0m 
+                Copyright (C) 2000-2013 NIKHEF, University of California & Stanford University
+                All rights reserved, please read http://roofit.sourceforge.net/license.txt
+
+Entries = 964823
+Experiment #0
+0 HT mean: 730.861
+Experiment #1
+1 HT mean: 730.743
+Experiment #2
+2 HT mean: 730.68
+Experiment #3
+3 HT mean: 730.79
+Experiment #4
+4 HT mean: 730.829
+Experiment #5
+5 HT mean: 730.694
+Experiment #6
+6 HT mean: 730.73
+Experiment #7
+7 HT mean: 730.704
+Experiment #8
+8 HT mean: 730.729
+Experiment #9
+9 HT mean: 730.664
