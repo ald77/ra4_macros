@@ -20,7 +20,7 @@
 
 namespace  {
   TString ntuple_date("2015_10_19");
-  TString luminosity="2.5";
+  TString luminosity="3";
   TString tag = "";
   bool do_1b=false;
   bool do_2l=false;
@@ -31,11 +31,11 @@ namespace  {
 
   int method = 0; // Only methods 1 and 2 currently supported
 
-  TString minjets("7");
+  TString minjets("6");
   TString highjets("9");
   TString mjthresh("400");
   TString highmet("400"); 
-  int do_nb_binning=0; // 0 = No Nb binning. 1 = Nb binning at low MET. 2 = Nb binning at all MET. 
+  int do_nb_binning=1; // 0 = No Nb binning. 1 = Nb binning at low MET. 2 = Nb binning at all MET. 
 }
 
 using namespace std;
@@ -87,24 +87,25 @@ int main(int argc, char *argv[]){
 
   // Reading ntuples
   TString folder = "~manuelf/work/babies/"+ntuple_date+"/mc/skim_1lht500met200/";
-  //folder = "archive/2015_10_19/mc/skim_1lht500met200/";
+  folder = "archive/2015_10_19/mc/skim_1lht500met200/";
 
   vector<TString> s_tt;
-  s_tt.push_back(folder+"*_TTJets*HT*");
   s_tt.push_back(folder+"*_TTJets*Lept*");
+  s_tt.push_back(folder+"*_TTJets_HT*");
   vector<TString> s_wjets;
-  s_wjets.push_back(folder+"*_WJets*");
+  s_wjets.push_back(folder+"*_WJetsToLNu*");
+  vector<TString> s_ttv;
+  s_ttv.push_back(folder+"*_TTWJets*");
+  s_ttv.push_back(folder+"*_TTZTo*");
   vector<TString> s_single;
   s_single.push_back(folder+"*_ST_*");
-  vector<TString> s_ttv;
-  s_ttv.push_back(folder+"*TTW*");
-  s_ttv.push_back(folder+"*TTZ*");
-  s_ttv.push_back(folder+"*TTHJetTobb*");
   vector<TString> s_other;
-  s_other.push_back(folder+"*_QCD_*");
+  s_other.push_back(folder+"*DYJetsToLL*");
+  s_other.push_back(folder+"*_QCD_HT*");
   s_other.push_back(folder+"*_ZJet*");
-  s_other.push_back(folder+"*DY*");
-  s_other.push_back(folder+"*WW*");
+  s_other.push_back(folder+"*_WWTo*");
+  s_other.push_back(folder+"*ggZH_HToBB*");
+  s_other.push_back(folder+"*ttHJetTobb*");
   vector<TString> s_t1t;
   s_t1t.push_back(folder+"*T1tttt*1500_*");
   vector<TString> s_t1tc;
