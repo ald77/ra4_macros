@@ -83,12 +83,34 @@ int main(){
 			   "ntruleps<=1"));
   Samples.push_back(sfeats(s_tt, "$t\\bar{t}$ ($2\\ell$)", 1006,1,
 			   "ntruleps>=2"));
+
   int nsig(0);
 
   for(unsigned sam(0); sam < Samples.size(); sam++){
     chain.push_back(new TChain("tree"));
     for(unsigned insam(0); insam < Samples[sam].file.size(); insam++)
       chain[sam]->Add(Samples[sam].file[insam]);
+  }
+
+  // 2l
+  vector<TChain *> chain_2l;
+  vector<sfeats> Samples_2l; 
+  Samples_2l.push_back(sfeats(s_trig_sl, "Data", 1003,1,"(trig[4]||trig[8])&&pass"));
+  if(!do_ttbaronly){
+    Samples_2l.push_back(sfeats(s_other, "Other", 1001));
+    Samples_2l.push_back(sfeats(s_ttv, "$t\\bar{t}V$", 1002));
+    Samples_2l.push_back(sfeats(s_single, "Single $t$", 1005));
+    Samples_2l.push_back(sfeats(s_wjets, "W+jets", 1004));
+  }
+  Samples_2l.push_back(sfeats(s_tt, "$t\\bar{t}$ (1$\\ell$)", 1000,1,
+			   "ntruleps<=1"));
+  Samples_2l.push_back(sfeats(s_tt, "$t\\bar{t}$ ($2\\ell$)", 1006,1,
+			   "ntruleps>=2"));
+
+  for(unsigned sam(0); sam < Samples_2l.size(); sam++){
+    chain_2l.push_back(new TChain("tree"));
+    for(unsigned insam(0); insam < Samples_2l[sam].file.size(); insam++)
+      chain_2l[sam]->Add(Samples_2l[sam].file[insam]);
   }
 
   TString minjets("7"), midjets("8"), mjthresh("600"), highmet("400"); bool do_nb_binning=false;
@@ -231,13 +253,13 @@ int main(){
 	 <<cuts_2ltex <<"} \\\\ \\hline \\hline\n";
 
     mjcut="mj<="+mjthresh; 
-    onelineyields[2] =  YieldsCut("D3: $M_J \\leq "+mjthresh+"$", "mj <= "+mjthresh+"&&"+cuts_2l, chain, Samples, nsig);
+    onelineyields[2] =  YieldsCut("D3: $M_J \\leq "+mjthresh+"$", "mj <= "+mjthresh+"&&"+cuts_2l, chain_2l, Samples_2l, nsig);
     file << onelineyields[2];
     file <<"\\hline\n";
 
 
     mjcut="mj>"+mjthresh; 
-    onelineyields[3] = YieldsCut("D4: $M_J > "+mjthresh+"$", "mj>"+mjthresh+"&&"+cuts_2l, chain, Samples, nsig);
+    onelineyields[3] = YieldsCut("D4: $M_J > "+mjthresh+"$", "mj>"+mjthresh+"&&"+cuts_2l, chain_2l, Samples_2l, nsig);
     file << onelineyields[3];
     file <<"\\hline\n";
    
