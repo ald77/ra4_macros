@@ -46,9 +46,9 @@ int main(){
   s_wjets.push_back(folder+"*_WJetsToLNu_HT*");
   vector<TString> s_single;
   s_single.push_back(folder+"*_ST_*");
-  // vector<TString> s_ttv;
-  // s_ttv.push_back(folder+"*TTW*");
-  // s_ttv.push_back(folder+"*TTZ*");
+  vector<TString> s_ttv;
+  s_ttv.push_back(folder+"*TTW*");
+  s_ttv.push_back(folder+"*TTZ*");
   vector<TString> s_qcd;
   s_qcd.push_back(folder+"*_QCD_HT*");
   vector<TString> s_other;
@@ -69,7 +69,7 @@ int main(){
   vector<sfeats> Samples; 
   Samples.push_back(sfeats(s_other, "Other", 1001));
   Samples.push_back(sfeats(s_qcd, "QCD", 1005,1)); 
-  // Samples.push_back(sfeats(s_ttv, "$t\\bar{t}V$", 1002));
+  Samples.push_back(sfeats(s_ttv, "$t\\bar{t}V$", 1002));
   Samples.push_back(sfeats(s_single, "Single $t$", 1005));
   Samples.push_back(sfeats(s_wjets, "W+jets", 1004));
   Samples.push_back(sfeats(s_tt, "$t\\bar{t}$ (1$\\ell$)", 1000,1,"ntruleps==1"));

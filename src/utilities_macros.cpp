@@ -535,12 +535,14 @@ TString cuts2title(TString title){
   title.ReplaceAll("(nmus+nels)", "n_{lep}");  
   title.ReplaceAll("(nels+nmus)", "n_{lep}");  
   title.ReplaceAll("(nvmus+nvels)", "n^{veto}_{lep}");  
+  title.ReplaceAll("nvmus==2&&nmus>=1","n_{#mu}#geq1, n^{veto}_{#mu}=2");
+  title.ReplaceAll("nvels==2&&nels>=1","n_{e}#geq1, n^{veto}_{e}=2");
   title.ReplaceAll("(nvmus>=2||nvels>=2)","n^{veto}_{lep} #geq 2"); 
   title.ReplaceAll("(mumu_m*(mumu_m>0)+elel_m*(elel_m>0))>80&&(mumu_m*(mumu_m>0)+elel_m*(elel_m>0))<100", 
 		   "80<m_{ll}<100");  
-  title.ReplaceAll("(mumuv_m*(mumuv_m>0)+elelv_m*(elelv_m>0))>80&&(mumuv_m*(mumuv_m>0)+elelv_m*(elelv_m>0))<100", 
+  title.ReplaceAll("mumuv_m>80&&mumuv_m<100", 
 		   "80<m_{ll}<100");  
-  title.ReplaceAll("(mumuv_m*(mumuv_m>0&&mumu_pt1>25)+elelv_m*(elelv_m>0&&elel_pt1>30))>80&&(mumuv_m*(mumuv_m>0&&mumu_pt1>25)+elelv_m*(elelv_m>0&&elel_pt1>30))<100", 
+  title.ReplaceAll("elelv_m>80&&elelv_m<100", 
 		   "80<m_{ll}<100");  
   title.ReplaceAll("onht>350&&onmet>100&&","");
   title.ReplaceAll("jets_islep[0]==0","");
