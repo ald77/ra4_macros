@@ -229,6 +229,7 @@ void WriteBaseHeader(const set<Variable> &all_vars,
 
   file << "  long GetEntries() const;\n";
   file << "  virtual void GetEntry(const long entry);\n";
+  file << "  float GetBranchValue(TString branch);\n";
   file << "  bool PassString(TString cut);\n\n";
 
   file << "  virtual void Fill();\n";
@@ -436,6 +437,12 @@ void WriteBaseSource(const set<Variable> &all_vars,
   file << "    throw std::logic_error(\"Trying to add files to tree opened for writing.\");\n";
   file << "  }\n";
   file << "  return chain_.Add(filename.c_str());\n";
+  file << "}\n\n";
+
+  file << "float small_tree::GetBranchValue(TString branch){\n";
+  file << " TTreeFormula f(\"formula\",branch, &chain_);\n";
+  file << " float result = f.EvalInstance(0);\n";
+  file << " return result;\n";
   file << "}\n\n";
 
 

@@ -629,6 +629,7 @@ hfeats::hfeats(TString ivarname, int inbins, float iminx, float imaxx, vector<in
   
   string ctitle(title.Data()); // Needed because effing TString can't handle square brackets
   if(!(ctitle.find("GeV")==std::string::npos)) unit = "GeV";
+  if(!(ctitle.find("Number")==std::string::npos)) unit = "";
   if(!(ctitle.find("phi")==std::string::npos)) unit = "rad";
   }
 hfeats::hfeats(TString ivarnamex, TString ivarnamey, int inbinsx, float iminx, float imaxx, int inbinsy, float iminy, float imaxy,  vector<int> isamples,
@@ -655,6 +656,7 @@ hfeats::hfeats(TString ivarnamex, TString ivarnamey, int inbinsx, float iminx, f
 
   string ctitle(title.Data()); // Needed because effing TString can't handle square brackets
   if(!(ctitle.find("GeV")==std::string::npos)) unit = "GeV";
+  if(!(ctitle.find("Number")==std::string::npos)) unit = "";
   if(!(ctitle.find("phi")==std::string::npos)) unit = "rad";
   }
 
@@ -680,6 +682,7 @@ hfeats::hfeats(TString ivarname, int inbins, float *ibinning, vector<int> isampl
   PU_reweight=false;
   string ctitle(title.Data()); // Needed because effing TString can't handle square brackets
   if(!(ctitle.find("GeV")==std::string::npos)) unit = "GeV";
+  if(!(ctitle.find("Number")==std::string::npos)) unit = "";
   if(!(ctitle.find("phi")==std::string::npos)) unit = "rad";
   }
 
