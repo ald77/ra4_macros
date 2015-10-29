@@ -101,6 +101,8 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
   vector<float> nentries;
   TString hname, pname, variable, samVariable, leghisto, totCut, title, ytitle, lumilabel, cmslabel;
   for(unsigned var(0); var<vars.size(); var++){
+    bool variableBins = vars[var].minx == -1;
+    if (vars[var].minx == -1) vars[var].minx = vars[var].binning[0];
     const unsigned Nsam(vars[var].samples.size());
     legH = (Nsam<=3?legSingle*Nsam:legSingle*(Nsam+1)/2);
     fracLeg = legH/(1-style.PadTopMargin-style.PadBottomMargin)*1.15;
@@ -113,9 +115,12 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
       varhisto.resize(0);
       for(unsigned sam(0); sam < Nsam; sam++){ 
         hname = "histo"; hname += var; hname += his; hname += sam;  
-        if((sizeof(vars[var].binning)/sizeof(*(vars[var].binning)))>2)  // trying non-uniform bin size, but not working
-            varhisto.push_back(new TH1D(hname, title, vars[var].nbins, vars[var].binning));
-        else varhisto.push_back(new TH1D(hname, title, vars[var].nbins, vars[var].minx, vars[var].maxx));
+        if(variableBins) { 
+          vars[var].minx = vars[var].binning[0];
+          varhisto.push_back(new TH1D(hname, title, vars[var].nbins, vars[var].binning));
+        }else {
+          varhisto.push_back(new TH1D(hname, title, vars[var].nbins, vars[var].minx, vars[var].maxx));
+        }
       }
       histo[his].push_back(varhisto);
     }
@@ -155,7 +160,7 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
         int digits(0);
         float binwidth((vars[var].maxx-vars[var].minx)/static_cast<float>(vars[var].nbins));
         if(binwidth<1) digits = 1;
-        ytitle += ("/("+RoundNumber(binwidth,digits) +" "+vars[var].unit+")");
+        if (!variableBins) ytitle += ("/("+RoundNumber(binwidth,digits) +" "+vars[var].unit+")");
       }
       histo[0][var][sam]->SetYTitle(ytitle);
       // Cloning histos for later
@@ -317,7 +322,11 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
           //line at 1
           bpad->cd();
           hratio_data->Draw("e0");
-	  
+          for (int ko=0; ko< hratio_data->GetNbinsX(); ko++){
+            cout<<hratio_data->GetBinLowEdge(ko+1)<<" "<<(hratio_data->GetBinLowEdge(ko+1)+hratio_data->GetBinWidth(ko+1))
+                <<hratio_data->GetBinContent(ko+1)<<std::endl;
+          }
+
           l1 = new TLine(histo[0][var][firstplotted]->GetXaxis()->GetXmin(), 1., histo[0][var][firstplotted]->GetXaxis()->GetXmax(), 1.);
           l1->SetLineStyle(2);
           l1->Draw("same");
@@ -652,6 +661,7 @@ hfeats::hfeats(TString ivarnamex, TString ivarnamey, int inbinsx, float iminx, f
   format_tag();
   unit = "";
   maxYaxis = -1.;
+  maxRatio = -1.;
   PU_reweight=false;
 
   string ctitle(title.Data()); // Needed because effing TString can't handle square brackets
@@ -670,10 +680,11 @@ hfeats::hfeats(TString ivarname, int inbins, float *ibinning, vector<int> isampl
   cut(icut),
   samples(isamples),
   tagname(itagname) {
-  minx = binning[0]; maxx = binning[nbins];
+  minx = -1; maxx = binning[nbins];
   format_tag();
   unit = "";
   maxYaxis = -1.;
+  maxRatio = -1.;
   skiplog =iskiplog;
   if(inevents.at(0)<0) nevents = vector<double>(isamples.size(),-1);
   else nevents = inevents;
