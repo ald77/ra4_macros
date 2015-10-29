@@ -322,10 +322,10 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
           //line at 1
           bpad->cd();
           hratio_data->Draw("e0");
-          for (int ko=0; ko< hratio_data->GetNbinsX(); ko++){
-            cout<<hratio_data->GetBinLowEdge(ko+1)<<" "<<(hratio_data->GetBinLowEdge(ko+1)+hratio_data->GetBinWidth(ko+1))
-                <<hratio_data->GetBinContent(ko+1)<<std::endl;
-          }
+	  //          for (int ko=0; ko< hratio_data->GetNbinsX(); ko++){
+          //  cout<<hratio_data->GetBinLowEdge(ko+1)<<" "<<(hratio_data->GetBinLowEdge(ko+1)+hratio_data->GetBinWidth(ko+1))
+          //      <<hratio_data->GetBinContent(ko+1)<<std::endl;
+          //}
 
           l1 = new TLine(histo[0][var][firstplotted]->GetXaxis()->GetXmin(), 1., histo[0][var][firstplotted]->GetXaxis()->GetXmax(), 1.);
           l1->SetLineStyle(2);
