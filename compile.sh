@@ -8,21 +8,19 @@ then
     ./run/remove_backups.sh
     exit_code=$?
 else
-    tmp_file=mktemp
-    
-    make -j 4 -k -r -R 2> >(tee $tmp_file >&2)
+    bad_file=$(mktemp)
+
+    make -j 4 -k -r -R 2> $bad_file
     exit_code=$?
     
-    echo
-    
     if [[ $exit_code != 0 ]] ; then
-	echo "ERRORS AND WARNINGS:"
-	cat $tmp_file >&2
+	printf "\n\e[31m==========  ERRORS AND WARNINGS  ============\e[0m\n"
+	cat $bad_file >&2
     else
-	echo "Compiled successfully without errors or warnings!"
+	printf "\n\e[32mCompiled successfully without errors or warnings!\e[0m\n"
     fi
     
-    rm -rf $tmp_file
+    rm -rf $bad_file
 fi
 
 exit $exit_code
