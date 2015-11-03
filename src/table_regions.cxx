@@ -395,7 +395,7 @@ TString YieldsCut(TString title, TString cuts, vector<TChain*> chain, vector<sfe
       if(yield[sam]>0) bkg += yield[sam];
       bkg_err = sqrt(pow(bkg_err,2)+pow(err,2));
     }
-    //    cout<<sam<<": yield "<<Samples[sam].label<<" "<<yield[sam]<<", n "<<entries<<" \t "<<totCut<<endl;
+    if(false) cout<<sam<<": yield "<<Samples[sam].label<<" "<<yield[sam]<<", n "<<entries<<" \t "<<totCut<<endl;
   }
   
   int digits(2);

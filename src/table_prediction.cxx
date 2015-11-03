@@ -113,9 +113,9 @@ int main(){
       chain_2l[sam]->Add(Samples_2l[sam].file[insam]);
   }
 
-  TString minjets("7"), midjets("8"), mjthresh("600"), highmet("400"); bool do_nb_binning=false;
-  if(method==1) {  minjets = "6"; midjets="99"; mjthresh="400"; highmet="9999"; do_nb_binning=false; } 
-  if(method==3) {  minjets ="6"; midjets="8"; mjthresh="400"; highmet="400"; do_nb_binning=true; }  
+  TString minjets("7"), midjets("8"), mjthresh("600"), highmet("400");
+  if(method==1) {  minjets = "6"; midjets="99"; mjthresh="400"; highmet="9999";} 
+  if(method==3) {  minjets ="6"; midjets="8"; mjthresh="400"; highmet="400";}  
 
 
   TString minjets_2l(""), midjets_2l("");
