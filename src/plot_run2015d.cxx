@@ -21,7 +21,7 @@ namespace {
   TString metcut("met>200");
   TString minht("500");
   TString minbm("1");
-  TString luminosity="0.832"/*"0.135"*/; // in ifb
+  TString luminosity="1.264"/*"0.832"*//*"0.135"*/; // in ifb
   TString plot_type=".pdf";
   TString plot_style="CMSPaper";
 }
@@ -58,13 +58,36 @@ int main(){
   TString folder_2ldata = "/cms24r0/jaehyeok/susy_cfa_babies/2015_10_21/skim_2l/";
 */
   TString folder_ns     = "/net/cms2/cms2r0/babymaker/babies/2015_10_19/mc/";
-  TString folder_nsdata = "/net/cms2/cms2r0/babymaker/babies/2015_10_19/data/singlelep/combined/skim_1lht400/";
+  TString folder_nsdata = "/net/cms2/cms2r0/babymaker/babies/2015_10_25/data/singlelep/combined/skim_1lht400/";
   TString folder_1l     = "/net/cms2/cms2r0/babymaker/babies/2015_10_19/mc/skim_1lht400/";
-  TString folder_1ldata = "/net/cms2/cms2r0/babymaker/babies/2015_10_19/data/singlelep/combined/skim_1lht400/";
-  TString folder_2l     = "/net/cms24/cms24r0/jaehyeok/susy_cfa_babies/2015_10_24/skim_2l/";
-  TString folder_2ldata = "/net/cms24/cms24r0/jaehyeok/susy_cfa_babies/2015_10_21/skim_2l/";
+  TString folder_1ldata = "/net/cms2/cms2r0/babymaker/babies/2015_10_25/data/singlelep/combined/skim_1lht400/";
+  //TString folder_1ldata = "/net/cms2/cms2r0/babymaker/babies/2015_10_25/data/hadronic/";
+  TString folder_2l     = "/net/cms2/cms2r0/babymaker/babies/2015_10_19/mc/skim_2l/";
+  TString folder_2ldata = "/net/cms24/cms24r0/jaehyeok/susy_cfa_babies/2015_10_27/skim_2l/";
 
   TString folder_2vl    = "/net/cms24/cms24r0/jaehyeok/susy_cfa_babies/2015_09_28/skim_2vl/";
+  
+  // 
+  /*
+  Single muon selecton:
+    HT> 500 GeV
+    Njet >=2  with pT>40 GeV and |eta|<2.4
+    Met > 250
+    muon PT > 25 GeV
+    MT< 120
+
+  Kinematic distributions:
+    Njet
+    Nbjet
+    MET
+    lepton PT
+    HT
+  */ 
+  //
+  //  L =  1.264 pb-1
+  // /net/cms2/cms2r0/babymaker/babies/2015_10_25/data/singlelep/combined/skim_1lht500met200
+  // /net/cms2/cms2r0/babymaker/babies/2015_10_25/data/hadronic/*
+  // 
 
   /////////////////////////////////////////////// Data  ///////////////////////////////////////////////   
   vector<TString> s_trig_htmht;
@@ -79,7 +102,7 @@ int main(){
   vector<TString> s_trig_del;
   s_trig_del.push_back(folder_1ldata+"/*DoubleE*");
   vector<TString> s_trig_sl_2l;
-  s_trig_sl_2l.push_back(folder_2ldata+"/*Single*");
+  s_trig_sl_2l.push_back(folder_2ldata+"/*Run*SingleElectron_SingleMuon*");
 
   /////////////////////////////////////////////// MC  ///////////////////////////////////////////////   
   // 1-lepton plots : ra4_sam
@@ -158,7 +181,7 @@ int main(){
   // Reading ntuples
   vector<sfeats> Samples; 
   TString datatitle = "Data";
-  //Samples.push_back(sfeats(s_trig_htmht, datatitle,kBlack,1,"trig[0]&&json")); Samples.back().isData = true;
+  //Samples.push_back(sfeats(s_trig_htmht, datatitle,kBlack,1,"trig[0]&&pass")); Samples.back().isData = true;
   Samples.push_back(sfeats(s_trig_sl, datatitle,kBlack,1,"(trig[4]||trig[8])&&pass")); Samples.back().isData = true;
   Samples.push_back(sfeats(s_tt, "t#bar{t}, 1 true lepton", dps::c_tt_1l, 1,"ntruleps<=1"));
   Samples.push_back(sfeats(s_tt, "t#bar{t}, 2 true leptons", dps::c_tt_2l,1,"ntruleps>=2"));
@@ -186,9 +209,9 @@ int main(){
 
   int imj(Samples.size());
   Samples.push_back(sfeats(s_trig_sl_2l, "Data 2l, N_{jets} #geq 5", kBlack, 1,
-			   "(trig[4]||trig[8])&&ht>450&&met>200&&njets>=5&&(nmus+nels)==2&&pass")); Samples.back().isData = true;
+			   "pass&&(trig[4]||trig[8])&&ht>500&&met>200&&met<400&&njets>=5&&nbm<3&&(nmus+nels)==2&&mj>250")); Samples.back().isData = true;
   Samples.push_back(sfeats(s_trig_sl, "Data 1l, N_{jets} #geq 6, m_{T}#leq140, n_{b}#geq1", dps::c_tt_1l, 1,
-			   "(trig[4]||trig[8])&&ht>450&&met>200&&njets>=6&&(nmus+nels)==1&&mt<=140&&nbm>=1&&pass")); //Samples.back().isData = true;
+			   "pass&&(trig[4]||trig[8])&&ht>500&&met>200&&met<400&&njets>=6&&(nmus+nels)==1&&mt<=140&&nbm>=1&&mj>250")); //Samples.back().isData = true;
   vector<int> mj_sam;
   mj_sam.push_back(imj);
   mj_sam.push_back(imj+1);
@@ -256,28 +279,84 @@ int main(){
     sig_sam_log.push_back(ra4_sam[ind]);
 
   vector<hfeats> vars;
+ 
+  // Invariant masses
+  TString mll("(mumu_m*(mumu_m>0&&mumu_pt1>30)+elel_m*(elel_m>0&&elel_pt1>30))>80&&(mumu_m*(mumu_m>0&&mumu_pt1>30)+elel_m*(elel_m>0&&elel_pt1>30))<100");
+  
+  /////////////////////////// SUSY Synch /////////////////////////// 
+/*
+  vars.push_back(hfeats("Sum$(jets_pt*(jets_pt>40)*(abs(jets_eta)<2.4)*(jets_islep==0))",20,500,1500, ra4_sam, "HT [GeV]",
+          "Sum$((mus_pt>25)*(mus_sigid)*(mus_miniso<0.2))==1&&Sum$(jets_pt*(jets_pt>40)*(abs(jets_eta)<2.4)*(jets_islep==0))>500&&Sum$((jets_pt>40)*(abs(jets_eta)<2.4)*(jets_islep==0))>=2&&met>250&&mt<120"));
+  vars.back().whichPlots = "1"; vars.back().normalize = true;
 
+  vars.push_back(hfeats("met",20,250,750, ra4_sam, "MET [GeV]",
+          "Sum$((mus_pt>25)*(mus_sigid)*(mus_miniso<0.2))==1&&Sum$(jets_pt*(jets_pt>40)*(abs(jets_eta)<2.4)*(jets_islep==0))>500&&Sum$((jets_pt>40)*(abs(jets_eta)<2.4)*(jets_islep==0))>=2&&met>250&&mt<120"));
+  vars.back().whichPlots = "1"; vars.back().normalize = true;
+
+  vars.push_back(hfeats("Sum$((jets_pt>40)*(abs(jets_eta)<2.4)*(jets_islep==0))",11,-0.5,10.5, ra4_sam, "N_{jets}",
+          "Sum$((mus_pt>25)*(mus_sigid)*(mus_miniso<0.2))==1&&Sum$(jets_pt*(jets_pt>40)*(abs(jets_eta)<2.4)*(jets_islep==0))>500&&Sum$((jets_pt>40)*(abs(jets_eta)<2.4)*(jets_islep==0))>=2&&met>250&&mt<120"));
+  vars.back().whichPlots = "1"; vars.back().normalize = true;
+
+  vars.push_back(hfeats("Sum$((jets_pt>40)*(abs(jets_eta)<2.4)*(jets_islep==0)*(jets_csv>0.89))",5,-0.5,4.5, ra4_sam, "N_{b}",
+          "Sum$((mus_pt>25)*(mus_sigid)*(mus_miniso<0.2))==1&&Sum$(jets_pt*(jets_pt>40)*(abs(jets_eta)<2.4)*(jets_islep==0))>500&&Sum$((jets_pt>40)*(abs(jets_eta)<2.4)*(jets_islep==0))>=2&&met>250&&mt<120"));
+  vars.back().whichPlots = "1"; vars.back().normalize = true;
+  
+  vars.push_back(hfeats("Max$(mus_pt*(mus_sigid)*(mus_miniso<0.2))",20,25,325, ra4_sam, "p_{T}(muon) [GeV]",
+          "Sum$((mus_pt>25)*(mus_sigid)*(mus_miniso<0.2))==1&&Sum$(jets_pt*(jets_pt>40)*(abs(jets_eta)<2.4)*(jets_islep==0))>500&&Sum$((jets_pt>40)*(abs(jets_eta)<2.4)*(jets_islep==0))>=2&&met>250&&mt<120"));
+  vars.back().whichPlots = "1"; vars.back().normalize = true;
+*/  
   /////////////////////////// N-1 plots ////////////////////////////
 /* 
+  // npv check
+  vars.push_back(hfeats("npv",30,-0.5,29.5, ra4_sam, "N_{pv}",
+          "mt<140&&(nels+nmus)==1&&ht>"+minht+"&&"+metcut+"&&njets>=0&&nbm>=1"));
+  vars.back().whichPlots = "1"; vars.back().normalize = true;
+
+  vars.push_back(hfeats("npv",30,-0.5,29.5, dl_sam, "N_{pv}",
+   			"ht>350&&(nmus>=2||nels>=2)&&met<50&&"+mll));
+  vars.back().whichPlots = "1"; vars.back().normalize = true;
+*/ 
   // (nels+mus)==1
+
   vars.push_back(hfeats("met",16,0,800, ra4_sam, "MET [GeV]",
-          "npv>=10&&npv<=15&&mt<140&&(nels+nmus)==1&&ht>"+minht+"&&njets>="+minjets+"&&nbm>="+minbm));
+          "mt<140&&(nels+nmus)==1&&ht>"+minht+"&&njets>="+minjets+"&&nbm>="+minbm));
   vars.back().whichPlots = "1"; vars.back().normalize = true;
 
   vars.push_back(hfeats("ht",10,500,1500, ra4_sam, "HT [GeV]",
-          "npv>=10&&npv<=15&&mt<140&&(nels+nmus)==1&&ht>"+minht+"&&"+metcut+"&&njets>="+minjets+"&&nbm>="+minbm));
+          "mt<140&&(nels+nmus)==1&&ht>"+minht+"&&"+metcut+"&&njets>="+minjets+"&&nbm>="+minbm));
   vars.back().whichPlots = "1"; vars.back().normalize = true;
 
   vars.push_back(hfeats("njets",11,-0.5,10.5, ra4_sam, "Number of jets",
-          "npv>=10&&npv<=15&&mt<140&&(nels+nmus)==1&&ht>"+minht+"&&"+metcut+"&&nbm>="+minbm));
+          "mt<140&&(nels+nmus)==1&&ht>"+minht+"&&"+metcut+"&&nbm>="+minbm));
   vars.back().whichPlots = "2"; vars.back().normalize = true;
 
   vars.push_back(hfeats("nbm",5,-0.5,4.5, ra4_sam, "Number of b-tags (CSVM)",
-          "npv>=10&&npv<=15&&mt<140&&(nels+nmus)==1&&ht>"+minht+"&&"+metcut+"&&njets>="+minjets));
+          "mt<140&&(nels+nmus)==1&&ht>"+minht+"&&"+metcut+"&&njets>="+minjets));
   vars.back().whichPlots = "2"; vars.back().normalize = true;
-*/
+ 
+  vars.push_back(hfeats("npv",30,-0.5,29.5, ra4_sam, "N_{pv} [GeV]",
+          "mt<140&&(nels+nmus)==1&&ht>"+minht+"&&"+metcut+"&&njets>="+minjets+"&&nbm>="+minbm));
+  vars.back().whichPlots = "1"; vars.back().normalize = true;
 
-/* 
+  vars.push_back(hfeats("mt",18,0,360, ra4_sam, "m_{T} [GeV]",
+          "mj>250&&mj<400&&(nels+nmus)==1&&ht>"+minht+"&&"+metcut+"&&njets>="+minjets+"&&nbm>="+minbm));
+          //"(nels+nmus)==1&&ht>"+minht+"&&"+metcut+"&&njets>="+minjets+"&&nbm>="+minbm)); // 135 pb-1
+  vars.back().whichPlots = "1"; vars.back().normalize = true; 
+  
+  vars.push_back(hfeats("mj",12,0,600, ra4_sam, "M_{J} [GeV]",
+  			"mt<140&&(nels+nmus)==1&&ht>"+minht+"&&"+metcut+"&&njets>="+minjets+"&&nbm>=1"));
+  			//"(nels+nmus)==1&&ht>"+minht+"&&"+metcut+"&&njets>="+minjets+"&&nbm>="+minbm)); // 135 pb-1
+  vars.back().whichPlots = "2";  vars.back().normalize = true;
+
+/*  
+  vars.push_back(hfeats("mt",18,0,360, ra4_sam, "m_{T} [GeV]",
+          "mj<400&&nels==1&&nmus==0&&ht>"+minht+"&&"+metcut+"&&njets>="+minjets+"&&nbm>="+minbm));
+  vars.back().whichPlots = "1"; vars.back().normalize = true; 
+  
+  vars.push_back(hfeats("mt",18,0,360, ra4_sam, "m_{T} [GeV]",
+          "mj<400&&nels==0&&nmus==1&&ht>"+minht+"&&"+metcut+"&&njets>="+minjets+"&&nbm>="+minbm));
+  vars.back().whichPlots = "1"; vars.back().normalize = true; 
+  
   vars.push_back(hfeats("mt",18,0,360, ra4_sam, "m_{T} [GeV]",
           "mt<140&&mj>400&&(nels+nmus)==1&&ht>"+minht+"&&"+metcut+"&&njets>="+minjets+"&&nbm>="+minbm));
   vars.back().whichPlots = "1"; vars.back().normalize = true; 
@@ -289,8 +368,22 @@ int main(){
   vars.push_back(hfeats("mt",18,0,360, ra4_sam, "m_{T} [GeV]",
           "mt<140&&mj>400&&nels==0&&nmus==1&&ht>"+minht+"&&"+metcut+"&&njets>="+minjets+"&&nbm>="+minbm));
   vars.back().whichPlots = "1"; vars.back().normalize = true;
+ 
+  vars.push_back(hfeats("mt",18,0,360, ra4_sam, "m_{T} [GeV]",
+          "(nels+nmus)==1&&ht>"+minht+"&&"+metcut+"&&njets>="+minjets+"&&nbm==0"));
+  vars.back().whichPlots = "1"; vars.back().normalize = true; 
+  
+  vars.push_back(hfeats("mt",18,0,360, ra4_sam, "m_{T} [GeV]",
+          "nels==1&&nmus==0&&ht>"+minht+"&&"+metcut+"&&njets>="+minjets+"&&nbm==0"));
+  vars.back().whichPlots = "1"; vars.back().normalize = true; 
+  
+  vars.push_back(hfeats("mt",18,0,360, ra4_sam, "m_{T} [GeV]",
+          "nels==0&&nmus==1&&ht>"+minht+"&&"+metcut+"&&njets>="+minjets+"&&nbm==0"));
+  vars.back().whichPlots = "1"; vars.back().normalize = true; 
 */
-
+  if(0)  // for mT study
+  {
+  
   vars.push_back(hfeats("mt",18,0,360, ra4_sam, "m_{T} [GeV]",
           "mj<400&&(nels+nmus)==1&&mt>120&&mt<240&&ht>"+minht+"&&"+metcut+"&&njets>="+minjets+"&&nbm>="+minbm));
   vars.back().whichPlots = "1"; //vars.back().normalize = true;
@@ -314,35 +407,32 @@ int main(){
   vars.push_back(hfeats("mt",18,0,360, ra4_sam, "m_{T} [GeV]",
           "nels==0&&nmus==1&&mt>120&&mt<240&&ht>"+minht+"&&"+metcut+"&&njets>="+minjets+"&&nbm==0"));
   vars.back().whichPlots = "1"; //vars.back().normalize = true;
-
+  
   vars.push_back(hfeats("mt",18,0,360, ra4_sam, "m_{T} [GeV]",
           "mj<400&&(nels+nmus)==1&&mt>240&&ht>"+minht+"&&"+metcut+"&&njets>="+minjets+"&&nbm>="+minbm));
-  vars.back().whichPlots = "1"; //vars.back().normalize = true;
+  vars.back().whichPlots = "1"; vars.back().normalize = true;
   
   vars.push_back(hfeats("mt",18,0,360, ra4_sam, "m_{T} [GeV]",
           "mj<400&&nels==1&&nmus==0&&mt>240&&ht>"+minht+"&&"+metcut+"&&njets>="+minjets+"&&nbm>="+minbm));
-  vars.back().whichPlots = "1"; //vars.back().normalize = true;
+  vars.back().whichPlots = "1"; vars.back().normalize = true;
  
   vars.push_back(hfeats("mt",18,0,360, ra4_sam, "m_{T} [GeV]",
           "mj<400&&nels==0&&nmus==1&&mt>240&&ht>"+minht+"&&"+metcut+"&&njets>="+minjets+"&&nbm>="+minbm));
-  vars.back().whichPlots = "1"; //vars.back().normalize = true;
+  vars.back().whichPlots = "1"; vars.back().normalize = true;
   
   vars.push_back(hfeats("mt",18,0,360, ra4_sam, "m_{T} [GeV]",
           "(nels+nmus)==1&&mt>240&ht>"+minht+"&&"+metcut+"&&njets>="+minjets+"&&nbm==0"));
-  vars.back().whichPlots = "1"; //vars.back().normalize = true;
+  vars.back().whichPlots = "1"; vars.back().normalize = true;
   
   vars.push_back(hfeats("mt",18,0,360, ra4_sam, "m_{T} [GeV]",
           "nels==1&&nmus==0&&mt>240&&ht>"+minht+"&&"+metcut+"&&njets>="+minjets+"&&nbm==0"));
-  vars.back().whichPlots = "1"; //vars.back().normalize = true;
+  vars.back().whichPlots = "1"; vars.back().normalize = true;
   
   vars.push_back(hfeats("mt",18,0,360, ra4_sam, "m_{T} [GeV]",
           "nels==0&&nmus==1&&mt>240&&ht>"+minht+"&&"+metcut+"&&njets>="+minjets+"&&nbm==0"));
-  vars.back().whichPlots = "1"; //vars.back().normalize = true;
-/*  
-  vars.push_back(hfeats("npv",30,-0.5,29.5, ra4_sam, "N_{pv} [GeV]",
-          "mt<140&&(nels+nmus)==1&&ht>"+minht+"&&"+metcut+"&&njets>="+minjets+"&&nbm>="+minbm));
   vars.back().whichPlots = "1"; vars.back().normalize = true;
-*/
+  }
+  
   // nels==1&&nmus==0
 /*
   vars.push_back(hfeats("met",16,0,800, ra4_sam, "MET [GeV]",
@@ -431,7 +521,7 @@ int main(){
           "mt<140&&(nels+nmus)==1&&ht>"+minht+"&&"+metcut+"&&njets>="+minjets+"&&nbm>="+minbm+"&&jets_islep[0]==0"));
   vars.back().whichPlots = "2";  vars.back().normalize = true;
 */
-  
+
   // nels==1&&nmus==0 
 /*  
   vars.push_back(hfeats("jets_pt[0]",16,0,800, ra4_sam, "p_{T}(j_{1}) [GeV]",
@@ -470,7 +560,7 @@ int main(){
   
   vars.push_back(hfeats("jets_eta",10,-2.5,2.5, ra4_sam, "#eta(j) [GeV]",
           "mt<140&&(nels==0&&nmus==1)&&ht>"+minht+"&&"+metcut+"&&njets>="+minjets+"&&nbm>="+minbm+"&&jets_islep==0"));
-  vars.back().whichPlots = "2";  vars.back().normalize = true;
+  ars.back().whichPlots = "2";  vars.back().normalize = true;
 
   vars.push_back(hfeats("jets_csv",20,0,1, ra4_sam, "csv [GeV]",
           "mt<140&&(nels==0&&nmus==1)&&ht>"+minht+"&&"+metcut+"&&njets>="+minjets+"&&nbm>="+minbm+"&&jets_islep==0"));
@@ -483,23 +573,27 @@ int main(){
           "mt<140&&(nels==1&&nmus==0)&&ht>"+minht+"&&"+metcut+"&&njets>="+minjets+"&&nbm>="+minbm));
   vars.back().whichPlots = "2";  vars.back().normalize = true;
   
-  vars.push_back(hfeats("Max$(els_eta*(els_miniso<0.1&&els_sigid&&els_pt>20))",10,-2.5,2.5, ra4_sam, "#eta(electron)",
-          "mt<140&&(nels==1&&nmus==0)&&ht>"+minht+"&&"+metcut+"&&njets>="+minjets+"&&nbm>="+minbm));
-  vars.back().whichPlots = "2";  vars.back().normalize = true;
+//  vars.push_back(hfeats("Max$(els_eta*(els_miniso<0.1&&els_sigid&&els_pt>20))",10,-2.5,2.5, ra4_sam, "#eta(electron)",
+//          "mt<140&&(nels==1&&nmus==0)&&ht>"+minht+"&&"+metcut+"&&njets>="+minjets+"&&nbm>="+minbm));
+//  vars.back().whichPlots = "2";  vars.back().normalize = true;
   
   vars.push_back(hfeats("Max$(mus_pt*(mus_miniso<0.2&&mus_sigid&&mus_pt>20))",10,0.001,200, ra4_sam, "p_{T}(muon) [GeV]",
           "mt<140&&(nels==0&&nmus==1)&&ht>"+minht+"&&"+metcut+"&&njets>="+minjets+"&&nbm>="+minbm));
   vars.back().whichPlots = "2";  vars.back().normalize = true;
 
-  vars.push_back(hfeats("Max$(mus_eta*(mus_miniso<0.2&&mus_sigid&&mus_pt>20))",10,-2.5,2.5, ra4_sam, "#eta(muon)",
-          "mt<140&&(nels==0&&nmus==1)&&ht>"+minht+"&&"+metcut+"&&njets>="+minjets+"&&nbm>="+minbm));
-  vars.back().whichPlots = "2";  vars.back().normalize = true;
+//  vars.push_back(hfeats("Max$(mus_eta*(mus_miniso<0.2&&mus_sigid&&mus_pt>20))",10,-2.5,2.5, ra4_sam, "#eta(muon)",
+//          "mt<140&&(nels==0&&nmus==1)&&ht>"+minht+"&&"+metcut+"&&njets>="+minjets+"&&nbm>="+minbm));
+//  vars.back().whichPlots = "2";  vars.back().normalize = true;
 */
 
   /////////////////////////// FJ related plots //////////////////////////// 
 
   // (nels+nmus)==1
-/*
+  /*
+  vars.push_back(hfeats("fjets_m[0]",40,0,400, ra4_sam, "m(J_{1}) [GeV]",
+  			"mt<140&&(nels+nmus)==1&&ht>"+minht+"&&"+metcut+"&&njets<"+minjets+"&&nbm>=1"));
+  vars.back().whichPlots = "2";  vars.back().normalize = true;
+
   vars.push_back(hfeats("fjets_m[0]",8,0,480, ra4_sam, "m(J_{1}) [GeV]",
   			"mt<140&&(nels+nmus)==1&&ht>"+minht+"&&"+metcut+"&&njets>="+minjets+"&&nbm>=1"));
   vars.back().whichPlots = "2";  vars.back().normalize = true;
@@ -535,6 +629,27 @@ int main(){
   vars.push_back(hfeats("fjets_nconst",6,-0.5,5.5, ra4_sam, "Number of fatjet constituents",
             "mt<140&&(nels+nmus)==1&&ht>"+minht+"&&"+metcut+"&&njets>="+minjets+"&&nbm>="+minbm));
   vars.back().whichPlots = "2"; vars.back().normalize = true;
+
+  vars.push_back(hfeats("fjets_m[0]",40,0,400, ra4_sam, "m(J_{1}) [GeV]",
+  			"mt<140&&(nels+nmus)==1&&ht>"+minht+"&&"+metcut+"&&njets>="+minjets+"&&nbm>=1&&1"));
+  vars.back().whichPlots = "2";  vars.back().normalize = true; // for mtop peak
+  
+  vars.push_back(hfeats("fjets_m[0]",40,0,400, ra4_sam, "m(J_{1}) [GeV]",
+  			"mt<140&&(nels+nmus)==1&&ht>"+minht+"&&"+metcut+"&&njets<"+minjets+"&&nbm>=1&&1"));
+  vars.back().whichPlots = "2";  vars.back().normalize = true; // for mtop peak
+  
+  vars.push_back(hfeats("fjets_m[0]",40,0,400, ra4_sam, "m(J_{1}) [GeV]",
+  			"mt<140&&(nels+nmus)==1&&ht>"+minht+"&&"+metcut+"&&njets<5&&nbm>=1&&1"));
+  vars.back().whichPlots = "2";  vars.back().normalize = true; // for mtop peak
+  
+  vars.push_back(hfeats("fjets_m[0]",40,0,400, ra4_sam, "m(J_{1}) [GeV]",
+  			"mt<140&&(nels+nmus)==1&&ht>"+minht+"&&"+metcut+"&&njets<4&&nbm>=1&&1"));
+  vars.back().whichPlots = "2";  vars.back().normalize = true; // for mtop peak
+  
+  
+  vars.push_back(hfeats("fjets_m[0]",40,0,400, ra4_sam, "m(J_{1}) [GeV]",
+  			"mt<140&&(nels+nmus)==1&&ht>"+minht+"&&"+metcut+"&&nbm>=1&&1"));
+  vars.back().whichPlots = "2";  vars.back().normalize = true; // for mtop peak
 */
   // nels==1&&nmus==0 
 /*
@@ -605,17 +720,15 @@ int main(){
   vars.back().whichPlots = "2"; vars.back().normalize = true;
 */  
   /////////////////////////////// 1l vs 2l MJ comparison ////////////////////////////
-/*  
-  vars.push_back(hfeats("mj", 6, 0, 600, mj_sam, "M_{J} [GeV]",
-   			//"pass&&ht>500&&met>100&&nbm>=1&&njets>=5&&(nmus+nels)==2"));
-   			//"ht>500&&met>200&&njets>=5&&(nmus+nels)==2"));
+  
+  vars.push_back(hfeats("mj", 6, 250, 700, mj_sam, "M_{J} [GeV]",
    			"pass"));
   vars.back().whichPlots = "2"; vars.back().normalize = true;
 
   //vars.push_back(hfeats("mj", nbins, xbins, mj_sam, "M_{J} [GeV]",
   // 			"pass&&ht>450&&met>100&&njets>=4&&(nmus+nels)==2"));
   //vars.back().whichPlots = "2"; vars.back().normalize = true;
- 
+/* 
   vars.push_back(hfeats("mj", nbins, xbins, mj_sam, "M_{J} [GeV]",
    			"pass&ht>450&&met>50"));
   vars.back().whichPlots = "2"; vars.back().normalize = true; vars.back().maxRatio = 2.2;
@@ -635,56 +748,43 @@ int main(){
    			"nels==1&&nmus==1&&met>100&&nbm>=1&&(Sum$(leps_pt>30&&abs(leps_eta)<2.1)>0)"));
   vars.back().whichPlots = "2";  vars.back().normalize = true;
   
-  vars.push_back(hfeats("njets",10,-0.5,9.5, dl_sam, "Number of jets",
+  vars.push_back(hfeats("njets",10,-0.5,9.5, dl_sam, "njets [GeV]",
    			"nels==1&&nmus==1&&met>100&&nbm>=1&&(Sum$(leps_pt>30&&abs(leps_eta)<2.1)>0)"));
   vars.back().whichPlots = "2";  vars.back().normalize = true;
-  
-  vars.push_back(hfeats("nfjets",7,-0.5,6.5, dl_sam, "Nunmber of fatjets",
-   			"nels==1&&nmus==1&&met>100&&nbm>=1&&(Sum$(leps_pt>30&&abs(leps_eta)<2.1)>0)"));
-  vars.back().whichPlots = "2";  vars.back().normalize = true;
-  
+
   vars.push_back(hfeats("mj",10,0,500, dl_sam, "M_{J} [GeV]",
    			"nels==1&&nmus==1&&met>100&&nbm>=1&&(Sum$(leps_pt>30&&abs(leps_eta)<2.1)>0)"));
   vars.back().whichPlots = "2";  vars.back().normalize = true;
   
-  vars.push_back(hfeats("mj",10,0,500, dl_sam, "M_{J} [GeV]",
+  vars.push_back(hfeats("fjets_m[0]",20,0,500, dl_sam, "m(J_{1}) [GeV]",
+   			"nels==1&&nmus==1&&met>100&&nbm>=1&&(Sum$(leps_pt>30&&abs(leps_eta)<2.1)>0)"));
+  vars.back().whichPlots = "2";  vars.back().normalize = true;
+  
+  vars.push_back(hfeats("fjets_m",20,0,500, dl_sam, "m(J) [GeV]",
+   			"nels==1&&nmus==1&&met>100&&nbm>=1&&(Sum$(leps_pt>30&&abs(leps_eta)<2.1)>0)"));
+  vars.back().whichPlots = "2";  vars.back().normalize = true;
+
+  vars.push_back(hfeats("ht",20,0,1000, dl_sam, "H_{T} [GeV]",
    			"nels==1&&nmus==1&&met>100&&nbm>=1&&(Sum$(leps_pt>30&&abs(leps_eta)<2.1)>0)&&ht>300"));
   vars.back().whichPlots = "2";  vars.back().normalize = true;
   
-  vars.push_back(hfeats("fjets_m[0]",20,0,500, dl_sam, "Most massive fat jet mass [GeV]",
-   			"nels==1&&nmus==1&&met>100&&nbm>=1&&(Sum$(leps_pt>30&&abs(leps_eta)<2.1)>0)"));
-  vars.back().whichPlots = "2";  vars.back().normalize = true;
-  
-  vars.push_back(hfeats("fjets_m",20,0,500, dl_sam, "Fat jet mass [GeV]",
-   			"nels==1&&nmus==1&&met>100&&nbm>=1&&(Sum$(leps_pt>30&&abs(leps_eta)<2.1)>0)"));
-  vars.back().whichPlots = "2";  vars.back().normalize = true;
-*/
-/*
-  vars.push_back(hfeats("ht",20,0,1000, dl_sam, "H_{T} [GeV]",
-   			"nels==1&&nmus==1&&met>150&&nbm>=1&&(Sum$(leps_pt>30&&abs(leps_eta)<2.1)>0)&&ht>400"));
-  vars.back().whichPlots = "2";  vars.back().normalize = true;
-  
   vars.push_back(hfeats("njets",10,-0.5,9.5, dl_sam, "njets [GeV]",
-   			"nels==1&&nmus==1&&met>150&&nbm>=1&&(Sum$(leps_pt>30&&abs(leps_eta)<2.1)>0)&&ht>400"));
+   			"nels==1&&nmus==1&&met>100&&nbm>=1&&(Sum$(leps_pt>30&&abs(leps_eta)<2.1)>0)&&ht>300"));
   vars.back().whichPlots = "2";  vars.back().normalize = true;
-  
-  vars.push_back(hfeats("mj",10,0,500, dl_sam, "njets [GeV]",
-   			"nels==1&&nmus==1&&met>150&&nbm>=1&&(Sum$(leps_pt>30&&abs(leps_eta)<2.1)>0)&&ht>400"));
-  vars.back().whichPlots = "2";  vars.back().normalize = true;
-  
-  vars.push_back(hfeats("fjets_m[0]",20,0,500, dl_sam, "Most massive fat jet mass [GeV]",
-   			"nels==1&&nmus==1&&met>150&&nbm>=1&&(Sum$(leps_pt>30&&abs(leps_eta)<2.1)>0)&&ht>400"));
-  vars.back().whichPlots = "2";  vars.back().normalize = true;
-  
-  vars.push_back(hfeats("fjets_m",20,0,500, dl_sam, "Fat jet mass [GeV]",
-   			"nels==1&&nmus==1&&met>150&&nbm>=1&&(Sum$(leps_pt>30&&abs(leps_eta)<2.1)>0)&&ht>400"));
-  vars.back().whichPlots = "2";  vars.back().normalize = true;
-*/
 
+  vars.push_back(hfeats("mj",10,0,500, dl_sam, "M_{J} [GeV]",
+   			"nels==1&&nmus==1&&met>100&&nbm>=1&&(Sum$(leps_pt>30&&abs(leps_eta)<2.1)>0)&&ht>300"));
+  vars.back().whichPlots = "2";  vars.back().normalize = true;
+ 
+  vars.push_back(hfeats("fjets_m[0]",20,0,500, dl_sam, "m(J_{1}) [GeV]",
+   			"nels==1&&nmus==1&&met>100&&nbm>=1&&(Sum$(leps_pt>30&&abs(leps_eta)<2.1)>0)&&ht>300"));
+  vars.back().whichPlots = "2";  vars.back().normalize = true;
   
+  vars.push_back(hfeats("fjets_m",20,0,500, dl_sam, "m(J) [GeV]",
+   			"nels==1&&nmus==1&&met>100&&nbm>=1&&(Sum$(leps_pt>30&&abs(leps_eta)<2.1)>0)&&ht>300"));
+  vars.back().whichPlots = "2";  vars.back().normalize = true;
+ */ 
   
-  // Invariant masses
-  //TString mll("(mumu_m*(mumu_m>0&&mumu_pt1>30)+elel_m*(elel_m>0&&elel_pt1>30))>80&&(mumu_m*(mumu_m>0&&mumu_pt1>30)+elel_m*(elel_m>0&&elel_pt1>30))<100");
   /*
   vars.push_back(hfeats("mumu_m",32,20,180, dl_sam, "m_{#mu#mu} [GeV]",
    			"ht>350&&nmus>=2&&njets<=3"));
@@ -706,14 +806,15 @@ int main(){
   vars.push_back(hfeats("elel_m",32,20,180, del_sam, "m_{ee} [GeV]",
    			"ht>350&&nels>=2&&njets>=4"));
   vars.back().whichPlots = "2"; //vars.back().normalize = true;
-*/
-/*
+
+
   vars.push_back(hfeats("mumu_m*(mumu_m>0)+elel_m*(elel_m>0)",32,20,180, dl_sam, "m_{ll} [GeV]",
    			"ht>350&&(nmus>=2||nels>=2)&&njets>=4"));
   vars.back().whichPlots = "2"; vars.back().normalize = true;
-
+*/
+/*
   // Kinematic distributions
-  vars.push_back(hfeats("ht",20,0,1000, dl_sam, "H_{T}^{HLT} [GeV]",
+  vars.push_back(hfeats("ht",20,0,1000, dl_sam, "H_{T} [GeV]",
    			"(nmus>=2||nels>=2)&&njets>=4&&"+mll));
   vars.back().whichPlots = "2";  vars.back().normalize = true;
   
@@ -721,7 +822,7 @@ int main(){
    			"ht>350&&(nmus>=2||nels>=2)&&"+mll));
   vars.back().whichPlots = "2";  vars.back().normalize = true;
   
-  vars.push_back(hfeats("fjets_m[0]",20,0,500, dl_sam, "Most massive fat jet mass [GeV]",
+  vars.push_back(hfeats("fjets_m[0]",20,0,500, dl_sam, "m(J_{1}) [GeV]",
    			"ht>350&&(nmus>=2||nels>=2)&&njets>=4&&"+mll));
   vars.back().whichPlots = "2";  vars.back().normalize = true;
   
@@ -737,6 +838,7 @@ int main(){
   vars.push_back(hfeats("mj",20,0,600, dl_sam, "M_{J} [GeV]",
    			"ht>350&&(nmus>=2||nels>=2)&&njets>=4&&"+mll));
   vars.back().whichPlots = "2";  vars.back().normalize = true;
+
 */ 
   // ZpT : elel and mumu separately
  /* 
@@ -768,10 +870,6 @@ int main(){
   vars.back().whichPlots = "2"; // vars.back().normalize = true;
 */  
   //
-  plot_distributions(Samples, vars, luminosity, plot_type, plot_style, "1d_2015d_test",true);
+  plot_distributions(Samples, vars, luminosity, plot_type, plot_style, "1d_2015d",true);
 
 }
-
-//float njets_reweight(int njets) {
-//    if(njets==0) return 1.;
-//}
