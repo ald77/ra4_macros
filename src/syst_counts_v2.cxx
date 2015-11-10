@@ -41,7 +41,7 @@ int main(int argc, char *argv[]){
   string folder = "/net/cms29/cms29r0/heller/ra4_macros/rohanskim/";
   double lumi = 10.;
   string lumi_string = "10";
-  bool compressed;
+  bool compressed = false;
   if(argc>1){
     lumi = strtod(argv[1], NULL);
     lumi_string = argv[1];
