@@ -57,8 +57,8 @@ int main(){
   
   //CUTS
   vector<TString> nbcuts;
-  nbcuts.push_back("nbm==1");
-  nbcuts.push_back("nbm==2");
+  nbcuts.push_back("nbm>=1");
+  nbcuts.push_back("nbm>=2");
   nbcuts.push_back("nbm>=3");
 
   vector<vector<TString> > syscuts;
@@ -131,7 +131,7 @@ void maketable(const vector<double> &tot_entries, const vector<vector<vector<dou
     //
     file<< "\\begin{tabular}[tbp!]{l|c|c|c} \\hline \\hline"<<endl;
 
-    file << "Baseline + $N_{b}="<<iNb+1<<"$ (${\\cal L} = "<<lumi<<"$ fb$^{-1}$) & Reco Lepton & MC Predicted Events & \\% (for both flavors) \\\\"<<endl;
+    file << "Baseline (${\\cal L} = "<<lumi<<"$ fb$^{-1}$) & Reco Lepton & MC Predicted Events & \\% (for both flavors) \\\\"<<endl;
     file << "\\hline \\hline"<<endl;
     file << "Lost-Fake Lepton & e & "<<RoundNumber(entries[iNb][0][0],1)<<" & \\multirow{2}{*}{"<<RoundNumber((entries[iNb][0][0]+entries[iNb][0][1])/tot_entries[iNb]*100.,0)<<"\\%} \\\\"<<endl;
     file << "& $\\mu$ & "<<RoundNumber(entries[iNb][0][1],1)<<" & \\\\"<<endl;
