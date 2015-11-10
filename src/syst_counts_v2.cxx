@@ -41,7 +41,7 @@ int main(int argc, char *argv[]){
   string folder = "/net/cms29/cms29r0/heller/ra4_macros/rohanskim/";
   double lumi = 10.;
   string lumi_string = "10";
-  bool compressed = false;
+  bool compressed;
   if(argc>1){
     lumi = strtod(argv[1], NULL);
     lumi_string = argv[1];
@@ -62,13 +62,7 @@ int main(int argc, char *argv[]){
   other.Add(folder_other+"*ZJetsToLNu_HT*");
   other.Add(folder_other+"*DYJets*");
   other.Add(folder_other+"*H_HToBB*");
-  small_tree_quick *sig;
-  if(compressed){
-    sig = new small_tree_quick(folder_other+"*T1tttt*1200*800*");
-  }else{
-    sig = new small_tree_quick(folder_other+"*T1tttt*1500*100*");
-  }
-
+  small_tree_quick sig(compressed ? folder_other+"*T1tttt*1200*800*" : folder_other+"*T1tttt*1500*100*");
 
   //Method2
   vector< vector<TString> > bins_by_region2;
@@ -170,6 +164,7 @@ int main(int argc, char *argv[]){
   
   GetCounts(lumi,sysnames, method, baseline, ttbar, ttbar_counts, ttbar_errors, bins_by_region, hists, h);
   GetCounts(lumi,sysnames, method, dilepton, ttbar, ttbar_counts_dilep, ttbar_errors_dilep, bins_by_region, hists, h_dilep);
+  if(false) cout << sig.GetEntries() << endl;
 
   vector< TString> othersys;
   for(int i=0;i<nsys; i++){
