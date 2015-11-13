@@ -64,7 +64,7 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
     pad = static_cast<TPad *>(can.cd());
   }
 
-  bool rohanHack(true);
+  bool rohanHack(false);
   if(rohanHack) cout<<"WARNING: RohanHack is On."<<endl;
 
   // Reading ntuples
