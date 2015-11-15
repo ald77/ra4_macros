@@ -27,6 +27,8 @@
 #include "TRandom3.h"
 #include "TStyle.h"
 #include "TEfficiency.h"
+#include "TSystem.h"
+#include "TDirectory.h"
 
 #include "styles.hpp"
 #include "utilities.hpp"
@@ -36,6 +38,10 @@ using namespace std;
 
 void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString luminosity, 
                         TString filetype, TString namestyle, TString dir, bool doRatio){
+
+  TString outfolder("plots/"+dir);
+  gSystem->mkdir(outfolder, kTRUE);
+
   bool showcuts(true);
   if (doRatio) namestyle = "CMSPaper";
   styles style(namestyle);
@@ -46,7 +52,6 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
     style.TitleSize    *= 1.1;
     style.yTitleOffset /= 1.3;
     style.xTitleOffset /= 1.08;
-
   }
   style.setDefaultStyle();
   TCanvas can;
@@ -348,7 +353,7 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
       }
       //save canvas
       pad->SetLogy(1);
-      pname = "plots/"+dir+"/log_lumi_"+vars[var].tag+plot_tag;
+      pname = outfolder+"/log_lumi_"+vars[var].tag+plot_tag;
       if(vars[var].normalize) pname.ReplaceAll("/log_lumi","/log_norm");
       if(!vars[var].skiplog && (vars[var].whichPlots.Contains("0") || vars[var].whichPlots.Contains("1"))) 
         can.SaveAs(pname);
@@ -359,7 +364,7 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
       histo[0][var][firstplotted]->SetMaximum(maxpad);
       // pad = static_cast<TPad *>(can.cd(1));
       if (!doRatio) style.moveYAxisLabel(histo[0][var][firstplotted], maxpad, false);
-      pname = "plots/"+dir+"/lumi_"+vars[var].tag+plot_tag;
+      pname = outfolder+"/lumi_"+vars[var].tag+plot_tag;
       if(vars[var].normalize) pname.ReplaceAll("/lumi","/norm");
       if(vars[var].whichPlots.Contains("0") || vars[var].whichPlots.Contains("2")) can.SaveAs(pname);
     } // Lumi plots
@@ -414,13 +419,13 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
     histo[1][var][0]->Draw("axis same");
     style.moveYAxisLabel(histo[1][var][0], maxpad, false);
     can.SetLogy(0);
-    pname = "plots/"+dir+"/shapes_"+vars[var].tag+plot_tag;
+    pname = outfolder+"/shapes_"+vars[var].tag+plot_tag;
     if(vars[var].whichPlots.Contains("0") || vars[var].whichPlots.Contains("3")) can.SaveAs(pname);
     float maxpadLog = maxhisto*exp(fracLeg*log(maxhisto/minLog)/(1-fracLeg));
     histo[1][var][0]->SetMaximum(maxpadLog);
     style.moveYAxisLabel(histo[1][var][0], maxpadLog, true);
     can.SetLogy(1);
-    pname = "plots/"+dir+"/log_shapes_"+vars[var].tag+plot_tag;
+    pname = outfolder+"/log_shapes_"+vars[var].tag+plot_tag;
     if(!vars[var].skiplog && (vars[var].whichPlots.Contains("0") || vars[var].whichPlots.Contains("4"))) 
       can.SaveAs(pname);
   }// Loop over variables
@@ -561,6 +566,7 @@ TString cuts2title(TString title){
   title.ReplaceAll("Max$(abs(els_eta)*(els_sigid&&els_miniso<0.1&&els_pt>20))>1.479","endcap #font[12]{e}");
 
 
+  title.ReplaceAll("nleps", "n_{l}");
   title.ReplaceAll("nmus", "n_{#mu}");  
   title.ReplaceAll("nels", "n_{e}");  
   title.ReplaceAll("nvmus", "n^{veto}_{#mu}");  
