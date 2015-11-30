@@ -42,7 +42,7 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
   TString outfolder("plots/"+dir);
   gSystem->mkdir(outfolder, kTRUE);
 
-  bool showcuts(true);
+  bool showcuts(false);
   if (doRatio) namestyle = "CMSPaper";
   styles style(namestyle);
   if(namestyle.Contains("CMSPaper")) style.nDivisions = 706;
@@ -158,7 +158,8 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
         lumilabel = "";
         cmslabel = "";
       } else {
-        lumilabel = TString::Format("L = %1.f",luminosity.Atof()*1000.)+" pb^{-1} (13 TeV)";
+        //lumilabel = TString::Format("L = %1.f",luminosity.Atof()*1000.)+" pb^{-1} (13 TeV)";
+        lumilabel = TString::Format("L = %1.1f",luminosity.Atof())+" fb^{-1} (13 TeV)";
         cmslabel = "#font[62]{CMS} #scale[0.8]{#font[52]{Preliminary}}";
       }
       if(vars[var].unit!="") {
@@ -345,7 +346,7 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
       //label lumi
       pad->cd();
       if(!namestyle.Contains("CMSPaper") || showcuts) {
-	TString lumilbl = TString::Format("L = %1.f",luminosity.Atof()*1000.)+" pb^{-1}, "+norm_s;
+	TString lumilbl = TString::Format("L = %1.1f",luminosity.Atof())+" fb^{-1}, "+norm_s;
 	TLatex llbl;
 	llbl.SetTextSize(style.LegendSize*0.8); 
 	llbl.SetNDC(); llbl.SetTextAlign(33);
