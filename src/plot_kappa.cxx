@@ -1,32 +1,31 @@
 // plot_kappa: Plots kappa for the different fitting methods.
 //             Uncertainties found fluctuating yields with Gamma distributions
 
-#include <fstream>
-#include <iostream>
-#include <vector>
 #include <ctime>
-
-#include <unistd.h>
+#include <fstream>
 #include <getopt.h>
+#include <iostream>
+#include <unistd.h>
+#include <vector>
 
-#include "TMath.h"
-#include "TChain.h"
-#include "TH1D.h"
 #include "TCanvas.h"
+#include "TChain.h"
+#include "TGraphAsymmErrors.h"
+#include "TH1D.h"
+#include "TLatex.h"
 #include "TLegend.h"
+#include "TMath.h"
 #include "TLine.h"
 #include "TString.h"
-#include "TLatex.h"
-#include "TGraphAsymmErrors.h"
 
 #include "styles.hpp"
 #include "utilities.hpp"
 #include "utilities_macros.hpp"
 
 namespace  {
-  TString ntuple_date("2015_09_14");
-  TString lumi("10");
-  int method(1);
+  TString ntuple_date("2015_10_19");
+  TString lumi("2.1");
+  int method(3);
   int nrep = 100000;    // Fluctuations of Gamma distribution
   bool do_2l(false);  // Calculate dilepton closure stat uncertainty
   bool do_1ltt(false); // Kappa just for 1l ttbar
@@ -36,8 +35,6 @@ namespace  {
   bool t_other(false); // Merges single t and other
   TString plot_type=".pdf";
   bool do_sigma_avError(true); 
-
-  bool morejets(false);
 }
 
 using namespace std;
@@ -69,51 +66,44 @@ int main(int argc, char *argv[]){
       do_2ltt = true;
       break;
     case 'o':
-      do_other = false;
+      do_other = true;
       break;
-    case 'j':
-      morejets = true;
     default:
       break;
     }
   }
 
-  TString folder="/cms5r0/rohan/archive/"+ntuple_date+"/skim/";
-  TString folder_1l="/cms5r0/rohan/archive/"+ntuple_date+"/skim_1l/";
-  TString folder_2l="/cms5r0/rohan/archive/"+ntuple_date+"/skim_2l/";
-  TString folder_genht="/cms5r0/rohan/archive/"+ntuple_date+"/skim_genht/";
+  TString folder="/afs/cern.ch/user/m/manuelf/work/babies/"+ntuple_date+"/mc/skim_1lht500met200/";
   
-  vector<TString> s_tt;
-  if(do_1ltt) {
-    s_tt.push_back(folder_genht+"*_TTJets*SingleLept*");
-    s_tt.push_back(folder_1l+"*_TTJets*HT*");
-  }
-  else if(do_2ltt){
-    s_tt.push_back(folder_genht+"*_TTJets*DiLept*");
-    s_tt.push_back(folder_2l+"*_TTJets*HT*");
-  }
-  else{
-    s_tt.push_back(folder_genht+"*_TTJets*Lept*");
+  vector<TString> s_tt, s_bkg;
+  if(do_ttbar){
+    s_tt.push_back(folder+"*_TTJets*Lept*");
     s_tt.push_back(folder+"*_TTJets*HT*");
+  }
+  if(do_other){
+    s_bkg.push_back(folder+"*_WJetsToLNu*");
+    s_bkg.push_back(folder+"*_TTWJets*");
+    s_bkg.push_back(folder+"*_TTZTo*");
+    s_bkg.push_back(folder+"*_ST_*");
+    s_bkg.push_back(folder+"*DYJetsToLL*");
+    s_bkg.push_back(folder+"*_QCD_HT*");
+    s_bkg.push_back(folder+"*ttHJetTobb*");
+    s_bkg.push_back(folder+"*_WWTo*");
+    s_bkg.push_back(folder+"*ggZH_HToBB*");
   }
   // Reading ntuples
   vector<sfeats> Samples; 
-  Samples.push_back(sfeats(s_tt, "t#bar{t}", 46,1));
-  
-    
-  // Adding non-skimmed samples
-  vector<int> ra4_sam, ra4_sam_ns;
+  if(do_1ltt) Samples.push_back(sfeats(s_tt, "t#bar{t}",46,1,"ntruleps==1"));
+  else if(do_2ltt) Samples.push_back(sfeats(s_tt, "t#bar{t}",46,1,"ntruleps==2"));
+  else Samples.push_back(sfeats(s_tt, "t#bar{t}",46,1));
+  if(do_other) Samples.push_back(sfeats(s_bkg, "Other", 46, 1));
+
+  vector<int> ra4_sam;
   unsigned nsam(Samples.size());
   for(unsigned sam(0); sam < nsam; sam++){
     ra4_sam.push_back(sam);
-    //    ra4_sam_ns.push_back(nsam+sam);
-    //vector<TString> sam_files = Samples[sam].file;
-    //for(unsigned ifile(0); ifile < sam_files.size(); ifile++)
-    //sam_files[ifile].ReplaceAll(folder, folder_ns);
-    //Samples.push_back(sfeats(sam_files, Samples[sam].label, Samples[sam].color, Samples[sam].style,
-    //			     Samples[sam].cut));
-  } // Loop over samples
-
+  }
+  
   // Reading ntuples
   vector<TChain *> chain;
   for(unsigned sam(0); sam < Samples.size(); sam++){
@@ -142,38 +132,29 @@ int main(int argc, char *argv[]){
   powersn.push_back(1); 
   powersn.push_back(1); 
 
-  TString baseline("ht>500&&met>200&&nbm>=1&&(nmus+nels)==1&&njets>=7");
-  if(morejets) baseline="ht>500&&met>200&&nbm>=1&&(nmus+nels)==1&&njets>=5";
-  if(do_2l) baseline = "(nmus+nels)==2&&ht>500&&met>200&&njets>=6&&nbm>=1";
+  TString baseline("ht>500&&met>200&&nbm>=1&&nleps==1&&njets>=6");
+  if(do_2l) baseline = "nleps==2&&ht>500&&met>200&&njets>=5&&nbm>=1";
   vector<TString> metcuts, njcuts, nbcuts, metnames;
   metcuts.push_back("met>200&&met<=400");
   metcuts.push_back("met>400");
   if(!do_2l){
-    if(morejets){
-      //njcuts.push_back("njets>=5&&njets<=6");
-      njcuts.push_back("njets==5");
-      njcuts.push_back("njets==6");
-      njcuts.push_back("njets>=7&&njets<=8");
-      njcuts.push_back("njets>=9");
-    }
-    else{
-      njcuts.push_back("njets<=8");
-      njcuts.push_back("njets>=9");
-    }
+    njcuts.push_back("njets<=8");
+    njcuts.push_back("njets>=9");    
   } else {
     njcuts.push_back("njets<=7");
     njcuts.push_back("njets>=8");
   }
-  if(do_2l) nbcuts.push_back("nbm<=2");
-  else {
+  if(!do_2l){
     nbcuts.push_back("nbm==1");
-    if(method==1 || method==2) nbcuts.push_back("nbm>=2");
+    if(method==1) 
+      nbcuts.push_back("nbm>=2");
     else {
       nbcuts.push_back("nbm==2");
       nbcuts.push_back("nbm>=3");
-      nbcuts.push_back("nbm>=2");
+      nbcuts.push_back("nbm>=2");    
     }
   }
+  
   for(unsigned imet(0); imet<metcuts.size(); imet++){
     metnames.push_back(metcuts[imet]);
     metnames[imet].ReplaceAll("met>","");
@@ -224,10 +205,10 @@ int main(int argc, char *argv[]){
 	  // cout << totcut<<endl;
 	  float yield_singlet(0);
 	  for(unsigned sam(0); sam < ra4_sam.size(); sam++) {
-	    totcut = (lumi+"*weight*("+baseline+"&&"+nbcuts[inb]+"&&"+metcuts[imet]+"&&"+cuts[obs]+
+	    totcut = (lumi+"*weight*("+baseline+"&&"+metcuts[imet]+"&&"+cuts[obs]+
 		      "&&"+Samples[ra4_sam[sam]].cut);
 	    //cout<<"Cut: "<<totcut<<endl;
-	    if(method==1 || obs%2==1) totcut += "&&"+njcuts[inj];
+	    if(method==1 || obs%2==1) totcut += "&&"+njcuts[inj]+"&&"+nbcuts[inb];
 	    totcut += ")";
 	    //cout << totcut<<endl;
 	    double yield(0.), sigma(0.), avWeight(1.);
@@ -393,7 +374,6 @@ void plotKappa(vector<vector<double> > &vx, vector<vector<double> > &vy, vector<
 
   bool do_data((idata%2)==1), do_pred(idata>=2);
   TString stylename = "RA4";
-  if(morejets) stylename = "RA4long";
   styles style(stylename);
   style.setDefaultStyle();
   float max_axis(3.2), max_kappa(0.);
@@ -465,7 +445,6 @@ void plotKappa(vector<vector<double> > &vx, vector<vector<double> > &vy, vector<
   }
   if(do_data) pname += "_data";
   else  pname += "_mc";
-  if(morejets) pname += "_ext";
   pname += plot_type;
   if(do_pred) pname.ReplaceAll("kappa","npred");
   can.SaveAs(pname);
