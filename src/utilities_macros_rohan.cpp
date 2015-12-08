@@ -35,13 +35,13 @@ using namespace std;
 
 void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString luminosity, 
                         TString filetype, TString namestyle, TString dir, bool doRatio){
-  bool showcuts(true);
+  bool showcuts(!namestyle.Contains("CMSPaper"));
   //if (doRatio) namestyle = "CMSPaper";
   styles style(namestyle);
   if(namestyle.Contains("CMSPaper")) style.nDivisions = 706;
   if (doRatio){
     style.LabelSize *=1.1;
-    style.LegendSize *=1.2;
+    style.LegendSize *=1;
     style.TitleSize *=1.2;
     style.yTitleOffset /=1.3;
   }
@@ -96,6 +96,7 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
     leg[ileg].SetTextFont(style.nFont); 
   }
   TLine line; line.SetLineColor(28); line.SetLineWidth(5); line.SetLineStyle(3);
+  TLine line2; line2.SetLineColor(kBlack); line2.SetLineWidth(5); line2.SetLineStyle(1);
   vector< vector<TH1D*> > histo[2];
   vector<TH1D*> varhisto;
   vector<float> nentries;
@@ -146,8 +147,8 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
         lumilabel = "";
         cmslabel = "";
       } else {
-        lumilabel = TString::Format("L = %1.f",luminosity.Atof()*1000.)+" pb^{-1} (13 TeV)";
-        cmslabel = "#font[62]{CMS preliminary}";
+        lumilabel = TString::Format("L = %1.f",luminosity.Atof())+" fb^{-1} (13 TeV)";
+        cmslabel = "#font[62]{CMS} #scale[0.8]{#font[52]{Simulation}}";
       }
       if(vars[var].unit!="") {
         int digits(0);
@@ -191,9 +192,10 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
         } else {
           histo[0][var][sam]->SetLineColor(Samples[isam].color);
           if(Samples[isam].isData){
-            histo[0][var][sam]->SetMarkerStyle(20);
+            histo[0][var][sam]->SetMarkerStyle(Samples[isam].style);
             histo[0][var][sam]->SetMarkerSize(1.2);         
             histo[0][var][sam]->SetLineWidth(2);
+            histo[0][var][sam]->SetLineStyle(0);
           } else {
             histo[0][var][sam]->SetLineWidth(6);
             histo[0][var][sam]->SetLineStyle(abs(Samples[isam].style));
@@ -248,19 +250,19 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
         bool noStack = Samples[isam].isSig || Samples[isam].isData;
         unsigned ileg = (Nsam<=3?0:legcount>=(Nsam+1)/2);
         if(!noStack){
-          leg[ileg].AddEntry(histo[0][var][sam], leghisto,"f");
+          leg[ileg].AddEntry(histo[0][var][sam], leghisto,"LEP");
           legcount++;
           if(firstplotted < 0) {
             if(!Samples[isam].mcerr) histo[0][var][sam]->Draw("hist");
             else histo[0][var][sam]->Draw("ELP");
             firstplotted = sam;
-            style.setTitles(histo[0][var][sam],vars[var].title, ytitle, cmslabel, lumilabel);
+            style.setTitles(histo[0][var][sam],vars[var].title, ytitle, cmslabel, "#sqrt{s} = 13 TeV");
           } else {
             if(!Samples[isam].mcerr) histo[0][var][sam]->Draw("hist same");
             else histo[0][var][sam]->Draw("ELP same");
           }
         } else {
-          if(Samples[isam].isSig) leg[ileg].AddEntry(histo[0][var][sam], leghisto,"l");
+          if(Samples[isam].isSig) leg[ileg].AddEntry(histo[0][var][sam], leghisto,"LEP");
           else leg[ileg].AddEntry(histo[0][var][sam], leghisto,"elp");
           legcount++;
         }
@@ -278,6 +280,7 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
       if (!doRatio) style.moveYAxisLabel(histo[0][var][firstplotted], maxpadLog, true);
       histo[0][var][firstplotted]->Draw("axis same");
       if(vars[var].cut>0) line.DrawLine(vars[var].cut, 0, vars[var].cut, maxhisto);
+      if(vars[var].cut>0) line2.DrawLine(250, 0, 250, maxhisto);
      
       //ratio
       TH1D* hratio_data(NULL), *hratio_mcscale(NULL);
@@ -304,21 +307,34 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
           hratio_data->SetTitle("");
           hratio_mcscale->SetTitle("");
           hratio_data->Divide(hratio_mcscale);
-	  hratio_data->GetYaxis()->SetRangeUser(0.01,maxRatio);
+	  hratio_data->GetYaxis()->SetRangeUser(0.0000001,maxRatio);
           hratio_data->GetXaxis()->SetLabelSize(style.LabelSize*2.2);
-          hratio_data->GetYaxis()->SetLabelSize(style.LabelSize*2.1);
+          hratio_data->GetYaxis()->SetLabelSize(style.LabelSize*1.8);
           hratio_data->GetYaxis()->SetTitle("Data / MC ");
-	  if(Nsam==2) hratio_data->GetYaxis()->SetTitle("High / Low");
+	  if(Nsam==2) hratio_data->GetYaxis()->SetTitle("High m_{T} / Low m_{T}");
           hratio_data->GetXaxis()->SetTitle(histo[0][var][firstplotted]->GetXaxis()->GetTitle());
-          hratio_data->GetYaxis()->SetTitleSize(style.TitleSize*3);
-          hratio_data->GetYaxis()->SetTitleOffset(0.5); //can't use relative size, since somehow it changes between plots...
+          hratio_data->GetYaxis()->SetTitleSize(style.TitleSize*2.4);
+          hratio_data->GetYaxis()->SetTitleOffset(0.65); //can't use relative size, since somehow it changes between plots...
           hratio_data->GetXaxis()->SetTitleSize(style.TitleSize*3);
           hratio_data->GetXaxis()->SetTitleOffset(style.xTitleOffset*0.9);
           //move  the labels ou tof the way
           histo[0][var][firstplotted]->GetXaxis()->SetLabelOffset(2.);
           //line at 1
           bpad->cd();
-          hratio_data->Draw("e0");
+	  hratio_data->SetLineColor(kBlack);
+	  hratio_data->SetMarkerStyle(20);
+	  hratio_data->Draw("e0");
+	  
+	  int xshade[] = {0,250,250,0,0};
+	  int yshade[] = {1,1,0,0,1};
+
+	  TGraph *hratio_shade = new TGraph(5,xshade,yshade);
+	  hratio_shade->SetFillColorAlpha(kBlack,0.2);
+
+	  hratio_shade->Draw("F same");
+
+	  if(vars[var].cut>0) line.DrawLine(vars[var].cut, 0, vars[var].cut, 1);
+	  if(vars[var].cut>0) line2.DrawLine(250, 0, 250, 1);
 	  
           l1 = new TLine(histo[0][var][firstplotted]->GetXaxis()->GetXmin(), 1., histo[0][var][firstplotted]->GetXaxis()->GetXmax(), 1.);
           l1->SetLineStyle(2);
@@ -367,16 +383,22 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
       int isam = vars[var].samples[sam];
       histo[1][var][sam]->SetLineColor(Samples[isam].color);
       histo[1][var][sam]->SetMarkerColor(Samples[isam].color);
-      histo[1][var][sam]->SetMarkerStyle(20);
-      histo[1][var][sam]->SetLineStyle(abs(Samples[isam].style));
-      histo[1][var][sam]->SetLineWidth(4);
+      histo[1][var][sam]->SetMarkerStyle(Samples[isam].style);
+      histo[1][var][sam]->SetLineStyle(0);
+      if(Samples[isam].isData) histo[1][var][sam]->SetLineWidth(2);
+      else histo[1][var][sam]->SetLineWidth(4);
+      
       if(nentries[sam]) histo[1][var][sam]->Scale(100./nentries[sam]);
       if(maxhisto < histo[1][var][sam]->GetMaximum()) maxhisto = histo[1][var][sam]->GetMaximum();
+      style.setTitles(histo[1][var][sam],vars[var].title, "Entries (%)", cmslabel, "#sqrt{s} = 13 TeV");
       if(sam==0){
         histo[1][var][sam]->SetXTitle(vars[var].title);
+        histo[1][var][sam]->GetXaxis()->SetLabelSize(0);
         histo[1][var][sam]->SetYTitle("Entries (%)");
-        if(Samples[isam].style>0) histo[1][var][sam]->Draw("hist");
-        else histo[1][var][sam]->Draw("e1 x0");
+	//        if(Samples[isam].style>0) histo[1][var][sam]->Draw("hist");
+        //else histo[1][var][sam]->Draw("e1 x0");
+	histo[1][var][sam]->Draw("e1 x0");
+	
       } else {
         if(Samples[isam].style>0) histo[1][var][sam]->Draw("hist same");
         else histo[1][var][sam]->Draw("e1 x0 same");
@@ -394,13 +416,23 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
           leg[ileg].SetTextSize(0.75*style.LegendSize);
         }
       }
-      
-      if(Samples[isam].style>0) leg[ileg].AddEntry(histo[1][var][sam], leghisto, "l");
-      else leg[ileg].AddEntry(histo[1][var][sam], leghisto, "p");
+     
+      if(Samples[isam].isData) leg[ileg].AddEntry(histo[1][var][sam], leghisto, "P");
+      else leg[ileg].AddEntry(histo[1][var][sam], leghisto, "L");
       legcount++;
     } // Loop over samples
+
+    float xshade[] = {0,250,250,0,0};
+    float yshade[] = {maxhisto,maxhisto,0,0,maxhisto};
+    
+    TGraph* shade = new TGraph(5,xshade,yshade);
+    shade->SetFillColorAlpha(kBlack,0.2);
+    shade->Draw("F same");
+
+
     for(int ileg(0); ileg<nLegs; ileg++) leg[ileg].Draw(); 
     if(vars[var].cut>0) line.DrawLine(vars[var].cut, 0, vars[var].cut, maxhisto);
+    if(vars[var].cut>0) line2.DrawLine(250, 0, 250, maxhisto);
     float maxpad = maxhisto + fracLeg*maxhisto/(1-fracLeg);
     histo[1][var][0]->SetMaximum(maxpad);
     histo[1][var][0]->Draw("axis same");
@@ -501,7 +533,6 @@ void plot_2D_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString 
         TLine line; line.SetLineColor(1); line.SetLineWidth(6); line.SetLineStyle(2);
         if(vars[i].cutx>0 && vars[i].cuty>0){
           line.DrawLine(vars[i].cutx,0,vars[i].cutx,vars[i].cuty);
-          line.DrawLine(0,vars[i].cuty,vars[i].cutx,vars[i].cuty);
         }
         else if(vars[i].cutx>0 && vars[i].cuty<0){
           line.DrawLine(vars[i].cutx,0,vars[i].cutx,vars[i].maxy);

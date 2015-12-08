@@ -63,7 +63,7 @@
     PadLeftMargin   = 0.19
     yTitleOffset    = 1.5
 
-[CMSPaper_Log]
+[CMSPaperLog]
     yTitleOffset    = 1.45
 [CMSPaper_Digits_2]
     yTitleOffset    = 1.3

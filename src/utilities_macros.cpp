@@ -384,8 +384,9 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
       histo[1][var][sam]->SetLineWidth(4);
       if(nentries[sam]) histo[1][var][sam]->Scale(100./nentries[sam]);
       if(maxhisto < histo[1][var][sam]->GetMaximum()) maxhisto = histo[1][var][sam]->GetMaximum();
+      style.setTitles(histo[1][var][sam],vars[var].title, "Entries (%)", cmslabel, lumilabel);
       if(sam==0){
-        histo[1][var][sam]->SetXTitle(vars[var].title);
+	histo[1][var][sam]->SetXTitle(vars[var].title);
         histo[1][var][sam]->SetYTitle("Entries (%)");
         if(Samples[isam].style>0) histo[1][var][sam]->Draw("hist");
         else histo[1][var][sam]->Draw("e1 x0");
