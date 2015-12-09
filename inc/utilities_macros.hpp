@@ -88,7 +88,7 @@ public:
   std::vector<TString> file;
   TString label, cut, factor,tag;
   int color, style;
-  bool isSig, doStack, isData, mcerr;
+  bool isSig, doStack, isData, mcerr, doBand;
   TString samVariable; // Used to plot different variables in the same histogram
 };
 

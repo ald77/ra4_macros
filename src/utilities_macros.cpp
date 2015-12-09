@@ -193,12 +193,16 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
             histo[0][var][sam]->Add(histo[0][var][bsam]);
             break;
           }
-
-	  
-          histo[0][var][sam]->SetFillColor(Samples[isam].color);
-          histo[0][var][sam]->SetFillStyle(1001);
-          histo[0][var][sam]->SetLineColor(1);
-          histo[0][var][sam]->SetLineWidth(1);
+	  histo[0][var][sam]->SetFillStyle(1001);
+	  if(Samples[isam].doBand){
+	    histo[0][var][sam]->SetFillColor(Samples[isam].color-12);
+	    histo[0][var][sam]->SetLineColor(Samples[isam].color);
+	    histo[0][var][sam]->SetLineWidth(3);
+	  } else {
+	    histo[0][var][sam]->SetFillColor(Samples[isam].color);
+	    histo[0][var][sam]->SetLineColor(1);
+	    histo[0][var][sam]->SetLineWidth(1);
+	  }
           bkgind = sam;
         } else {
           histo[0][var][sam]->SetLineColor(Samples[isam].color);
@@ -261,11 +265,22 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
         bool noStack = Samples[isam].isSig || Samples[isam].isData;
         unsigned ileg = (Nsam<=3?0:legcount>=(Nsam+1)/2);
         if(!noStack){
-          leg[ileg].AddEntry(histo[0][var][sam], leghisto,"f");
+          if(Samples[isam].doBand) leg[ileg].AddEntry(histo[0][var][sam], leghisto,"fl");
+	  else leg[ileg].AddEntry(histo[0][var][sam], leghisto,"f");
           legcount++;
           if(firstplotted < 0) {
-            if(!Samples[isam].mcerr) histo[0][var][sam]->Draw("hist");
-            else histo[0][var][sam]->Draw("ELP");
+            if(!Samples[isam].mcerr) {
+	      if(!Samples[isam].doBand) histo[0][var][sam]->Draw("hist");
+	      else {
+		histo[0][var][sam]->Draw("E2");
+		TString hcname("hclone"); hcname += var;
+		TH1F *hclone = static_cast<TH1F*>(histo[0][var][sam]->Clone(hcname));
+		hclone->SetLineColor(Samples[isam].color);
+		hclone->SetLineWidth(3);
+		hclone->SetFillColor(0);
+		hclone->Draw("hist same");
+	      }
+            } else histo[0][var][sam]->Draw("ELP");
             firstplotted = sam;
             style.setTitles(histo[0][var][sam],vars[var].title, ytitle, cmslabel, lumilabel);
           } else {
@@ -317,7 +332,11 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
           hratio_data->GetXaxis()->SetLabelSize(style.LabelSize*2.2);
           hratio_data->GetYaxis()->SetLabelSize(style.LabelSize*2.1);
           hratio_data->GetYaxis()->SetTitle("Data / MC ");
-	  if(Nsam==2) hratio_data->GetYaxis()->SetTitle("2l / 1l");
+	  if(Nsam==2) {
+	    size_t idata = vars[var].samples[0];
+	    if(Samples[idata].label.Contains("2l")) hratio_data->GetYaxis()->SetTitle("2l / 1l");
+	    else hratio_data->GetYaxis()->SetTitle("high / low");
+	  }
           hratio_data->GetXaxis()->SetTitle(histo[0][var][firstplotted]->GetXaxis()->GetTitle());
           hratio_data->GetYaxis()->SetTitleSize(style.TitleSize*3);
           hratio_data->GetYaxis()->SetTitleOffset(0.5); //can't use relative size, since somehow it changes between plots...
@@ -782,7 +801,7 @@ sfeats::sfeats(vector<TString> ifile, TString ilabel, int icolor, int istyle, TS
   tag = label;
   tag.ReplaceAll("(",""); tag.ReplaceAll(",","_");  tag.ReplaceAll(")","");
   tag.ReplaceAll("{",""); tag.ReplaceAll("#,","");  tag.ReplaceAll("}","");
-  doStack = false; isData = false; mcerr=false;
+  doStack = false; isData = false; mcerr=false; doBand = false;
 }
 
 sysfeats::sysfeats(TString iname, TString ititle):
