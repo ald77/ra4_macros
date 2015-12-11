@@ -9,15 +9,10 @@ using namespace std;
 
 int main(){ 
 
-  TString folder="/afs/cern.ch/work/m/manuelf/public/babies/2015_10_19/mc/skim_1lht500met200/";
+  TString folder="/afs/cern.ch/user/m/manuelf/work/babies/2015_11_28/mc/bkg/skim_1lht500met200/";
   vector<TString> s_tt; 
   s_tt.push_back(folder+"*TTJets*Lept*");
   s_tt.push_back(folder+"*TTJets*HT*");
-  vector<TString> s_t1t;
-  s_t1t.push_back(folder+"*T1tttt*1500_*");
-  vector<TString> s_t1tc;
-  s_t1tc.push_back(folder+"*T1tttt*1200_*");
-
 
   // Reading ntuples
   vector<sfeats> Samples;
