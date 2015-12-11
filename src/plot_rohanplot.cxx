@@ -16,10 +16,10 @@ int main(){
 
   // Reading ntuples
   vector<sfeats> Samples;
-  Samples.push_back(sfeats(s_tt, "2 true lepton t#bar{t}, m_{T} > 140", kViolet+9,25, "mt>140&&ntruleps==2")); Samples.back().isData = true;
-  Samples.push_back(sfeats(s_tt, "1 true lepton t#bar{t}, m_{T} > 140", kViolet+9,25,"mt>140&&ntruleps==1")); Samples.back().isData = true;
-  Samples.push_back(sfeats(s_tt, "2 true lepton t#bar{t}, m_{T} #leq 140", 31,1, "mt<=140&&ntruleps==2"));
-  Samples.push_back(sfeats(s_tt, "1 true lepton t#bar{t}, m_{T} #leq 140", 31,1,"mt<=140&&ntruleps==1"));
+  Samples.push_back(sfeats(s_tt, "2 true, 1 reco lepton t#bar{t}: m_{T} > 140", kViolet+9,25, "mt>140&&ntruleps==2&&stitch")); Samples.back().isData = true;
+  Samples.push_back(sfeats(s_tt, "1 true, 1 reco lepton t#bar{t}: m_{T} > 140", kViolet+9,25,"mt>140&&ntruleps==1&&stitch")); Samples.back().isData = true;
+  Samples.push_back(sfeats(s_tt, "2 true, 1 reco lepton t#bar{t}: m_{T} #leq 140", 31,1, "mt<=140&&ntruleps==2&&stitch"));
+  Samples.push_back(sfeats(s_tt, "1 true, 1 reco lepton t#bar{t}: m_{T} #leq 140", 31,1,"mt<=140&&ntruleps==1&&stitch"));
 
   vector<int> mt140;
   mt140.push_back(0);
@@ -44,4 +44,5 @@ int main(){
 
   //NOTE: Make sure RohanHack is turned off
   plot_distributions(Samples, vars, "3", ".pdf", "CMSPaper","",true);
+  plot_distributions(Samples, vars, "3", ".root", "CMSPaper","",true);
 }
