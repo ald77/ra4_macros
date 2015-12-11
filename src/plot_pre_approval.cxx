@@ -63,8 +63,8 @@ int main(){
   Samples.push_back(sfeats(s_slep, "Data", kBlack,1,"(trig[4]||trig[8])&&pass")); Samples.back().isData = true;
   Samples.push_back(sfeats(s_t1t, "T1tttt(1500,100)", sigcolor, 1));
   Samples.push_back(sfeats(s_t1tc, "T1tttt(1200,800)", sigcolor, 2));
-  Samples.push_back(sfeats(s_tt, "t#bar{t}, 1 true lepton", dps::c_tt_1l, 1,"ntruleps<=1"));
-  Samples.push_back(sfeats(s_tt, "t#bar{t}, 2 true leptons", dps::c_tt_2l,1,"ntruleps>=2"));
+  Samples.push_back(sfeats(s_tt, "t#bar{t}, 1 true lepton", dps::c_tt_1l, 1,"ntruleps<=1&&stitch"));
+  Samples.push_back(sfeats(s_tt, "t#bar{t}, 2 true leptons", dps::c_tt_2l,1,"ntruleps>=2&&stitch"));
   Samples.push_back(sfeats(s_wjets, "W+jets", dps::c_wjets,1));
   Samples.push_back(sfeats(s_single, "Single top", dps::c_singlet));
   Samples.push_back(sfeats(s_ttv, "ttV", ra4::c_ttv));
@@ -156,14 +156,11 @@ int main(){
   vars.push_back(hfeats("mt",18,0,630, ra4_sam, "m_{T} [GeV]","mj>400&&nleps==1&&ht>500&&met>200&&njets>=6&&nbm>=2"));
   vars.back().whichPlots = "12"; vars.back().normalize = true;
 
-  vars.push_back(hfeats("met",12,200,800, ra4_sam, "MET [GeV]","mt>140&&mj>250&&nleps==1&&ht>500&&met>200&&njets>=6&&nbm>=2"));
-  vars.back().whichPlots = "12"; vars.back().normalize = true;
-  vars.push_back(hfeats("met",12,200,800, ra4_sam, "MET [GeV]","mt<=140&&mj>250&&nleps==1&&ht>500&&met>200&&njets>=6&&nbm>=2"));
-  vars.back().whichPlots = "12"; vars.back().normalize = true;
 
-  vars.push_back(hfeats("njets",13, 0.5,13.5, ra4_sam, "n_{jets}","mt>140&&mj>250&&nleps==1&&ht>500&&met>200&&nbm>=2"));
+  //// 1+b plots
+  vars.push_back(hfeats("met",12,200,800, ra4_sam, "MET [GeV]","mt>140&&mj>250&&nleps==1&&ht>500&&met>200&&njets>=6&&nbm>=1"));
   vars.back().whichPlots = "12"; vars.back().normalize = true;
-  vars.push_back(hfeats("njets",13, 0.5,13.5, ra4_sam, "n_{jets}","mt<=140&&mj>250&&nleps==1&&ht>500&&met>200&&nbm>=2"));
+  vars.push_back(hfeats("met",12,200,800, ra4_sam, "MET [GeV]","mt<=140&&mj>250&&nleps==1&&ht>500&&met>200&&njets>=6&&nbm>=1"));
   vars.back().whichPlots = "12"; vars.back().normalize = true;
 
 
@@ -177,12 +174,25 @@ int main(){
   // vars.back().whichPlots = "12"; vars.back().normalize = true;
 
   // // Not in PAS
-  // //// 1+b plots
-  // vars.push_back(hfeats("met",12,200,800, ra4_sam, "MET [GeV]","mt>140&&mj>250&&nleps==1&&ht>500&&met>200&&njets>=6&&nbm>=1"));
+  // //// njets, nbm N-1
+  // vars.push_back(hfeats("njets",13, 0.5,13.5, ra4_sam, "n_{jets}","nleps==1&&ht>500&&met>200&&nbm>=1"));
   // vars.back().whichPlots = "12"; vars.back().normalize = true;
-  // vars.push_back(hfeats("met",12,200,800, ra4_sam, "MET [GeV]","mt<=140&&mj>250&&nleps==1&&ht>500&&met>200&&njets>=6&&nbm>=1"));
+  // vars.push_back(hfeats("nbm",6, -0.5,5.5, ra4_sam, "n_{b}","nleps==1&&ht>500&&met>200&&njets>=6"));
   // vars.back().whichPlots = "12"; vars.back().normalize = true;
 
+  // // // Not in PAS
+  // //// 2b plots
+  // vars.push_back(hfeats("met",12,200,800, ra4_sam, "MET [GeV]","mt>140&&mj>250&&nleps==1&&ht>500&&met>200&&njets>=6&&nbm>=2"));
+  // vars.back().whichPlots = "12"; vars.back().normalize = true;
+  // vars.push_back(hfeats("met",12,200,800, ra4_sam, "MET [GeV]","mt<=140&&mj>250&&nleps==1&&ht>500&&met>200&&njets>=6&&nbm>=2"));
+  // vars.back().whichPlots = "12"; vars.back().normalize = true;
+
+  // vars.push_back(hfeats("njets",13, 0.5,13.5, ra4_sam, "n_{jets}","mt>140&&mj>250&&nleps==1&&ht>500&&met>200&&nbm>=2"));
+  // vars.back().whichPlots = "12"; vars.back().normalize = true;
+  // vars.push_back(hfeats("njets",13, 0.5,13.5, ra4_sam, "n_{jets}","mt<=140&&mj>250&&nleps==1&&ht>500&&met>200&&nbm>=2"));
+  // vars.back().whichPlots = "12"; vars.back().normalize = true;
+
+  // //// njets, nbm N-1
   // vars.push_back(hfeats("njets",13, 0.5,13.5, ra4_sam, "n_{jets}","mt>140&&mj>250&&nleps==1&&ht>500&&met>200&&nbm>=1"));
   // vars.back().whichPlots = "12"; vars.back().normalize = true;
   // vars.push_back(hfeats("njets",13, 0.5,13.5, ra4_sam, "n_{jets}","mt<=140&&mj>250&&nleps==1&&ht>500&&met>200&&nbm>=1"));
@@ -192,6 +202,6 @@ int main(){
   // vars.push_back(hfeats("fjets_m[0]",20,0,400, ra4_sam, "m(J_{1}) [GeV]","mt<=140&&nleps==1&&ht>500&&met>200&&njets>=6&&nbm>=1"));
   // vars.back().whichPlots = "12"; vars.back().normalize = true;
 
-  plot_distributions(Samples, vars, luminosity, plot_type, plot_style, "test",true);
+  plot_distributions(Samples, vars, luminosity, plot_type, plot_style, "dec11",true);
 
 }
