@@ -53,7 +53,7 @@
 [CMSPaper]
     CanvasW	    = 600
     CanvasH	    = 600
-    LegendSize	    = 0.065
+    LegendSize	    = 0.06
     TitleSize	    = 0.043
     LabelSize	    = 0.06     
     PadRightMargin  = 0.05
