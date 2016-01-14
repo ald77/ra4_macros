@@ -9,7 +9,7 @@ using namespace std;
 
 int main(){ 
 
-  TString folder="/afs/cern.ch/user/m/manuelf/work/babies/2015_11_28/mc/bkg/skim_1lht500met200/";
+  TString folder="/cms2r0/babymaker/babies/2015_11_28/mc/skim_1lht500met200/";
   vector<TString> s_tt; 
   s_tt.push_back(folder+"*TTJets*Lept*");
   s_tt.push_back(folder+"*TTJets*HT*");
@@ -34,7 +34,7 @@ int main(){
   mt140_1l.push_back(3);
 
   TString noCuts = "1";
-  TString baseline = "ht>500&&met>200&&njets>=6&&nbm>=1&&nleps==1";
+  TString baseline = "ht>500&&met>200&&njets>=6&&nbm>=1&&nleps==1&&stitch&&pass";
 
   vector<hfeats> vars;
 
@@ -44,5 +44,5 @@ int main(){
 
   //NOTE: Make sure RohanHack is turned off
   plot_distributions(Samples, vars, "3", ".pdf", "CMSPaper","",true);
-  plot_distributions(Samples, vars, "3", ".root", "CMSPaper","",true);
+  //  plot_distributions(Samples, vars, "3", ".root", "CMSPaper","",true);
 }
