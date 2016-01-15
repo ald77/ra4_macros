@@ -53,6 +53,7 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
     style.yTitleOffset /= 1.3;
     style.xTitleOffset /= 1.08;
   }
+  if(!showcuts) style.LegendSize *=0.9;
   style.setDefaultStyle();
   TCanvas can;
   can.cd();
