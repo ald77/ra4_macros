@@ -159,8 +159,12 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
         cmslabel = "";
       } else {
         //lumilabel = TString::Format("L = %1.f",luminosity.Atof()*1000.)+" pb^{-1} (13 TeV)";
-        lumilabel = TString::Format("L = %1.1f",luminosity.Atof())+" fb^{-1} (13 TeV)";
-        cmslabel = "#font[62]{CMS} #scale[0.8]{#font[52]{Preliminary}}";
+	lumilabel = TString::Format("#sqrt{s} = 13 TeV");
+        cmslabel = "#font[62]{CMS} #scale[0.8]{#font[52]{Simulation}}";
+	bool contains_data = false;
+	for(unsigned is=0;is<Samples.size();is++){if(Samples[is].isData){contains_data=true; break;} }
+	if(contains_data){ cmslabel = "#font[62]{CMS} #scale[0.8]{#font[52]{Preliminary}}";  
+	  lumilabel = TString::Format("L = %1.1f",luminosity.Atof())+" fb^{-1} (13 TeV)";}
       }
       if(vars[var].unit!="") {
         int digits(0);
@@ -437,6 +441,7 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
     if(vars[var].cut>0) line.DrawLine(vars[var].cut, 0, vars[var].cut, maxhisto);
     float maxpad = maxhisto + fracLeg*maxhisto/(1-fracLeg);
     histo[1][var][0]->SetMaximum(maxpad);
+    histo[1][var][0]->SetMinimum(0);
     histo[1][var][0]->Draw("axis same");
     style.moveYAxisLabel(histo[1][var][0], maxpad, false);
     can.SetLogy(0);
@@ -444,6 +449,7 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
     if(vars[var].whichPlots.Contains("0") || vars[var].whichPlots.Contains("3")) can.SaveAs(pname);
     float maxpadLog = maxhisto*exp(fracLeg*log(maxhisto/minLog)/(1-fracLeg));
     histo[1][var][0]->SetMaximum(maxpadLog);
+    histo[1][var][0]->SetMinimum(minLog);
     style.moveYAxisLabel(histo[1][var][0], maxpadLog, true);
     can.SetLogy(1);
     pname = outfolder+"/log_shapes_"+vars[var].tag+plot_tag;

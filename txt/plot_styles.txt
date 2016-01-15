@@ -63,7 +63,7 @@
     PadLeftMargin   = 0.19
     yTitleOffset    = 1.5
 
-[CMSPaperLog]
+[CMSPaper_Log]
     yTitleOffset    = 1.45
 [CMSPaper_Digits_2]
     yTitleOffset    = 1.3
@@ -73,6 +73,31 @@
     yTitleOffset    = 1.65
 [CMSPaper_Digits_5]
     yTitleOffset    = 1.55
+
+[CMSPaperNoRatio]
+    CanvasW         = 600
+    CanvasH         = 420
+    LegendSize      = 0.053
+    TitleSize       = 0.043
+    LabelSize       = 0.06
+    PadRightMargin  = 0.05
+    PadTopMargin    = 0.09
+    PadBottomMargin = 0.14
+    xTitleOffset    = 1.1
+    PadLeftMargin   = 0.19
+    yTitleOffset    = 1.5
+
+[CMSPaperNoRatio_Log]
+    yTitleOffset    = 1.1
+[CMSPaperNoRatio_Digits_2]
+    yTitleOffset    = 1.3
+[CMSPaperNoRatio_Digits_3]
+    yTitleOffset    = 1.45
+[CMSPaperNoRatio_Digits_4]
+    yTitleOffset    = 1.65
+[CMSPaperNoRatio_Digits_5]
+    yTitleOffset    = 1.55
+
 
 [HLTStyle]
     CanvasW	    = 670
