@@ -18,7 +18,7 @@
 
 namespace {
   TString metcut("met<50");
-  TString luminosity="0.1157"; // in ifb
+  TString luminosity="2.25"; // in ifb
   TString plot_type=".pdf";
   TString plot_style="CMSPaper";
 }
@@ -27,34 +27,35 @@ using namespace std;
 
 int main(){ 
 
-  TString folder_mc="/net/cms2/cms2r0/ald77/archive/2015_07_22/skim_ht1000/";
-  TString folder_data="/net/cms2/cms2r0/ald77/archive/2015_07_26/skim_ht1000/";
-  folder_mc = "/net/cms2/cms2r0/ald77/archive/2015_08_13/skim_ht1000/";
-  folder_data = "/net/cms2/cms2r0/ald77/archive/2015_08_17/skim_ht1000/";
-  folder_mc   = "/cms24r0/jaehyeok/susy_cfa_babies/2015_09_28/skim_ht1000/";
-  folder_data = "/cms24r0/jaehyeok/susy_cfa_babies/2015_09_30/";
-
+  //TString folder_mc="/net/cms2/cms2r0/ald77/archive/2015_07_22/skim_ht1000/";
+  //TString folder_data="/net/cms2/cms2r0/ald77/archive/2015_07_26/skim_ht1000/";
+  //folder_mc   = "/net/cms2/cms2r0/babymaker/babies/2015_11_28/mc/";
+  TString folder_mc     = "/net/cms2/cms2r0/jaehyeok/babies/2015_11_28/mc/skim_ht1000/";
+  TString folder_data = "/net/cms2/cms2r0/babymaker/babies/2015_11_20/data/hadronic/";
+ 
   vector<TString> s_data_ns;
   s_data_ns.push_back(folder_data+"*JetHT*");
   vector<TString> s_tt;
-  s_tt.push_back(folder_mc+"*TTJets_SingleLeptFromT*25ns*");
-  s_tt.push_back(folder_mc+"*TTJets_DiLept*25ns*");
+  s_tt.push_back(folder_mc+"*_TTJets*Lept*");
+  s_tt.push_back(folder_mc+"*_TTJets_HT*");
   vector<TString> s_singlet;
   s_singlet.push_back(folder_mc+"*ST*");
   vector<TString> s_qcd;
-  s_qcd.push_back(folder_mc+"*QCD_Pt*");
+  s_qcd.push_back(folder_mc+"*QCD_HT*");
   //  s_qcd.push_back("/net/cms5/cms5r0/ald77/archive/2015_06_05/*QCD_Pt*");
   vector<TString> s_other;
   s_other.push_back(folder_mc+"*TTW*");
   s_other.push_back(folder_mc+"*TTZ*");
   s_other.push_back(folder_mc+"*_ZJet*");
   s_other.push_back(folder_mc+"*DY*");
-  s_other.push_back(folder_mc+"*WH_HToBB*");
   s_other.push_back(folder_mc+"*WJetsToLNu_HT*");
+  s_other.push_back(folder_mc+"*WH_HToBB*");
+  s_other.push_back(folder_mc+"*ggZH_HToBB*");
+  s_other.push_back(folder_mc+"*ttHJetTobb*");
 
   // Reading ntuples
   vector<sfeats> Samples; 
-  Samples.push_back(sfeats(s_data_ns, "Data", 1, -1, "trig[12] && json")); Samples.back().isData = true;
+  Samples.push_back(sfeats(s_data_ns, "Data", 1, -1, "trig[12]")); Samples.back().isData = true;
   Samples.push_back(sfeats(s_qcd, "QCD", dps::c_qcd));
   Samples.push_back(sfeats(s_tt, "t#bar{t}", dps::c_tt_1l, 1));
   Samples.push_back(sfeats(s_singlet, "Single top", dps::c_singlet));
@@ -69,28 +70,25 @@ int main(){
 
   vector<hfeats> vars;
 
-  // Mass plots for the DPS in two bins of pT
-  vars.push_back(hfeats("jets_m",48,0,24, ra4_sam, "AK4 jet mass [GeV]",
-    			"ht>1000&&"+metcut+"&&(nvmus+nvels)==0&&jets_pt>50&&jets_pt<75",0));
+  vars.push_back(hfeats("fjets_m",50,0,500, ra4_sam, "m(J) [GeV]",
+    			"pass&&ht>1000&&"+metcut+"&&(nvmus+nvels)==0&&njets>=7&&njets<=9",0));
   vars.back().whichPlots = "1"; vars.back().normalize = true;
-  vars.push_back(hfeats("jets_m",55,0,110, ra4_sam, "AK4 jet mass [GeV]",
-    			"ht>1000&&"+metcut+"&&(nvmus+nvels)==0&&jets_pt>250",0));
+  
+  vars.push_back(hfeats("fjets_m",50,0,500, ra4_sam, "m(J) [GeV]",
+    			"pass&&ht>1000&&"+metcut+"&&(nvmus+nvels)==0&&njets>=10",0));
   vars.back().whichPlots = "1"; vars.back().normalize = true;
+  
+  vars.push_back(hfeats("mj",50,0,1500, ra4_sam, "M_{J} [GeV]",
+    			"pass&&ht>1000&&"+metcut+"&&(nvmus+nvels)==0&&njets>=7&&njets<=9",0));
+  vars.back().whichPlots = "1"; vars.back().normalize = true;
+  
+  vars.push_back(hfeats("mj",50,0,1500, ra4_sam, "M_{J} [GeV]",
+    			"pass&&ht>1000&&"+metcut+"&&(nvmus+nvels)==0&&njets>=10",0));
+  vars.back().whichPlots = "1"; vars.back().normalize = true;
+  
+  plot_distributions(Samples, vars, luminosity, plot_type, plot_style, "1d_2015d",true);
 
-  // // Additional plots
-  // vars.push_back(hfeats("npv",50,0,50, ra4_sam, "NPV",
-  //         "ht>1000&&met<50&&(nmus+nels)==0",0));
-  // vars.back().normalize = true;
-
-  // vars.push_back(hfeats("jets_m",25,0,250, ra4_sam, "AK4 jet mass (GeV)",
-  //  			"ht>1000&&met_nohf<50&&(nmus+nels)==0",0));
-  // vars.back().whichPlots = "1";
-  // vars.push_back(hfeats("jets_pt",20,0,1000, ra4_sam, "jet p_{T} (GeV)",
-  //  			"ht>1000&&met_nohf<50&&(nmus+nels)==0",0));
-  // vars.back().whichPlots = "1";
-
-  plot_distributions(Samples, vars, luminosity, plot_type, plot_style, "1d",true);
-
+/*
   double ptBinEdges[30] = {50, 60, 70, 80, 90,
                         100, 110, 120, 130, 140,
                         150, 160, 170, 180, 190,
@@ -212,5 +210,5 @@ int main(){
   l1->Draw("same");
 
   can->SaveAs("plots/1d_2015d/mass_versus_pt2.pdf");
-
+*/
 }
