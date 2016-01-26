@@ -17,8 +17,14 @@ def set_palette(name="palette", ncontours=999):
         red   = [1.00, 0.84, 0.61, 0.34, 0.00]
         green = [1.00, 0.84, 0.61, 0.34, 0.00]
         blue  = [1.00, 0.84, 0.61, 0.34, 0.00]
-    # elif name == "whatever":
-        # (define more palettes)
+    elif name == "susy":
+    #NRGBs = 5
+     #   NCont = 255
+        stops = [0.00, 0.34, 0.61, 0.84, 1.00]
+        red = [0.50, 0.50, 1.00, 1.00, 1.00]
+        green = [ 0.50, 1.00, 1.00, 0.60, 0.50]
+        blue = [1.00, 1.00, 0.50, 0.40, 0.50]
+       
     else:
         # default palette, looks cool
         stops = [0.00, 0.34, 0.61, 0.84, 1.00]
