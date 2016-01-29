@@ -480,7 +480,7 @@ void plot_2D_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString 
   can.cd();
   TPad *pad(NULL);
   pad = static_cast<TPad *>(can.cd());
-  pad->SetBottomMargin(0.02);
+  pad->SetRightMargin(0.2);
   // Reading ntuples
   vector<TChain *> chain;
   for(unsigned sam(0); sam < Samples.size(); sam++){
@@ -521,6 +521,13 @@ void plot_2D_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString 
     //Create and project histogram
     hists.push_back(new TH2D(hname, title, vars[i].nbinsx,vars[i].minx,vars[i].maxx,vars[i].nbinsy,vars[i].miny,vars[i].maxy));
     tempChain->Project(hname, variable, totCut, "colz");
+    for(int iby=1;iby<=vars[i].nbinsy;iby++){
+      hists.back()->SetBinContent(vars[i].nbinsx,iby,hists.back()->GetBinContent(vars[i].nbinsx,iby)+hists.back()->GetBinContent(vars[i].nbinsx+1,iby));
+    }
+    for(int ibx=1;ibx<=vars[i].nbinsx;ibx++){
+      hists.back()->SetBinContent(ibx,vars[i].nbinsy,hists.back()->GetBinContent(ibx,vars[i].nbinsy)+hists.back()->GetBinContent(ibx,vars[i].nbinsy+1));
+    }
+
   }
 
   // Save and format histograms
@@ -534,7 +541,7 @@ void plot_2D_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString 
       if(doLogz==1 && vars[i].whichPlots.Contains("1")) continue;
       TString pname;
       TString plot_tag("_lumi"+lumi_nodot+filetype);
-      hists[i]->SetStats(1);
+      hists[i]->SetStats(0);
       hists[i]->Draw("colz");
       pname = "plots/"+dir+"/"+vars[i].tag+plot_tag;
       if(doLogz) pname = "plots/"+dir+"/logz_"+vars[i].tag+plot_tag;
