@@ -12,7 +12,8 @@ int main(){
   TString folder="/cms2r0/babymaker/babies/2015_11_28/mc/skim_1lht500met200/";
   string hostname = execute("echo $HOSTNAME");
   if(Contains(hostname, "cms") || Contains(hostname, "compute-"))  folder = "/net/cms2"+folder;
-  if(Contains(hostname, "lxplus")) folder="/cms2r0/babymaker/babies/2015_11_28/mc/skim_1lht500met200/";
+  if(Contains(hostname, "lxplus"))     
+    folder="/afs/cern.ch/user/m/manuelf/work/babies/2015_11_28/mc/skim_1lht500met200/";
 
   vector<TString> s_tt, s_t4t_nc; 
   s_tt.push_back(folder+"*TTJets*Lept*");

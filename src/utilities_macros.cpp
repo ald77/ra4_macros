@@ -114,12 +114,15 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
     fracLeg = legH/(1-style.PadTopMargin-style.PadBottomMargin)*1.15;
     for(int ileg(0); ileg<nLegs; ileg++) leg[ileg].SetY1NDC(legY-legH); 
     cout<<endl;
+
+    bool someBands = false;
     // Generating vector of histograms
     title = cuts2title(vars[var].cuts); 
     if(namestyle.Contains("CMSPaper") && !showcuts) title = "";
     for(unsigned his(0); his < 2; his++){
       varhisto.resize(0);
       for(unsigned sam(0); sam < Nsam; sam++){ 
+	if(Samples[vars[var].samples[sam]].doBand) someBands = true;
         hname = "histo"; hname += var; hname += his; hname += sam;  
         if(variableBins) { 
           vars[var].minx = vars[var].binning[0];
@@ -218,7 +221,7 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
             histo[0][var][sam]->SetMarkerSize(1.2);         
             histo[0][var][sam]->SetLineWidth(2);
           } else {
-            if(Samples[isam].doBand) histo[0][var][sam]->SetLineWidth(3);
+            if(someBands) histo[0][var][sam]->SetLineWidth(3);
 	    else histo[0][var][sam]->SetLineWidth(6);
             histo[0][var][sam]->SetLineStyle(abs(Samples[isam].style));
           }
