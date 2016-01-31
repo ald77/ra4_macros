@@ -17,11 +17,11 @@ namespace ra4{
   // Had to define the TColor objects in the cpp
   enum {
     c_t1tttt   = 2,
-    c_tt_1l    = 1000, // ucsb_blue
-    c_tt_2l    = 1006, // tar_heel_blue
-    c_wjets    = 1001, // ucsb_gold
+    c_tt_1l    = 2000, // ucsb_blue
+    c_tt_2l    = 2006, // tar_heel_blue
+    c_wjets    = 2001, // ucsb_gold
     c_singlet  = kGreen+3,
-    c_ttv      = 1002, // penn_red
+    c_ttv      = 2002, // penn_red
     c_other    = kBlue+4
   };
 
@@ -30,24 +30,16 @@ namespace ra4{
 namespace dps{
   // Had to define the TColor objects in the cpp
   enum {
-    //option 1
-    // c_tt_1l    = 1011, // ucsb_blue
-    // c_tt_2l    = 1012, // tar_heel_blue
-    // c_wjets    = 1013, // ucsb_gold
-    // c_singlet  = 1016,
-    // c_qcd    = 1015,
-    // c_other    = 1014
-
-    //option 2
-    c_tt_1l    = 1012, // ucsb_blue
-    c_tt_2l    = 1011, // tar_heel_blue
-    c_wjets    = 1018, // ucsb_gold
-    c_singlet  = 1015,
-    c_qcd    = 1020,
-    c_other    = 1019
+    c_tt_1l    = 2012, // ucsb_blue
+    c_tt_2l    = 2011, // tar_heel_blue
+    c_wjets    = 2018, // ucsb_gold
+    c_singlet  = 2015,
+    c_qcd    = 2020,
+    c_other    = 2019
   };
 
 }
+
 
 struct pfeats{
   pfeats(const std::vector<int> &isamples, const TString &icut = "1", const TString &itagname="");

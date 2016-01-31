@@ -26,6 +26,8 @@
 #include "TMath.h"
 #include "TRandom3.h"
 #include "TStyle.h"
+#include "TSystem.h"
+#include "TDirectory.h"
 
 #include "styles.hpp"
 #include "utilities.hpp"
@@ -35,6 +37,9 @@ using namespace std;
 
 void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString luminosity, 
                         TString filetype, TString namestyle, TString dir, bool doRatio){
+  TString outfolder("plots/"+dir);
+  gSystem->mkdir(outfolder, kTRUE);
+
   bool showcuts(!namestyle.Contains("CMSPaper"));
   //if (doRatio) namestyle = "CMSPaper";
   styles style(namestyle);
@@ -82,7 +87,7 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
   TString plot_tag("_lumi"+lumi_nodot+filetype);
   float minLog = 0.002, fracLeg = 0.36; // Fraction of the histo pad devoted to the legend
 
-  double legLeft(style.PadLeftMargin+0.03), legRight(1-style.PadRightMargin-0.02);
+  double legLeft(style.PadLeftMargin+0.08), legRight(1-style.PadRightMargin-0.02);
   double legY(1-style.PadTopMargin-0.023), legSingle = 0.052;
   if (doRatio) {legY=1-style.PadTopMargin-0.033; legSingle = 0.06;}
   double legW = 0.13, legH = legSingle*(vars[0].samples.size()+1)/2;
@@ -104,7 +109,7 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
   for(unsigned var(0); var<vars.size(); var++){
     unsigned Nsam(vars[var].samples.size());
     legH = (Nsam<=3?legSingle*Nsam:legSingle*(Nsam+1)/2);
-    fracLeg = legH/(1-style.PadTopMargin-style.PadBottomMargin)*1.15;
+    fracLeg = legH/(1-style.PadTopMargin-style.PadBottomMargin)*1.2;
     for(int ileg(0); ileg<nLegs; ileg++) leg[ileg].SetY1NDC(legY-legH); 
     cout<<endl;
     // Generating vector of histograms
@@ -325,14 +330,14 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
 	  hratio_data->SetMarkerStyle(20);
 	  hratio_data->Draw("e0");
 	  
-	  int xshade[] = {0,250,250,0,0};
-	  int yshade[] = {1,1,0,0,1};
-
-	  TGraph *hratio_shade = new TGraph(5,xshade,yshade);
-	  hratio_shade->SetFillColorAlpha(kBlack,0.2);
-
-	  hratio_shade->Draw("F same");
-
+	  if(vars[var].varname=="mj"){
+	    int xshade[] = {0,250,250,0,0};
+	    int yshade[] = {1,1,0,0,1};	    
+	    TGraph *hratio_shade = new TGraph(5,xshade,yshade);
+	    hratio_shade->SetFillColorAlpha(kBlack,0.2);
+	    hratio_shade->Draw("F same");
+	  }
+	  
 	  if(vars[var].cut>0) line.DrawLine(vars[var].cut, 0, vars[var].cut, 1);
 	  if(vars[var].cut>0) line2.DrawLine(250, 0, 250, 1);
 	  
@@ -390,13 +395,19 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
       
       if(nentries[sam]) histo[1][var][sam]->Scale(100./nentries[sam]);
       if(maxhisto < histo[1][var][sam]->GetMaximum()) maxhisto = histo[1][var][sam]->GetMaximum();
-      style.setTitles(histo[1][var][sam],vars[var].title, "Entries (%)", cmslabel, "#sqrt{s} = 13 TeV");
+      style.setTitles(histo[1][var][sam],vars[var].title, "", cmslabel, "#sqrt{s} = 13 TeV");
       if(sam==0){
         histo[1][var][sam]->SetXTitle(vars[var].title);
         histo[1][var][sam]->GetXaxis()->SetLabelSize(0);
-        histo[1][var][sam]->SetYTitle("Entries (%)");
-	//        if(Samples[isam].style>0) histo[1][var][sam]->Draw("hist");
-        //else histo[1][var][sam]->Draw("e1 x0");
+	ytitle = "% events";
+	if(vars[var].unit!="") {
+	  int digits(0);
+	  float binwidth((vars[var].maxx-vars[var].minx)/static_cast<float>(vars[var].nbins));
+	  if(binwidth<1) digits = 1;
+	  ytitle += ("/("+RoundNumber(binwidth,digits) +" "+vars[var].unit+")");
+	}	
+
+        histo[1][var][sam]->SetYTitle(ytitle);
 	histo[1][var][sam]->Draw("e1 x0");
 	
       } else {
@@ -422,13 +433,13 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
       legcount++;
     } // Loop over samples
 
-    float xshade[] = {0,250,250,0,0};
-    float yshade[] = {maxhisto,maxhisto,0,0,maxhisto};
-    
-    TGraph* shade = new TGraph(5,xshade,yshade);
-    shade->SetFillColorAlpha(kBlack,0.2);
-    shade->Draw("F same");
-
+    if(vars[var].varname=="mj"){
+      float xshade[] = {0,250,250,0,0};
+      float yshade[] = {maxhisto,maxhisto,0,0,maxhisto};
+      TGraph* shade = new TGraph(5,xshade,yshade);
+      shade->SetFillColorAlpha(kBlack,0.2);
+      shade->Draw("F same");
+    }
 
     for(int ileg(0); ileg<nLegs; ileg++) leg[ileg].Draw(); 
     if(vars[var].cut>0) line.DrawLine(vars[var].cut, 0, vars[var].cut, maxhisto);
@@ -879,43 +890,26 @@ void dump_event(small_tree_full &tree, int entry){
 }
 
 namespace  ra4 {
-  TColor ucsb_blue(1000, 1/255.,57/255.,166/255.);
-  TColor ucsb_gold(1001, 255/255.,200/255.,47/255);
-  TColor penn_red(1002, 149/255.,0/255.,26/255.);
-  TColor uf_orange(1003, 255/255.,74/255.,0/255.);
-  TColor uo_green(1004, 0/255.,79/255.,39/255.);
-  TColor tcu_purple(1005, 52/255.,42/255.,123/255.);
-  TColor tar_heel_blue(1006, 86/255.,160/255.,211/255.);
-  TColor sig_teal(1007, 96/255.,159/255.,128/255.);
-  TColor sig_gold(1008, 215/255.,162/255.,50/255.);
-  TColor seal_brown(1010, 89/255.,38/255.,11/255.);
+  TColor ucsb_blue(2000, 1/255.,57/255.,166/255.);
+  TColor ucsb_gold(2001, 255/255.,200/255.,47/255);
+  TColor penn_red(2002, 149/255.,0/255.,26/255.);
+  TColor uf_orange(2003, 255/255.,74/255.,0/255.);
+  TColor uo_green(2004, 0/255.,79/255.,39/255.);
+  TColor tcu_purple(2005, 52/255.,42/255.,123/255.);
+  TColor tar_heel_blue(2006, 86/255.,160/255.,211/255.);
+  TColor sig_teal(2007, 96/255.,159/255.,128/255.);
+  TColor sig_gold(2008, 215/255.,162/255.,50/255.);
+  TColor seal_brown(2010, 89/255.,38/255.,11/255.);
 }
 
 namespace dps{
-  //option 1
-  // TColor light_blue(1011, 200/255.,230/255.,255/255.);
-  // TColor med_blue(1012, 100/255.,150/255.,255/255.);
-  // TColor yellow(1013, 255/255.,255/255.,135/255.);
-  // TColor green(1014, 130/255.,255/255.,120/255.);
-  // TColor red(1015, 255/255.,140/255.,140/255.);
-  // TColor violet(1016, 170/255.,130/255.,255/255.);
-  // TColor tan(1017, 255/255.,240/255.,210/255.);
-
-  //option 2
-  // TColor light_blue(1011, 173/255.,230/255.,255/255.);
-  // TColor med_blue(1012, 1/255.,148/255.,218/255.);
-  // TColor red(1015, 250/255.,96/255.,1/255.);
-  // TColor skype_green(1018,9/255.,186/255.,1/255.);
-  // TColor purple(1019, 183/255.,66/255.,176/255.);
-  // TColor ucsb_gold(1020, 254/255.,234/255.,51/255);
-
-  TColor light_blue(1011, 153/255.,220/255.,255/255.);
-  TColor med_blue(1012, 1/255.,148/255.,218/255.);
-  TColor red(1015, 250/255.,96/255.,1/255.);
-  TColor skype_green(1018,9/255.,186/255.,1/255.);
-  // TColor purple(1019, 172/255.,46/255.,135/255.);
-  TColor purple(1019, 183/255.,66/255.,176/255.);
-  TColor ucsb_gold(1020, 255/255.,200/255.,47/255);
+  TColor light_blue(2011, 153/255.,220/255.,255/255.);
+  TColor med_blue(2012, 1/255.,148/255.,218/255.);
+  TColor red(2015, 250/255.,96/255.,1/255.);
+  TColor skype_green(2018,9/255.,186/255.,1/255.);
+  // TColor purple(2019, 172/255.,46/255.,135/255.);
+  TColor purple(2019, 183/255.,66/255.,176/255.);
+  TColor ucsb_gold(2020, 255/255.,200/255.,47/255);
 
 }
 
