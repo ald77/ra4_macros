@@ -5,6 +5,7 @@ import string
 from array import array 
 from pprint import pprint
 from get_xsec import signalCrossSection
+from get_xsec_stop import stopCrossSection
 from set_palette import set_palette
 import math
 import ROOT
@@ -142,8 +143,12 @@ if not skipcalc: # if not supplying root file
 
         print "glu is " + str(glu)
         print "lsp is " + str(lsp)
-
-        tot = 1000.*signalCrossSection(glu)
+        
+        if "T1" in topo or "T5" in topo:
+             tot = 1000.*signalCrossSection(glu)
+        elif "T2" in topo or "T6" in topo:
+             tot = 1000.*stopCrossSection(glu)
+             print "xsec is"+str(stopCrossSection(glu))
         print "tot = "+str(tot)
         #assume integral of weights was normalized correctly pre-skim
 
@@ -193,16 +198,17 @@ if not skipcalc: # if not supplying root file
 
          #Fix empty bottom-left corner with average of two closest points on axis
         hist = graphs[-1].GetHistogram()
-        val1 = hist.GetBinContent(hist.FindBin(700,0))
-        val2 = hist.GetBinContent(hist.FindBin(600,100))
+        if("T1tttt" in topo):
+             val1 = hist.GetBinContent(hist.FindBin(700,0))
+             val2 = hist.GetBinContent(hist.FindBin(600,100))
         #print val1
         #print val2
         #print (val1+val2)/2.
-        graphs[-1].SetPoint(graphs[-1].GetN(),ROOT.Double(600.),0.,(val1+val2)/2.)
-        hist = graphs[-2].GetHistogram()
-        val1 = hist.GetBinContent(hist.FindBin(700,0))
-        val2 = hist.GetBinContent(hist.FindBin(600,100))
-        graphs[-2].SetPoint(graphs[-2].GetN(),ROOT.Double(600.),0.,(val1+val2)/2.)
+             graphs[-1].SetPoint(graphs[-1].GetN(),ROOT.Double(600.),0.,(val1+val2)/2.)
+             hist = graphs[-2].GetHistogram()
+             val1 = hist.GetBinContent(hist.FindBin(700,0))
+             val2 = hist.GetBinContent(hist.FindBin(600,100))
+             graphs[-2].SetPoint(graphs[-2].GetN(),ROOT.Double(600.),0.,(val1+val2)/2.)
             
         graphs[-1].Write()
         graphs[-2].Write()
@@ -216,14 +222,24 @@ if skipcalc:
 
 #make title list to facilitate cosmetics later
 graphTitles = []
-graphTitles.append(["effmap","; m_{#tilde{g}} [GeV]; m_{#tilde{#chi}^{0}_{1}} [GeV]; Region 4 Efficiency"])
-graphTitles.append(["yieldmap","; m_{#tilde{g}} [GeV]; m_{#tilde{#chi}^{0}_{1}} [GeV]; Region 4 Yield"])
-for name in cosmeticbindefs:
-    graphTitles.append([name,"; m_{#tilde{g}} [GeV]; m_{#tilde{#chi}^{0}_{1}} [GeV]; Fraction of R4 efficiency from "+name])
-    graphTitles.append([name+"_yield","; m_{#tilde{g}} [GeV]; m_{#tilde{#chi}^{0}_{1}} [GeV]; R4 Yield with "+name])
-graphTitles.append(["effmapR3","; m_{#tilde{g}} [GeV]; m_{#tilde{#chi}^{0}_{1}} [GeV]; Region 3 Efficiency"])
-graphTitles.append(["yieldmapR3","; m_{#tilde{g}} [GeV]; m_{#tilde{#chi}^{0}_{1}} [GeV]; Region 3 Yield"])
+if("T2" not in topo):
+     graphTitles.append(["effmap","; m_{#tilde{g}} [GeV]; m_{#tilde{#chi}^{0}_{1}} [GeV]; Region 4 Efficiency"])
+     graphTitles.append(["yieldmap","; m_{#tilde{g}} [GeV]; m_{#tilde{#chi}^{0}_{1}} [GeV]; Region 4 Yield"])
+     for name in cosmeticbindefs:
+          graphTitles.append([name,"; m_{#tilde{g}} [GeV]; m_{#tilde{#chi}^{0}_{1}} [GeV]; Fraction of R4 efficiency from "+name])
+          graphTitles.append([name+"_yield","; m_{#tilde{g}} [GeV]; m_{#tilde{#chi}^{0}_{1}} [GeV]; R4 Yield with "+name])
+     graphTitles.append(["effmapR3","; m_{#tilde{g}} [GeV]; m_{#tilde{#chi}^{0}_{1}} [GeV]; Region 3 Efficiency"])
+     graphTitles.append(["yieldmapR3","; m_{#tilde{g}} [GeV]; m_{#tilde{#chi}^{0}_{1}} [GeV]; Region 3 Yield"])
     
+else:
+     graphTitles.append(["effmap","; m_{#tilde{t}} [GeV]; m_{#tilde{#chi}^{0}_{1}} [GeV]; Region 4 Efficiency"])
+     graphTitles.append(["yieldmap","; m_{#tilde{t}} [GeV]; m_{#tilde{#chi}^{0}_{1}} [GeV]; Region 4 Yield"])
+     for name in cosmeticbindefs:
+          graphTitles.append([name,"; m_{#tilde{t}} [GeV]; m_{#tilde{#chi}^{0}_{1}} [GeV]; Fraction of R4 efficiency from "+name])
+          graphTitles.append([name+"_yield","; m_{#tilde{t}} [GeV]; m_{#tilde{#chi}^{0}_{1}} [GeV]; R4 Yield with "+name])
+     graphTitles.append(["effmapR3","; m_{#tilde{t}} [GeV]; m_{#tilde{#chi}^{0}_{1}} [GeV]; Region 3 Efficiency"])
+     graphTitles.append(["yieldmapR3","; m_{#tilde{t}} [GeV]; m_{#tilde{#chi}^{0}_{1}} [GeV]; Region 3 Yield"])
+
 
 # get max z-value
 maxfrac = 0.
@@ -240,7 +256,10 @@ for name,title in graphTitles:
    
             
 set_palette()
-frame = ROOT.TH2F("frame","",100,700,1950,152,0,1900)
+if "T1" in topo or "T5" in topo:
+     frame = ROOT.TH2F("frame","",100,700,1950,152,0,1900)
+elif "T2" in topo or "T6" in topo:
+     frame = ROOT.TH2F("frame","",100,200,1000,152,0,500)
 frame.SetStats(0)
 #ROOT.gStyle.SetPalette(56)
 #frame = ROOT.TFrame(700,1950,0,1900)
@@ -271,8 +290,9 @@ for name,title in graphTitles:
    # hist.SetBinContent(hist.FindBin(600,0),(val1+val2)/2.)
     
     frame.Draw()
-    graph.GetHistogram().SetAxisRange(700,1950,"X")
-    graph.GetHistogram().SetAxisRange(0,1900,"Y")
+    if("T1" in topo):
+         graph.GetHistogram().SetAxisRange(700,1950,"X")
+         graph.GetHistogram().SetAxisRange(0,1900,"Y")
     graph.GetHistogram().Draw("colz same")
     #graph.Draw("colz same")
     frame.Draw("X axis same")
