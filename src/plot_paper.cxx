@@ -18,7 +18,7 @@
 namespace {
   TString luminosity="2.25";
   TString plot_type=".pdf";
-  TString plot_style="CMSPaperNoRatio";
+  TString plot_style="CMSPaper";
 }
 
 using namespace std;
@@ -32,7 +32,7 @@ int main(){
   if(Contains(hostname, "cms") || Contains(hostname, "compute-"))  
     bfolder = "/net/cms2"; // In laptops, you can't create a /net folder
   
-  TString folder1l(bfolder+"/cms2r0/babymaker/babies/2015_11_20/data/singlelep/combined/skim_1lht500met200/");
+  TString folder1l(bfolder+"/cms2r0/babymaker/babies/2016_02_04/data/singlelep/combined/skim_1lht500met200/");
   TString foldermc(bfolder+"/cms2r0/babymaker/babies/2015_11_28/mc/skim_1lht500met200/");
 
   vector<TString> s_slep;
@@ -111,6 +111,6 @@ int main(){
   vars.back().whichPlots = "2"; vars.back().normalize = true;
 
 
-  plot_distributions(Samples, vars, luminosity, plot_type, plot_style, "paper",false);
+  plot_distributions(Samples, vars, luminosity, plot_type, plot_style, "paper",true);
 
 }
