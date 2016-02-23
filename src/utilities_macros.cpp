@@ -617,6 +617,7 @@ TString cuts2title(TString title){
 
 
   title.ReplaceAll("nleps", "n_{l}");
+  title.ReplaceAll("nvleps", "n_{l}");
   title.ReplaceAll("nmus", "n_{#mu}");  
   title.ReplaceAll("nels", "n_{e}");  
   title.ReplaceAll("nvmus", "n^{veto}_{#mu}");  
@@ -625,6 +626,8 @@ TString cuts2title(TString title){
   title.ReplaceAll("_ra2b", "^{ra2b}");
   title.ReplaceAll("npv", "n_{PV}");  
   title.ReplaceAll("mumu_pt1", "p_{T}^{#mu}");  title.ReplaceAll("elel_pt1", "p_{T}^{e}");  
+
+  title.ReplaceAll("abs(mc_id)==1000006", "stop"); title.ReplaceAll("abs(mc_id)==1000022", "LSP");
 
   title.ReplaceAll("onmet", "MET^{on}"); title.ReplaceAll("onht", "H_{T}^{on}");  
   title.ReplaceAll("njets30","n_{jets}^{30}"); 
@@ -638,6 +641,7 @@ TString cuts2title(TString title){
   title.ReplaceAll("<=", " #leq "); title.ReplaceAll("<", " < "); 
   title.ReplaceAll("&&", ", "); title.ReplaceAll("==", " = "); 
   title.ReplaceAll("met", "MET"); title.ReplaceAll("ht_hlt", "H_{T}^{HLT}");  
+  title.ReplaceAll("mht", "MHT");  
   title.ReplaceAll("ht", "H_{T}");  title.ReplaceAll("mt", "m_{T}"); 
   title.ReplaceAll("ntks_chg==0", " ITV");
   title.ReplaceAll("nbm","n_{b}"); 
