@@ -64,8 +64,8 @@ int main(){
 
   // Reading ntuples
   int sigcolor(2);
-  TString lsp = "#tilde{#chi}#lower[0.2]{#scale[0.85]{^{0}}}#kern[-1.3]{#scale[0.85]{_{1}}}";
-  TString t1t_label = "#scale[0.92]{#tilde{g}#kern[0.2]{#tilde{g}}, #tilde{g}#rightarrowt#bar{t}"+lsp;
+  TString lsp = "{#lower[-0.1]{#tilde{#chi}}#lower[0.2]{#scale[0.85]{^{0}}}#kern[-1.3]{#scale[0.85]{_{1}}}}";
+  TString t1t_label = "#scale[0.95]{#tilde{g}#kern[0.2]{#tilde{g}}, #tilde{g}#rightarrowt#kern[0.18]{#bar{t}}#kern[0.18]"+lsp;
   vector<sfeats> Samples; 
   Samples.push_back(sfeats(s_slep, "Data", kBlack,1,"(trig[4]||trig[8])&&pass")); Samples.back().isData = true;
   Samples.push_back(sfeats(s_t1t, t1t_label+" (1500,100)}", sigcolor, 1));
@@ -99,18 +99,22 @@ int main(){
 
   vector<hfeats> vars;
 
-  vars.push_back(hfeats("mt",18,0,630, ra4_sam, "m_{T} [GeV]",
-  			"nleps==1&&ht>500&&met>200&&pass&&njets>=6&&nbm>=1",140, "baseline"));
-  vars.back().whichPlots = "1"; vars.back().normalize = true;
+  bool do_mt = true;
 
-  vars.push_back(hfeats("mj",10,25,775, mj_sam, "M_{J} [GeV]",
-			"nleps==1&&ht>500&&met>200&&pass&&njets>=6&&nbm==1",400,"results"));
-  vars.back().whichPlots = "2"; vars.back().normalize = true;
-  vars.push_back(hfeats("mj",10,25,775, mj_sam, "M_{J} [GeV]",
-			"nleps==1&&ht>500&&met>200&&pass&&njets>=6&&nbm>=2",400,"results"));
-  vars.back().whichPlots = "2"; vars.back().normalize = true;
+  if(do_mt){
+    vars.push_back(hfeats("mt",12,0,420, ra4_sam, "m_{T} [GeV]",
+			  "nleps==1&&ht>500&&met>200&&pass&&njets>=6&&nbm>=1",140, "baseline"));
+    vars.back().whichPlots = "1"; vars.back().normalize = true;
+    plot_distributions(Samples, vars, luminosity, plot_type, plot_style, "paper",true);
+  } else {
+    vars.push_back(hfeats("mj",10,25,775, mj_sam, "M_{J} [GeV]",
+			  "nleps==1&&ht>500&&met>200&&pass&&njets>=6&&nbm==1",400,"results"));
+    vars.back().whichPlots = "2"; vars.back().normalize = true;
+    vars.push_back(hfeats("mj",10,25,775, mj_sam, "M_{J} [GeV]",
+			  "nleps==1&&ht>500&&met>200&&pass&&njets>=6&&nbm>=2",400,"results"));
+    vars.back().whichPlots = "2"; vars.back().normalize = true;
 
-
-  plot_distributions(Samples, vars, luminosity, plot_type, plot_style, "paper",true);
+    plot_distributions(Samples, vars, luminosity, plot_type, plot_style, "paper",false);
+  }
 
 }

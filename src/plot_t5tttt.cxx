@@ -70,15 +70,23 @@ int main(){
 
   vector<hfeats> vars;
 
-  vars.push_back(hfeats("met",40,0,1200, all_sam, "MET [GeV]","nleps==1&&ht>500&&njets>=6"));
+  vars.push_back(hfeats("leps_pt[0]",40,0,400, all_sam, "Lepton p_{T} [GeV]","nleps==1&&ht>500&&met>200&&njets>=6"));
   vars.back().whichPlots = "34";
-  vars.push_back(hfeats("ht",40,0,3000, all_sam, "H_{T} [GeV]","nleps==1&&met>200&&njets>=6"));
+  vars.push_back(hfeats("met",40,0,1200, all_sam, "MET [GeV]","nleps==1&&ht>500&&njets>=6", 200));
   vars.back().whichPlots = "34";
-  vars.push_back(hfeats("mj",40,0,1500, all_sam, "M_{J} [GeV]","nleps==1&&ht>500&&met>200&&njets>=6"));
+  vars.push_back(hfeats("mt",40,0,800, all_sam, "m_{T} [GeV]","nleps==1&&ht>500&&njets>=6", 140));
   vars.back().whichPlots = "34";
-  vars.push_back(hfeats("nbm",6,-0.5,5.5, all_sam, "n_{b}","nleps==1&&ht>500&&met>200&&njets>=6"));
+  vars.push_back(hfeats("mt",40,0,800, all_sam, "m_{T} [GeV]","nleps==1&&ht>500&&met>200&&njets>=6", 140));
   vars.back().whichPlots = "34";
-  vars.push_back(hfeats("njets",13,1.5,14.5, all_sam, "n_{jets}","nleps==1&&ht>500&&met>200"));
+  vars.push_back(hfeats("ht",40,0,3000, all_sam, "H_{T} [GeV]","nleps==1&&met>200&&njets>=6", 500));
+  vars.back().whichPlots = "34";
+  vars.push_back(hfeats("mj",40,0,1500, all_sam, "M_{J} [GeV]","nleps==1&&ht>500&&met>200&&njets>=6", 400));
+  vars.back().whichPlots = "34";
+  vars.push_back(hfeats("nbm",6,-0.5,5.5, all_sam, "n_{b}","nleps==1&&ht>500&&met>200&&njets>=6", 0.5));
+  vars.back().whichPlots = "34";
+  vars.push_back(hfeats("njets",13,1.5,14.5, all_sam, "n_{jets}","nleps==1&&ht>500&&met>200", 5.5));
+  vars.back().whichPlots = "34";
+  vars.push_back(hfeats("nleps",5,-0.5,4.5, all_sam, "n_{leps}","1"));
   vars.back().whichPlots = "34";
 
   plot_distributions(Samples, vars, luminosity, plot_type, plot_style, "t5tttt",false, true);

@@ -145,7 +145,8 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
       if(Samples[isam].isData) totCut= vars[var].cuts+"&&"+Samples[isam].cut;
       if(vars[var].PU_reweight && !Samples[isam].isData) totCut = Samples[isam].factor+"*"+luminosity+"*weight*wpu*("+vars[var].cuts+"&&"+Samples[isam].cut+")";
       //cout<<totCut<<endl;
-      histo[0][var][sam]->Sumw2();
+      //histo[0][var][sam]->Sumw2();
+      histo[0][var][sam]->SetBinErrorOption(TH1::kPoisson);
       if(samVariable=="noPlot") chain[isam]->Project(histo[0][var][sam]->GetName(), variable, totCut);
       else chain[isam]->Project(histo[0][var][sam]->GetName(), samVariable, totCut);
       histo[0][var][sam]->SetBinContent(vars[var].nbins,
@@ -183,7 +184,7 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
       for(int bin(0); bin<=histo[0][var][sam]->GetNbinsX()+1; bin++){
         double val(histo[0][var][sam]->GetBinContent(bin));
         histo[1][var][sam]->SetBinContent(bin, val);
-        if(Samples[isam].isData) histo[0][var][sam]->SetBinError(bin, sqrt(val));
+        //if(Samples[isam].isData) histo[0][var][sam]->SetBinError(bin, sqrt(val));
         histo[1][var][sam]->SetBinError(bin, histo[0][var][sam]->GetBinError(bin));
       }
     }
@@ -285,7 +286,7 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
             if(!Samples[isam].mcerr) {
 	      if(!Samples[isam].doBand) histo[0][var][sam]->Draw("hist");
 	      else {
-		histo[0][var][sam]->Draw("E2");
+		histo[0][var][sam]->Draw("E0");
 		TString hcname("hclone"); hcname += var;
 		TH1F *hclone = static_cast<TH1F*>(histo[0][var][sam]->Clone(hcname));
 		hclone->SetLineColor(Samples[isam].color);
@@ -293,12 +294,12 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
 		hclone->SetFillColor(0);
 		hclone->Draw("hist same");
 	      }
-            } else histo[0][var][sam]->Draw("ELP");
+            } else histo[0][var][sam]->Draw("E0LP");
             firstplotted = sam;
             style.setTitles(histo[0][var][sam],vars[var].title, ytitle, cmslabel, lumilabel);
           } else {
             if(!Samples[isam].mcerr) histo[0][var][sam]->Draw("hist same");
-            else histo[0][var][sam]->Draw("ELP same");
+            else histo[0][var][sam]->Draw("E0LP same");
           }
         } else {
           if(Samples[isam].isSig) leg[ileg].AddEntry(histo[0][var][sam], leghisto,"l");
@@ -309,7 +310,7 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
       for(int sam(Nsam-1); sam >= 0; sam--){
         int isam = vars[var].samples[sam];
         if(Samples[isam].isSig){if(!Samples[isam].mcerr) histo[0][var][sam]->Draw("hist same"); else histo[0][var][sam]->Draw("EP same"); }
-        if(Samples[isam].isData) histo[0][var][sam]->Draw("e1 same");
+        if(Samples[isam].isData) histo[0][var][sam]->Draw("e0 same");
       }
       for(int ileg(0); ileg<nLegs; ileg++) leg[ileg].Draw(); 
       if(histo[0][var][firstplotted]->GetMinimum() > minLog) histo[0][var][firstplotted]->SetMinimum(minLog);
@@ -428,10 +429,10 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
 	}	
         histo[1][var][sam]->SetYTitle(ytitle);
         if(Samples[isam].style>0) histo[1][var][sam]->Draw("hist");
-        else histo[1][var][sam]->Draw("e1 x0");
+        else histo[1][var][sam]->Draw("e0 x0");
       } else {
         if(Samples[isam].style>0) histo[1][var][sam]->Draw("hist same");
-        else histo[1][var][sam]->Draw("e1 x0 same");
+        else histo[1][var][sam]->Draw("e0 x0 same");
       }
       leghisto = Samples[isam].label;
       unsigned ileg = (Nsam<=3?0:legcount>=(Nsam+1)/2);
