@@ -113,6 +113,8 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
     legH = (Nsam<=3?legSingle*Nsam:legSingle*(Nsam+1)/2);
     fracLeg = legH/(1-style.PadTopMargin-style.PadBottomMargin)*1.15;
     for(int ileg(0); ileg<nLegs; ileg++) leg[ileg].SetY1NDC(legY-legH); 
+    leg[1].SetX1NDC(legX1[1]+vars[var].moveRLegend); leg[1].SetX2NDC(legX1[1]+legW+vars[var].moveRLegend); 
+
     cout<<endl;
 
     bool someBands = false;
@@ -185,7 +187,7 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
         double val(histo[0][var][sam]->GetBinContent(bin));
         histo[1][var][sam]->SetBinContent(bin, val);
         //if(Samples[isam].isData) histo[0][var][sam]->SetBinError(bin, sqrt(val));
-        histo[1][var][sam]->SetBinError(bin, histo[0][var][sam]->GetBinError(bin));
+        histo[1][var][sam]->SetBinError(bin, histo[0][var][sam]->GetBinErrorUp(bin));
       }
     }
     
@@ -261,8 +263,8 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
         }
         double maxval(histo[0][var][sam]->GetMaximum());
         if(maxhisto < maxval)  maxhisto = maxval;
-	maxval += sqrt(maxval);
-	if(Samples[isam].isData && maxhisto < maxval) maxhisto = maxval;
+	maxval += histo[0][var][sam]->GetBinErrorUp(histo[0][var][sam]->GetMaximumBin());
+	if((Samples[isam].isData || Samples[isam].mcerr) && maxhisto < maxval) maxhisto = maxval;
       }
 
 
@@ -286,7 +288,7 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
             if(!Samples[isam].mcerr) {
 	      if(!Samples[isam].doBand) histo[0][var][sam]->Draw("hist");
 	      else {
-		histo[0][var][sam]->Draw("E0");
+		histo[0][var][sam]->Draw("E2");
 		TString hcname("hclone"); hcname += var;
 		TH1F *hclone = static_cast<TH1F*>(histo[0][var][sam]->Clone(hcname));
 		hclone->SetLineColor(Samples[isam].color);
@@ -697,6 +699,7 @@ hfeats::hfeats(TString ivarname, int inbins, float iminx, float imaxx, vector<in
   whichPlots = "0"; // Make all 4 [log_]lumi and [log_]shapes plots; For 2D: 1=linear, 2=log
   normalize=false;
   PU_reweight=false;
+  moveRLegend = 0;
   
   string ctitle(title.Data()); // Needed because effing TString can't handle square brackets
   if(!(ctitle.find("GeV")==std::string::npos)) unit = "GeV";

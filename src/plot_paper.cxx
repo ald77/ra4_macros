@@ -99,20 +99,23 @@ int main(){
 
   vector<hfeats> vars;
 
-  bool do_mt = true;
+  bool do_mt = false;
 
   if(do_mt){
+    plot_style="CMSPaper";
     vars.push_back(hfeats("mt",12,0,420, ra4_sam, "m_{T} [GeV]",
 			  "nleps==1&&ht>500&&met>200&&pass&&njets>=6&&nbm>=1",140, "baseline"));
     vars.back().whichPlots = "1"; vars.back().normalize = true;
+
     plot_distributions(Samples, vars, luminosity, plot_type, plot_style, "paper",true);
   } else {
+    plot_style="CMSPaperNoRatio";
     vars.push_back(hfeats("mj",10,25,775, mj_sam, "M_{J} [GeV]",
 			  "nleps==1&&ht>500&&met>200&&pass&&njets>=6&&nbm==1",400,"results"));
-    vars.back().whichPlots = "2"; vars.back().normalize = true;
+    vars.back().whichPlots = "2"; vars.back().normalize = true; vars.back().moveRLegend = -0.05;
     vars.push_back(hfeats("mj",10,25,775, mj_sam, "M_{J} [GeV]",
 			  "nleps==1&&ht>500&&met>200&&pass&&njets>=6&&nbm>=2",400,"results"));
-    vars.back().whichPlots = "2"; vars.back().normalize = true;
+    vars.back().whichPlots = "2"; vars.back().normalize = true; vars.back().moveRLegend = -0.05;
 
     plot_distributions(Samples, vars, luminosity, plot_type, plot_style, "paper",false);
   }
