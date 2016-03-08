@@ -29,6 +29,7 @@
 namespace  {
   bool do_rund = true;
   bool do_dps = false;
+  bool do_rpv = false;
   TString plot_type = ".pdf";
 }
 
@@ -58,6 +59,23 @@ int main(){
   TChain c_lep("tree"); c_lep.Add(folder+"singlelep/*Single*");
   TChain c_all("tree"); c_all.Add(folder+"alldata/*root");
   TChain c_had("tree"); c_had.Add(folder+"hadronic/*root");
+  TChain c_jetht_rpv("tree");
+  c_jetht_rpv.Add("/homes/cawest/links/JetHT_Run2015C-05Oct2015-v1/*root");
+  c_jetht_rpv.Add("/homes/cawest/links/JetHT_Run2015D-05Oct2015-v1/*root");
+  c_jetht_rpv.Add("/homes/cawest/links/JetHT_Run2015D-PromptReco-v4/*root");
+  TChain c_mu_rpv("tree");
+  c_mu_rpv.Add("/homes/cawest/links/SingleMuon_Run2015C-23Sep2015-v1/*root");
+  c_mu_rpv.Add("/homes/cawest/links/SingleMuon_Run2015D-05Oct2015-v1/*root");
+  c_mu_rpv.Add("/homes/cawest/links/SingleMuon_Run2015D-PromptReco-v4/*root");
+
+  if(do_rpv){
+    float lmin(500), lmax(2000);
+    int lbins(static_cast<int>((lmax-lmin)/25));
+    PlotTurnOn(&c_mu_rpv, "ht", lbins,lmin,lmax, "H_{T}",
+               "(trig[20]&&nmus==1&&mus_pt[0]>35)", "trig[12]","HLT_IsoMu27 && p_{T,#mu}>35 GeV", "PFHT800",700);
+    PlotTurnOn(&c_jetht_rpv, "ht", lbins,lmin,lmax, "H_{T}",
+               "(trig[11])", "trig[12]","PFHT450", "PFHT800",800);
+  }
 
   if(do_rund){
     float lmin(25), lmax(300);
@@ -290,7 +308,10 @@ void PlotTurnOn(TChain *data, TString var, int nbins, double minx, double maxx, 
   else label.DrawLatex(0.13, 0.93, "#font[61]{CMS} #scale[0.8]{#font[52]{Simulation}}");
   // Drawing luminosity
   label.SetTextAlign(31); 
-  if(isData) label.DrawLatex(0.85, 0.93, "116 pb^{-1} (13 TeV)");
+  if(isData) {
+    if(do_rpv) label.DrawLatex(0.85, 0.93, "2.69 fb^{-1} (13 TeV)");
+    else label.DrawLatex(0.85, 0.93, "116 pb^{-1} (13 TeV)");
+  }
   else label.DrawLatex(0.85, 0.93, "Spring15 t#bar{t}");
 
   can.SaveAs(pname);
