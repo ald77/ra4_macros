@@ -1,3 +1,8 @@
+namespace rpv
+{
+  TString luminosity="2.69";
+}
+
 TString filestring(TString dataset, bool isSkimmed=true)
 {
   if(isSkimmed) {

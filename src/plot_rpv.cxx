@@ -16,7 +16,6 @@
 #include "utilities_macros_rpv.hpp"
 
 namespace {
-  TString luminosity="2.69";
   TString plot_type=".pdf";
   TString plot_style="CMSPaper";
 }
@@ -27,7 +26,6 @@ using std::endl;
 
 
 int main(){ 
-  //  std::string extraWeight("w_lumi*w_btag/weight");
   // don't want to include RA4 trigger efficiency
   std::string extraWeight("1/eff_trig");
 
@@ -41,10 +39,10 @@ int main(){
   s_rpv_LO_M1100.push_back("/homes/cawest/babymaker/CMSSW_7_4_14/src/babymaker/RPV_M1100_LO.root");
   vector<TString> s_rpv_NLO;
   s_rpv_NLO.push_back("/homes/cawest/CMSSW_7_4_14/src/babymaker/RPV_M1000_NLO.root");
+
   vector<TString> s_tt;
-  s_tt.push_back(filestring("TTJets_TuneCUETP8M1_13TeV-madgraphMLM"));
-
-
+  //  s_tt.push_back(filestring("TTJets_TuneCUETP8M1_13TeV-madgraphMLM"));
+  s_tt.push_back(filestring("TT_TuneCUETP8M1_13TeV-powheg-pythia8"));
   vector<TString> s_wjets;
   s_wjets.push_back(filestring("WJetsToLNu_HT-600ToInf_TuneCUETP8M1_13TeV-madgraphMLM-pythia8"));
   vector<TString> s_singlet;
@@ -70,14 +68,14 @@ int main(){
   vector<TString> s_z_had;
   s_z_had.push_back(filestring("ZJetsToQQ_HT600toInf_13TeV-madgraph"));
   vector<TString> s_jetht;
-  s_jetht.push_back(filestring("JetHT_Run2015C-05Oct2015-v1"));
+  s_jetht.push_back(filestring("JetHT_Run2015C_25ns-05Oct2015-v1"));
   s_jetht.push_back(filestring("JetHT_Run2015D-05Oct2015-v1"));
   s_jetht.push_back(filestring("JetHT_Run2015D-PromptReco-v4"));
 
   // Reading ntuples
   vector<sfeats> Samples; 
   if(showData) {
-    Samples.push_back(sfeats(s_jetht, "Data",kBlack,1,"trig[12] && pass && njets<10")); 
+    Samples.push_back(sfeats(s_jetht, "Data",kBlack,1,"trig[12] && pass && (njets<10 || (nmus+nels)==0)"));
     Samples.back().isData = true;
     Samples.back().doStack = false;
   }
@@ -113,7 +111,7 @@ int main(){
   TString cuts("(nmus+nels)==1");
  
   std::vector<TString> basecut = {"(nmus+nels)==0", "(nmus+nels)==1"};
-  std::vector<TString> mjcuts = {"mj>500&&mj<=800", "mj>800"};
+  std::vector<TString> mjcuts = {"mj<=300", "mj>300&&mj<=500", "mj>500&&mj<=800", "mj>800"};
   std::vector<TString> njetcuts = {"njets>=4&&njets<=5", "njets>=6&&njets<=7", "njets>=8&&njets<=9", "njets>=10"};
   TString htcut("ht>1500");
   for(auto ibasecut : basecut) {
@@ -122,6 +120,8 @@ int main(){
 	// skip blinded regions
 	bool isBlind = (ibasecut.EqualTo("(nmus+nels)==0") && !ijetcut.EqualTo("njets>=4&&njets<=5") && !ijetcut.EqualTo("njets>=6&&njets<=7" )) ||
 	  (ibasecut.EqualTo("(nmus+nels)==1") && !ijetcut.EqualTo("njets>=4&&njets<=5"));
+	// reenable all regions for low mj
+	if(imjcut.EqualTo("mj>300&&mj<=500" && !ibasecut.EqualTo("(nmus+nels)==1"))) isBlind=false;
 	if(isBlind && showData) continue;
 	if(ibasecut=="(nmus+nels)==1") {
 	  ijetcut.ReplaceAll("njets>=10","njets>=8");
@@ -132,10 +132,10 @@ int main(){
 	// vars.back().normalize = true;
 	// vars.push_back(hfeats("mj",25, 0, 2500, rpv_sam, "M_{J} (GeV)", cuts));
 	// vars.back().normalize = true;
-	// vars.push_back(hfeats("dr_bb",15, 0, 6, rpv_sam, "#Delta_{R^{b#bar{b}}}", cuts));
+	// vars.push_back(hfeats("dr_bb",15, 0, 6, rpv_sam, "#DeltaR_{b#bar{b}}", cuts));
 	// vars.back().normalize = true;
-	vars.push_back(hfeats("nbm",6, 0, 6, rpv_sam, "N_{b}", cuts));
-	vars.back().normalize = true;
+	vars.push_back(hfeats("nbm",1, 0, 4, rpv_sam, "N_{b}", cuts));
+        vars.back().normalize = true;
         // vars.push_back(hfeats("njets",20, 0, 20, rpv_sam, "N_{jets}", cuts));
 	// vars.back().normalize = true;
 	// vars.push_back(hfeats("jets_pt[0]",30, 0, 1500, rpv_sam, "p_{T,1} (GeV)", cuts));
@@ -168,7 +168,7 @@ int main(){
     }
   }
   
-  plot_distributions(Samples, vars, luminosity, plot_type, plot_style, "rpv_base", showData); // last argument determines whether or not a ratio is drawn
+  plot_distributions(Samples, vars, rpv::luminosity, plot_type, plot_style, "rpv_base", showData); // last argument determines whether or not a ratio is drawn
 
 }
 

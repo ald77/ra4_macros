@@ -60,7 +60,7 @@ int main(){
   TChain c_all("tree"); c_all.Add(folder+"alldata/*root");
   TChain c_had("tree"); c_had.Add(folder+"hadronic/*root");
   TChain c_jetht_rpv("tree");
-  c_jetht_rpv.Add("/homes/cawest/links/JetHT_Run2015C-05Oct2015-v1/*root");
+  c_jetht_rpv.Add("/homes/cawest/links/JetHT_Run2015C_25ns-05Oct2015-v1/*root");
   c_jetht_rpv.Add("/homes/cawest/links/JetHT_Run2015D-05Oct2015-v1/*root");
   c_jetht_rpv.Add("/homes/cawest/links/JetHT_Run2015D-PromptReco-v4/*root");
   TChain c_mu_rpv("tree");

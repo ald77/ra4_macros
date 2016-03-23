@@ -16,7 +16,6 @@
 #include "utilities_macros_rpv.hpp"
 
 namespace {
-  TString luminosity="2.69";
   TString plot_type=".pdf";
   TString plot_style="CMSPaper";
   int section(11);
@@ -107,10 +106,10 @@ int main(){
   }
 
   if(showData) {
-    plot_distributions(Samples, vars, luminosity, plot_type, plot_style, "gs", true);
+    plot_distributions(Samples, vars, rpv::luminosity, plot_type, plot_style, "gs", true);
   }
   else {
-    plot_distributions(Samples, vars, luminosity, plot_type, plot_style, "gs", false);
+    plot_distributions(Samples, vars, rpv::luminosity, plot_type, plot_style, "gs", false);
   }
 }
 

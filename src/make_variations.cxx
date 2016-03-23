@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <iostream>
 #include <vector>
+#include <math.h>
 #include "TChain.h"
 #include "TH1D.h"
 #include "TCanvas.h"
@@ -24,11 +25,6 @@ std::string cutandweightForVariationsdata(std::string cut, std::string weight);
 void setOverflow(TH1F *hist);
 void protectFromZero(TH1F* hist);
 
-namespace {
-  TString luminosity="2.69";
-  TString plot_type=".pdf";
-  TString plot_style="CMSPaper";
-}
 
 TFile *f;
 std::map<std::string, std::string> prettySampleName;
@@ -38,7 +34,10 @@ std::string cutandweightForVariations(std::string cut, std::string weight)
 {
   std::string newcut("(");
   newcut+=weight;
-  newcut+="*w_lumi*w_btag)*(";
+  // the default weight includes the RA4 trigger efficiency; need to exclude this
+  newcut+="*";
+  newcut+=rpv::luminosity.Data();
+  newcut+="*weight/eff_trig)*(";
   newcut+=cut;
   newcut+="";
 
@@ -51,7 +50,9 @@ std::string cutandweightForVariationsQCD(std::string cut, std::string weight, st
 {
   std::string newcut("(");
   newcut+=weight;
-  newcut+="*w_lumi*w_btag*";
+  newcut+="*";
+  newcut+=rpv::luminosity.Data();
+  newcut+="*weight/eff_trig*";
   newcut+=flavorWeight;
   newcut+=")*(";
   newcut+=cut;
@@ -86,7 +87,8 @@ void protectFromZero(TH1F *hist)
   for(int i=0; i<hist->GetNbinsX(); i++) {
     float bincontent = hist->GetBinContent(i);
     float binerror = hist->GetBinError(i);
-    if(bincontent-binerror<0) {
+    if(bincontent-binerror<0 || isnan(bincontent)) {
+      if(isnan(bincontent)) std::cout << "Found nan" << std::endl;
       hist->SetBinContent(i, 0.0);
       hist->SetBinError(i, 0.0);
     }
@@ -133,9 +135,16 @@ void outputHistograms(std::vector<sfeats>& Samples, std::string variation)
 				   "nbm>0&&ht>1200&&njets>=4&&njets<=5&&(nmus+nels)==1&&mj>=500&&mj<800", 
   				   "nbm>0&&ht>1500&&njets>=4&&njets<=5&&(nmus+nels)==0&&mj>=800","nbm>0&&ht>1500&&njets>=6&&njets<=7&&(nmus+nels)==0&&mj>=800",
   				   //"nbm>0&&ht>1500&&njets>=8&&njets<=9&&(nmus+nels)==0&&mj>=800",
-				   "nbm>0&&ht>1200&&njets>=4&&njets<=5&&(nmus+nels)==1&&mj>=800"};
+				   "nbm>0&&ht>1200&&njets>=4&&njets<=5&&(nmus+nels)==1&&mj>=800",
+				   // low MJ control regions
+				   "nbm>0&&ht>1500&&njets>=4&&njets<=5&&(nmus+nels)==0&&mj>=300&&mj<500",
+				   "nbm>0&&ht>1500&&njets>=6&&njets<=7&&(nmus+nels)==0&&mj>=300&&mj<500",
+				   "nbm>0&&ht>1500&&njets>=8&&njets<=9&&(nmus+nels)==0&&mj>=300&&mj<500",
+				   "nbm>0&&ht>1500&&njets>=10&&(nmus+nels)==0&&mj>=300&&mj<500",
+  };
 
-  int nBins=6;
+  // maximum number of b-tagged jets
+  int nBBins=4;
   
   for(unsigned int icut=0; icut<cuts.size(); icut++) {
     // need to make temporary variable because some systematics can change cuts or plot variables
@@ -166,7 +175,7 @@ void outputHistograms(std::vector<sfeats>& Samples, std::string variation)
 	histname.erase(histname.find('['), 1);
 	histname.erase(histname.find(']'), 1);
       }
-      TH1F * hist = new TH1F(histname.c_str(), histname.c_str(), nBins, 0, nBins);
+      TH1F * hist = new TH1F(histname.c_str(), histname.c_str(), nBBins+1, 0, nBBins+1);
       TString fullCut(Form("%s&&%s)", Samples.at(i).cut.Data(), tempCut.Data()));
 
       std::cout << fullCut << std::endl;
@@ -207,8 +216,7 @@ int main(int argc, char* argv[])
 
   if(variations.at(0).size()==0) variations.at(0)="nominal";
   f = new TFile(Form("variations/output_%s.root", variations.at(0).c_str()), "recreate");
-  //  std::vector<std::string> types = {"Up", "Down"};
-  std::vector<std::string> types = {"Down", "Up"};
+  std::vector<std::string> types = {"Up", "Down"};
   // the nominal variations only have one sign
   if(variations.size()==0) {
     types.clear();
@@ -280,7 +288,7 @@ void makeVariations(std::string &syst){
   // negative sign implements anticorrelation between b and c reweightings
   float cflavorValError = -csv_weight->GetBinError(2);
   float lflavorValCentral = csv_weight->GetBinContent(3);
-  float lflavorValError = csv_weight->GetBinContent(3);
+  float lflavorValError = csv_weight->GetBinError(3);
   csv_weight_file->Close();
   f->cd();
   
@@ -329,7 +337,7 @@ void makeVariations(std::string &syst){
   if(syst=="ttbar_murfDown") ttbarWeight="sys_murf[1]";
 
   if(syst=="ttbar_ptUp") ttbarWeight="w_toppt";
-  if(syst=="ttbar_ptDown") ttbarWeight="2-w_toppt";
+  if(syst=="ttbar_ptDown") ttbarWeight="(2-w_toppt)";
 
   if(syst=="other_mufUp") otherWeight="sys_muf[0]";
   if(syst=="other_mufDown") otherWeight="sys_muf[1]";
@@ -376,7 +384,7 @@ void makeVariations(std::string &syst){
   s_other.push_back(filestring("ttHJetTobb_M125_13TeV_amcatnloFXFX_madspin_pythia8"));
   s_other.push_back(filestring("TTTT_TuneCUETP8M1_13TeV-amcatnlo-pythia8"));
   std::vector<TString> s_jetht;
-  s_jetht.push_back(filestring("JetHT_Run2015C-05Oct2015-v1"));
+  s_jetht.push_back(filestring("JetHT_Run2015C_25ns-05Oct2015-v1"));
   s_jetht.push_back(filestring("JetHT_Run2015D-05Oct2015-v1"));
   s_jetht.push_back(filestring("JetHT_Run2015D-PromptReco-v4"));
 
