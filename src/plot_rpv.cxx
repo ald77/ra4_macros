@@ -134,7 +134,7 @@ int main(){
 	// vars.back().normalize = true;
 	// vars.push_back(hfeats("dr_bb",15, 0, 6, rpv_sam, "#DeltaR_{b#bar{b}}", cuts));
 	// vars.back().normalize = true;
-	vars.push_back(hfeats("nbm",1, 0, 4, rpv_sam, "N_{b}", cuts));
+	vars.push_back(hfeats("nbm", 4, 1, 5, rpv_sam, "N_{b}", cuts));
         vars.back().normalize = true;
         // vars.push_back(hfeats("njets",20, 0, 20, rpv_sam, "N_{jets}", cuts));
 	// vars.back().normalize = true;
