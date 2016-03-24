@@ -25,11 +25,25 @@ using std::cout;
 using std::endl;
 
 
-int main(){ 
+int main(int argc, char *argv[]){
   // don't want to include RA4 trigger efficiency
   std::string extraWeight("1/eff_trig");
 
   bool showData=true;
+  bool nminus1=false;
+  TString outDir("rpv_base");
+  if(argc==2) {
+    TString nMinus1String("nminus1");
+    if(argv[1]!=nMinus1String) {
+      cout << "Only valid option is 'nminus1'. If no options are specified, the default plots are generated" << endl;
+      return 1;
+    }
+    else {
+      nminus1=true;
+      showData=false; // don't show data in signal region
+      outDir="nminus1";
+    }
+  }
 
   TString folder_links="/homes/cawest/links/";
 
@@ -114,41 +128,45 @@ int main(){
   std::vector<TString> mjcuts = {"mj<=300", "mj>300&&mj<=500", "mj>500&&mj<=800", "mj>800"};
   std::vector<TString> njetcuts = {"njets>=4&&njets<=5", "njets>=6&&njets<=7", "njets>=8&&njets<=9", "njets>=10"};
   TString htcut("ht>1500");
-  for(auto ibasecut : basecut) {
-    for(auto imjcut : mjcuts) {
-      for(auto ijetcut : njetcuts) {
-	// skip blinded regions
-	bool isBlind = (ibasecut.EqualTo("(nmus+nels)==0") && !ijetcut.EqualTo("njets>=4&&njets<=5") && !ijetcut.EqualTo("njets>=6&&njets<=7" )) ||
-	  (ibasecut.EqualTo("(nmus+nels)==1") && !ijetcut.EqualTo("njets>=4&&njets<=5"));
-	// reenable all regions for low mj
-	if(imjcut.EqualTo("mj>300&&mj<=500" && !ibasecut.EqualTo("(nmus+nels)==1"))) isBlind=false;
-	if(isBlind && showData) continue;
-	if(ibasecut=="(nmus+nels)==1") {
-	  ijetcut.ReplaceAll("njets>=10","njets>=8");
-	  htcut="ht>1200";
+  if(!nminus1) {
+    for(auto ibasecut : basecut) {
+      for(auto imjcut : mjcuts) {
+	for(auto ijetcut : njetcuts) {
+	  // skip blinded regions
+	  bool isBlind = (ibasecut.EqualTo("(nmus+nels)==0") && !ijetcut.EqualTo("njets>=4&&njets<=5") && !ijetcut.EqualTo("njets>=6&&njets<=7" )) ||
+	    (ibasecut.EqualTo("(nmus+nels)==1") && !ijetcut.EqualTo("njets>=4&&njets<=5"));
+	  // reenable all regions for low mj
+	  if(imjcut.EqualTo("mj>300&&mj<=500" && !ibasecut.EqualTo("(nmus+nels)==1"))) isBlind=false;
+	  // reenable njet>=10 region for (nmus+nels)==0
+	  if(ijetcut.EqualTo("njets>=10") && ibasecut.EqualTo("(nmus+nels)==0")) isBlind=false;
+	  if(isBlind && showData) continue;
+	  if(ibasecut=="(nmus+nels)==1") {
+	    ijetcut.ReplaceAll("njets>=10","njets>=8");
+	    htcut="ht>1200";
+	  }
+	  cuts = ibasecut + "&&" + htcut + "&&" + ijetcut + "&&" + imjcut;
+	  // vars.push_back(hfeats("ht",40, 0, 4000, rpv_sam, "H_{T} (GeV)", cuts));
+	  // vars.back().normalize = true;
+	  // vars.push_back(hfeats("mj",25, 0, 2500, rpv_sam, "M_{J} (GeV)", cuts));
+	  // vars.back().normalize = true;
+	  // vars.push_back(hfeats("dr_bb",15, 0, 6, rpv_sam, "#DeltaR_{b#bar{b}}", cuts));
+	  // vars.back().normalize = true;
+	  vars.push_back(hfeats("nbm", 4, 1, 5, rpv_sam, "N_{b}", cuts));
+	  vars.back().normalize = true;
+	  // vars.push_back(hfeats("njets",20, 0, 20, rpv_sam, "N_{jets}", cuts));
+	  // vars.back().normalize = true;
+	  // vars.push_back(hfeats("jets_pt[0]",30, 0, 1500, rpv_sam, "p_{T,1} (GeV)", cuts));
+	  // vars.back().normalize = true;
+	  // vars.push_back(hfeats("jets_pt[1]",30, 0, 1500, rpv_sam, "p_{T,2} (GeV)", cuts));
+	  // vars.back().normalize = true;
+	  // vars.push_back(hfeats("met",30, 0, 1500, rpv_sam, "MET (GeV)", cuts));
+	  // vars.back().normalize = true;
 	}
-        cuts = ibasecut + "&&" + htcut + "&&" + ijetcut + "&&" + imjcut;
-	// vars.push_back(hfeats("ht",40, 0, 4000, rpv_sam, "H_{T} (GeV)", cuts));
-	// vars.back().normalize = true;
-	// vars.push_back(hfeats("mj",25, 0, 2500, rpv_sam, "M_{J} (GeV)", cuts));
-	// vars.back().normalize = true;
-	// vars.push_back(hfeats("dr_bb",15, 0, 6, rpv_sam, "#DeltaR_{b#bar{b}}", cuts));
-	// vars.back().normalize = true;
-	vars.push_back(hfeats("nbm", 4, 1, 5, rpv_sam, "N_{b}", cuts));
-        vars.back().normalize = true;
-        // vars.push_back(hfeats("njets",20, 0, 20, rpv_sam, "N_{jets}", cuts));
-	// vars.back().normalize = true;
-	// vars.push_back(hfeats("jets_pt[0]",30, 0, 1500, rpv_sam, "p_{T,1} (GeV)", cuts));
-	// vars.back().normalize = true;
-	// vars.push_back(hfeats("jets_pt[1]",30, 0, 1500, rpv_sam, "p_{T,2} (GeV)", cuts));
-	// vars.back().normalize = true;
-	// vars.push_back(hfeats("met",30, 0, 1500, rpv_sam, "MET (GeV)", cuts));
-	// vars.back().normalize = true;
       }
     }
-  }
+  } // end if(!minus1)
   // make N-1 plots for signal regions
-  if(!showData) {
+  else {
     std::vector<std::string> basecutsNm1 = {"(nmus+nels)==0", "(nmus+nels)==1"};
     std::vector<std::string> htcutsNm1 = {"ht>1500", "ht>1200"};
     std::vector<std::string> mjcutsNm1 = {"mj>800", "mj>500"};
@@ -168,7 +186,7 @@ int main(){
     }
   }
   
-  plot_distributions(Samples, vars, rpv::luminosity, plot_type, plot_style, "rpv_base", showData); // last argument determines whether or not a ratio is drawn
+  plot_distributions(Samples, vars, rpv::luminosity, plot_type, plot_style, outDir, showData); // last argument determines whether or not a ratio is drawn
 
 }
 

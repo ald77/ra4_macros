@@ -48,8 +48,8 @@ int main(){
   Samples.back().doStack = false;
   Samples.push_back(sfeats(s_tt_MLM, "t#bar{t}, aMC@NLO (LO, MLM)", ra4::c_t1tttt, 2, cutandweight("1", extraWeight)));
   Samples.back().doStack = false;
-  Samples.push_back(sfeats(s_tt_MLM, "t#bar{t}, (LO, p_{T} reweighted)", kBlue, 1, cutandweight("1", extraWeightTopPt)));
-  Samples.back().doStack = false;
+  // Samples.push_back(sfeats(s_tt_MLM, "t#bar{t}, (LO, p_{T} reweighted)", kBlue, 1, cutandweight("1", extraWeightTopPt)));
+  // Samples.back().doStack = false;
   Samples.push_back(sfeats(s_tt_amcatnlo, "t#bar{t}, aMC@NLO (NLO, FxFx)", kBlack, 1, cutandweight("1", extraWeight)));
   Samples.back().doStack = false;
 

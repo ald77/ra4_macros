@@ -16,7 +16,6 @@ int main(int argc, char *argv[])
   bool excludeHighCSV=false;
   
   int maxbin=20;
-  if(excludeHighCSV) maxbin=16;
 
   // by default, want to look at low njet region
   TString fitType="low_njet";
@@ -25,11 +24,18 @@ int main(int argc, char *argv[])
     fitType=Form("%s", argv[1]);
     // options: low_njet, low_njet_low_mj, low_njet_high_mj, high_njet, exclude_high_csv 
     if(fitType!="low_njet" && 
+       fitType!="high_njet" &&
        fitType!="low_njet_low_mj" && 
        fitType!="low_njet_high_mj" && 
        fitType!="exclude_high_csv") {
       std::cout << "Invalid fit type: " << fitType << std::endl;
-    }  
+      return 1;
+    }
+    if(fitType=="exclude_high_csv") {
+      maxbin=16;
+      // still want to fit low_njet region
+      fitType="low_njet";
+    }
   }  
   setTDRStyle();
   gROOT->ForceStyle();
@@ -133,7 +139,7 @@ int main(int argc, char *argv[])
     data->SetMarkerSize(1);
     data->SetLineColor(kBlack);
     data->SetMarkerStyle(kFullCircle);
-    data->SetTitle(";CSV;Events / 0.05");
+    data->SetTitle(";Rescaled CSV;Events / 0.05");
     TCanvas *c = new TCanvas;
     data->Draw("e");
 
@@ -272,7 +278,7 @@ int main(int argc, char *argv[])
 
     // don't want to recreate files for variations
     TFile *out;
-    if(!excludeHighCSV) {
+    if(fitType=="low_njet" && !excludeHighCSV) {
       out = new TFile(Form("data/%s.root", fitType.Data()), "recreate");
       TH1F *csv_weight = new TH1F("csv_weight", "csv_weight", 3, 0, 3);
       csv_weight->SetBinContent(1, qcd_b_ratio);
