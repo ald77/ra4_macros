@@ -47,6 +47,7 @@ systList.append(["jes","Jet energy scale",4,1])
 #systList.append(["lep_eff","Lepton efficiency",6,1])
 systList.append(["mc_stat","MC statistics",1,2]) #must be done last!
 
+nSyst = len(systList)
 #make list of bins
 
 binList = []
@@ -78,11 +79,14 @@ for bin in binList:
     nominal.SetBinContent(nbinsX,content)
     nominal.SetBinError(nbinsX,error)
 
-    
+    ROOT.gStyle.SetPadRightMargin()
+    ROOT.gStyle.SetPadLeftMargin(0.12) #so it's not messed by larger table margin each iteration of the loop
     c = ROOT.TCanvas()
     leg = ROOT.TLegend(0.12,0.7,0.54,0.92)
+
+    table = ROOT.TH2F("table_"+dir,"",nbinsX,-0.5,nbinsX-0.5,nSyst,0,nSyst)
     
-    for sys in systList:
+    for isys,sys in enumerate(systList,start=1):
         sysName = sys[0]
         if verbose:
             print "starting "+sysName
@@ -132,12 +136,14 @@ for bin in binList:
                     histUp.SetBinContent(i,(histUp.GetBinError(i)/histUp.GetBinContent(i)))
                 
 
-        if verbose:
-            for i in range(1,histUp.GetNbinsX()+1):
+       
+        for i in range(1,histUp.GetNbinsX()+1):
+            table.SetBinContent(i,isys,round(100*histUp.GetBinContent(i),1))
+            if verbose:
                 print "symmetrized rel error bin "+str(i)+" "+str(histUp.GetBinContent(i))        
 
+        table.GetYaxis().SetBinLabel(isys,sys[1])        
         histUp.SetTitle(";N_{b};Relative Error")
-        histUp.SetTitleOffset
         histUp.SetLineColor(sys[2])
         histUp.SetLineStyle(sys[3])
         histUp.SetLineWidth(2)
@@ -165,4 +171,28 @@ for bin in binList:
     outname = "plots/sig_systs_"+dir+".pdf"
     c.Print(outname)
 
+
+    ROOT.gStyle.SetPadLeftMargin(0.25)
+    ROOT.gStyle.SetPadRightMargin(0.2)
+    c2 = ROOT.TCanvas()
+    table.GetXaxis().SetNdivisions(505)
+    table.SetMaximum(50)
+    table.SetMinimum(0)
+    table.SetStats(0)
+    table.SetAxisRange(0.5,4.499,"X")
+    table.SetXTitle("N_{b}")
+    table.SetZTitle("Uncertainty [%]")
+    table.GetYaxis().SetTitleOffset(1.4)
+    table.GetYaxis().SetTitleSize(0.04)
+    table.GetXaxis().SetTitleSize(0.04)
+    table.Draw("colz text")
+    ROOT.gPad.SetTicks(1,0)
+    table.Draw("axis y+ same")
+    tla = ROOT.TLatex()
+    tla.SetTextSize(0.038)
+    tla.DrawLatexNDC(0.25,0.93,"#font[62]{CMS} #scale[0.8]{#font[52]{Simulation}}")
+    tla.SetTextFont(42)
+    tla.DrawLatexNDC(0.66,0.93,"#sqrt{s} = 13 TeV")
+    outname = "plots/table_sig_systs_"+dir+".pdf"
+    c2.Print(outname)
     
