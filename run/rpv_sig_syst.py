@@ -50,16 +50,16 @@ systList.append(["mc_stat","MC statistics",1,2]) #must be done last!
 #make list of bins
 
 binList = []
-binList.append(["bin0","4 #leq n_{jets} #leq 5","500 #leq M_{J} < 800","n_{lep} = 0"])
-binList.append(["bin1","6 #leq n_{jets} #leq 7","500 #leq M_{J} < 800","n_{lep} = 0"])
-binList.append(["bin2","4 #leq n_{jets} #leq 5","500 #leq M_{J} < 800","n_{lep} = 1"])
-binList.append(["bin3","4 #leq n_{jets} #leq 5","M_{J} #geq 800","n_{lep} = 0"])
-binList.append(["bin4","6 #leq n_{jets} #leq 7","M_{J} #geq 800","n_{lep} = 0"])
-binList.append(["bin5","4 #leq n_{jets} #leq 5","M_{J} #geq 800","n_{lep} = 1"])
-binList.append(["bin6","4 #leq n_{jets} #leq 5","300 #leq M_{J} < 500","n_{lep} = 0"])
-binList.append(["bin7","6 #leq n_{jets} #leq 7","300 #leq M_{J} < 500","n_{lep} = 0"])
-binList.append(["bin8","8 #leq n_{jets} #leq 9","300 #leq M_{J} < 500","n_{lep} = 0"])
-binList.append(["bin9","n_{jets} #geq 10","300 #leq M_{J} < 500","n_{lep} = 0"])
+binList.append(["bin0","4 #leq n_{jets} #leq 5","500 #leq M_{J} < 800 GeV","n_{lep} = 0"])
+binList.append(["bin1","6 #leq n_{jets} #leq 7","500 #leq M_{J} < 800 GeV","n_{lep} = 0"])
+binList.append(["bin2","4 #leq n_{jets} #leq 5","500 #leq M_{J} < 800 GeV","n_{lep} = 1"])
+binList.append(["bin3","4 #leq n_{jets} #leq 5","M_{J} #geq 800 GeV","n_{lep} = 0"])
+binList.append(["bin4","6 #leq n_{jets} #leq 7","M_{J} #geq 800 GeV","n_{lep} = 0"])
+binList.append(["bin5","4 #leq n_{jets} #leq 5","M_{J} #geq 800 GeV","n_{lep} = 1"])
+binList.append(["bin6","4 #leq n_{jets} #leq 5","300 #leq M_{J} < 500 GeV","n_{lep} = 0"])
+binList.append(["bin7","6 #leq n_{jets} #leq 7","300 #leq M_{J} < 500 GeV","n_{lep} = 0"])
+binList.append(["bin8","8 #leq n_{jets} #leq 9","300 #leq M_{J} < 500 GeV","n_{lep} = 0"])
+binList.append(["bin9","n_{jets} #geq 10","300 #leq M_{J} < 500 GeV","n_{lep} = 0"])
 
 
 
@@ -148,6 +148,7 @@ for bin in binList:
         histUp.GetYaxis().SetTitleOffset(1.4)
         histUp.GetYaxis().SetTitleSize(0.04)
         histUp.GetXaxis().SetTitleSize(0.04)
+        histUp.GetXaxis().SetNdivisions(505)
         leg.AddEntry(histUp,sys[1],"l")
         histUp.Draw("hist same")    
 
