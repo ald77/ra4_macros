@@ -2,20 +2,26 @@
 #include "TH1.h"
 #include "TString.h"
 #include "TFile.h"
-#include "TList.h"
 
 #include <fstream>
 #include <string>
 
 void outputShapeSystematics(std::ofstream &file, const std::vector<std::string> shapeSysts);
 void outputLognormalSystematics(std::ofstream &file);
+void outputMCStatisticsSyst(std::ofstream &file, const std::vector<std::string> &bins);
+// determine if a histogram has an entry for a given nB
+bool hasEntry(const std::string &sample, const std::string &bin, const int nB);
 
-unsigned int nbins;
-unsigned int nprocesses;
+namespace {
+  unsigned int nbins;
+  unsigned int nprocesses;
+}
 
 int main()
 {
   bool includePDFUncert = true;
+  bool includeLowMJ = false;
+  bool includeSignalRegion = false;
 
   std::vector<std::string> processes = {"signal", "qcd", "ttbar", "wjets", "other"};
   std::vector<std::string> shapeSysts = {"btag_bc", "btag_udsg", "gs",
@@ -28,6 +34,25 @@ int main()
 					 "other_muf", "other_mur", "other_murf"};
 
   nprocesses=processes.size();
+
+  std::vector<std::string> bins = {"bin0", "bin1", "bin2",
+				   "bin3", "bin4", "bin5"};
+
+  if(includeLowMJ) {
+    bins.push_back("bins6");
+    bins.push_back("bins7");
+    bins.push_back("bins8");
+    bins.push_back("bins9");
+  }
+  if(includeSignalRegion) {
+    bins.push_back("bins10");
+    bins.push_back("bins11");
+    bins.push_back("bins12");
+    bins.push_back("bins13");
+    bins.push_back("bins14");
+    bins.push_back("bins15");
+  }
+  nbins = bins.size();
 
   std::string dataCardPath("/homes/cawest/rpv_2016/ra4_macros/variations/sum_rescaled.root");
   TFile *variations = TFile::Open(dataCardPath.c_str());
@@ -44,11 +69,6 @@ int main()
   }
   file.open(filename);
 
-  TList *bins = gDirectory->GetListOfKeys();
-  nbins = bins->GetSize();
-  // hack to set bin number to some other number
-  nbins=6;
-
   // output header
   file << "imax " << nbins << " number of bins" << std::endl;
   file << "jmax " << nprocesses-1 << std::endl;
@@ -56,20 +76,20 @@ int main()
   file << "------------------------------------" << std::endl;
 
   for(unsigned int ibin=0; ibin<nbins; ibin++) {
-    file << "shapes * " << bins->At(ibin)->GetName() << " " << dataCardPath << " " << bins->At(ibin)->GetName() 
-	 << "/$PROCESS " << bins->At(ibin)->GetName() << "/$PROCESS_$SYSTEMATIC" << std::endl;
+    file << "shapes * " << bins.at(ibin) << " " << dataCardPath << " " << bins.at(ibin)
+	 << "/$PROCESS " << bins.at(ibin) << "/$PROCESS_$SYSTEMATIC" << std::endl;
   }
   file << "------------------------------------" << std::endl;
   file << "bin          ";
 
   for(unsigned int ibin=0; ibin<nbins; ibin++) {
-    variations->cd(bins->At(ibin)->GetName());
-    file << bins->At(ibin)->GetName() << " ";
+    variations->cd(bins.at(ibin).c_str());
+    file << bins.at(ibin) << " ";
   }
   file << "\n";
   file << "observation  ";
   for(unsigned int ibin=0; ibin<nbins; ibin++) {
-    TString binName(bins->At(ibin)->GetName());
+    TString binName(bins.at(ibin));
     TH1F *hist = static_cast<TH1F*>(variations->Get(Form("%s/data_obs",binName.Data())));
     file << hist->Integral() << " ";
     hist->Delete();
@@ -79,7 +99,7 @@ int main()
   file << "bin  ";
   for(unsigned int ibin=0; ibin<nbins; ibin++) {
     for(unsigned int iprocess=0; iprocess<nprocesses; iprocess++) {
-      file << bins->At(ibin)->GetName() << " ";
+      file << bins.at(ibin) << " ";
     }
   }
   file << "\n";
@@ -93,7 +113,7 @@ int main()
   file << "rate  ";
   for(unsigned int ibin=0; ibin<nbins; ibin++) {
     for(unsigned int iprocess=0; iprocess<nprocesses; iprocess++) {
-      TString histName(Form("%s/%s", bins->At(ibin)->GetName(), processes.at(iprocess).c_str()));
+      TString histName(Form("%s/%s", bins.at(ibin).c_str(), processes.at(iprocess).c_str()));
       TH1F *hist = static_cast<TH1F*>(variations->Get(histName));
       file << hist->Integral() << "  ";
     }
@@ -105,6 +125,9 @@ int main()
   
   // output lognormal lumi uncertainties for signal, wjets and other
   outputLognormalSystematics(file);
+
+  // output MC statistics nuisance parameters
+  outputMCStatisticsSyst(file, bins);
 
   file.close();
 
@@ -135,4 +158,62 @@ void outputShapeSystematics(std::ofstream &file, const std::vector<std::string> 
     }
     file << "\n";
   }
+}
+
+// outputs MC statistical uncertainties
+void outputMCStatisticsSyst(std::ofstream &file, const std::vector<std::string> &bins)
+{
+  //  unsigned int nbins=bins.size();
+  const unsigned int maxB=4;
+
+  // only signal, qcd, and ttbar have non-negligible MC statistics uncertainties
+  std::vector<std::string> samples = {"signal", "qcd", "ttbar"};
+  for(auto isample : samples) {
+    for(unsigned int ibin = 0; ibin<bins.size(); ibin++) {
+      for(unsigned int ibbin=1; ibbin<maxB+1; ibbin++) {
+	if(!hasEntry(isample, bins.at(ibin), ibbin)) continue;
+	file << "mcstat_" << isample << "_" << bins.at(ibin) << "_nb" << ibbin << " shape ";
+	for(unsigned int ientry = 0; ientry<bins.size(); ientry++) {
+	  if(ientry == ibin ) {
+	    if( isample == "signal") file << "1 - - - - ";
+	    else if( isample == "qcd") file << "- 1 - - - ";
+	    else if( isample == "ttbar" ) file << "- - 1 - - ";
+	    else if( isample == "wjets" ) file << "- - - 1 - ";
+	    else if( isample == "other" ) file << "- - - - 1 ";
+	  }
+	  else file << "- - - - - ";
+	}
+	file << "\n";
+      }
+    }
+  }
+}
+
+// exclude by hand following bins that have no entries:
+// signal_mcstat_signal_bin0_nb3
+// signal_mcstat_signal_bin2_nb4
+// signal_mcstat_signal_bin3_nb4
+// signal_mcstat_signal_bin5_nb4
+// ttbar_mcstat_ttbar_bin0_nb4
+// ttbar_mcstat_ttbar_bin5_nb4
+// qcd_mcstat_qcd_bin5_nb3
+// qcd_mcstat_qcd_bin5_nb4
+// should do this from the histograms themselves!
+bool hasEntry(const std::string &sample, const std::string &bin, const int nB)
+{
+  if(sample=="signal") {
+    if(bin=="bin0" && nB==3) return false;
+    if(bin=="bin2" && nB==4) return false;
+    if(bin=="bin3" && nB==4) return false;
+    if(bin=="bin5" && nB==4) return false;
+  }
+  if(sample=="ttbar") {
+    if(bin=="bin0" && nB==4) return false;
+    if(bin=="bin5" && nB==4) return false;
+  }
+  if(sample=="qcd") {
+    if(bin=="bin5" && nB==3) return false;
+    if(bin=="bin5" && nB==4) return false;
+  }
+  return true;
 }

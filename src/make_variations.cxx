@@ -131,16 +131,22 @@ void outputHistograms(std::vector<sfeats>& Samples, std::string variation)
 
   std::string plotVar("nbm");
   std::vector<std::string> cuts = {"nbm>0&&ht>1500&&njets>=4&&njets<=5&&(nmus+nels)==0&&mj>=500&&mj<800","nbm>0&&ht>1500&&njets>=6&&njets<=7&&(nmus+nels)==0&&mj>=500&&mj<800",
-  				   //"nbm>0&&ht>1500&&njets>=8&&njets<=9&&(nmus+nels)==0&&mj>=500&&mj<800",
 				   "nbm>0&&ht>1200&&njets>=4&&njets<=5&&(nmus+nels)==1&&mj>=500&&mj<800", 
   				   "nbm>0&&ht>1500&&njets>=4&&njets<=5&&(nmus+nels)==0&&mj>=800","nbm>0&&ht>1500&&njets>=6&&njets<=7&&(nmus+nels)==0&&mj>=800",
-  				   //"nbm>0&&ht>1500&&njets>=8&&njets<=9&&(nmus+nels)==0&&mj>=800",
 				   "nbm>0&&ht>1200&&njets>=4&&njets<=5&&(nmus+nels)==1&&mj>=800",
 				   // low MJ control regions
 				   "nbm>0&&ht>1500&&njets>=4&&njets<=5&&(nmus+nels)==0&&mj>=300&&mj<500",
 				   "nbm>0&&ht>1500&&njets>=6&&njets<=7&&(nmus+nels)==0&&mj>=300&&mj<500",
 				   "nbm>0&&ht>1500&&njets>=8&&njets<=9&&(nmus+nels)==0&&mj>=300&&mj<500",
 				   "nbm>0&&ht>1500&&njets>=10&&(nmus+nels)==0&&mj>=300&&mj<500",
+				   // signal regions, low mj
+				   "nbm>0&&ht>1500&&njets>=10&&(nmus+nels)==0&&mj>=500&&mj<800",
+				   "nbm>0&&ht>1200&&njets>=6&&njets<=7&&(nmus+nels)==1&&mj>=500&&mj<800",
+				   "nbm>0&&ht>1200&&njets>=8&&(nmus+nels)==1&&mj>=500&&mj<800",
+				   // signal regions, high mj
+				   "nbm>0&&ht>1500&&njets>=10&&(nmus+nels)==0&&mj>=800",
+				   "nbm>0&&ht>1200&&njets>=6&&njets<=7&&(nmus+nels)==1&&mj>=800",
+				   "nbm>0&&ht>1200&&njets>=8&&(nmus+nels)==1&&mj>=800",
   };
 
   // maximum number of b-tagged jets
@@ -389,13 +395,14 @@ void makeVariations(std::string &syst){
   s_jetht.push_back(filestring("JetHT_Run2015D-PromptReco-v4"));
 
   // Reading ntuples
+  std::string blinding("((njets<10 && (nmus+nels)==0) || (nmus+nels==1 && njets<6))");
   std::vector<sfeats> Samples; 
   Samples.push_back(sfeats(s_rpv_LO, "#tilde{g}(1000)", ra4::c_t1tttt, 1,cutandweightForVariations("1",extraWeight))); 
   Samples.push_back(sfeats(s_wjets, "W+jets", kTeal, 1,cutandweightForVariations("1", wjetsWeight)));
   Samples.push_back(sfeats(s_qcd, "QCD", kYellow, 1,cutandweightForVariationsQCD("1",qcdWeight, qcdFlavorWeight))); 
   Samples.push_back(sfeats(s_tt, "t#bar{t}", kTeal, 1,cutandweightForVariations("1", ttbarWeight)));
   Samples.push_back(sfeats(s_other, "Other", ra4::c_other, 1, cutandweightForVariations("1", otherWeight)));
-  Samples.push_back(sfeats(s_jetht, "Data",kBlack,1,cutandweightForVariationsdata("trig[12] && pass", "1"))); 
+  Samples.push_back(sfeats(s_jetht, "Data",kBlack,1,cutandweightForVariationsdata("trig[12] && pass && " + blinding, "1")));
   Samples.back().isData = true;
   Samples.back().doStack = false;
 

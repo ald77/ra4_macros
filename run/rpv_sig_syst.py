@@ -44,7 +44,7 @@ systList=[]
 systList.append(["btag_bc","b,c jet b-tag SF",2,1])
 systList.append(["btag_udsg","Light flavor jet b-tag SF",3,1])
 systList.append(["jes","Jet energy scale",4,1])
-#systList.append(["lep_eff","Lepton efficiency",6,1])
+systList.append(["lep_eff","Lepton efficiency",6,1])
 systList.append(["mc_stat","MC statistics",1,2]) #must be done last!
 
 nSyst = len(systList)
@@ -61,6 +61,13 @@ binList.append(["bin6","4 #leq n_{jets} #leq 5","300 #leq M_{J} < 500 GeV","n_{l
 binList.append(["bin7","6 #leq n_{jets} #leq 7","300 #leq M_{J} < 500 GeV","n_{lep} = 0"])
 binList.append(["bin8","8 #leq n_{jets} #leq 9","300 #leq M_{J} < 500 GeV","n_{lep} = 0"])
 binList.append(["bin9","n_{jets} #geq 10","300 #leq M_{J} < 500 GeV","n_{lep} = 0"])
+# signal regions
+binList.append(["bin10","n_{jets} #geq 10","500 #leq M_{J} < 800 GeV","n_{lep} = 0"])
+binList.append(["bin11","6 #leq n_{jets} #leq 7","500 #leq M_{J} < 800 GeV","n_{lep} = 1"])
+binList.append(["bin12","n_{jets} #geq 8","500 #leq M_{J} < 800 GeV","n_{lep} = 1"])
+binList.append(["bin13","n_{jets} #geq 10","M_{J} #geq 800 GeV","n_{lep} = 0"])
+binList.append(["bin14","6 #leq n_{jets} #leq 7","M_{J} #geq 800 GeV","n_{lep} = 1"])
+binList.append(["bin15","n_{jets} #geq 8","M_{J} #geq 800 GeV","n_{lep} = 1"])
 
 
 

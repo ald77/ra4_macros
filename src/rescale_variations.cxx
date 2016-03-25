@@ -6,9 +6,9 @@
 
 int main()
 {
-  TFile *f = TFile::Open("variations/sum_rescaled.root", "update");
+  TFile *f = TFile::Open("variations/sum_rescaled_test.root", "update");
 
-  std::vector<std::string> mcStatisticsList = { "qcd", "ttbar"};
+  std::vector<std::string> mcStatisticsList = { "signal", "qcd", "ttbar"};
   std::vector<std::string> rescaleList = {"qcd_flavor", "qcd_mur", "qcd_muf", "qcd_murf",
 					  "ttbar_pt", "jes", "lep_eff",
   					  "ttbar_mur", "ttbar_muf", "ttbar_murf"};
