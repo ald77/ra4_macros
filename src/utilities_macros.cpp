@@ -166,7 +166,7 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
         cmslabel = "";
       } else {
         //lumilabel = TString::Format("L = %1.f",luminosity.Atof()*1000.)+" pb^{-1} (13 TeV)";
-	lumilabel = TString::Format("#sqrt{s} = 13 TeV");
+	lumilabel = TString::Format("13 TeV");
         cmslabel = "#font[62]{CMS} #scale[0.8]{#font[52]{Simulation}}";
 	bool contains_data = false;
 	for(unsigned is=0;is<Samples.size();is++){if(Samples[is].isData){contains_data=true; break;} }

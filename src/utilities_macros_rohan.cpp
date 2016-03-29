@@ -261,7 +261,7 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
             if(!Samples[isam].mcerr) histo[0][var][sam]->Draw("hist");
             else histo[0][var][sam]->Draw("ELP");
             firstplotted = sam;
-            style.setTitles(histo[0][var][sam],vars[var].title, ytitle, cmslabel, "#sqrt{s} = 13 TeV");
+            style.setTitles(histo[0][var][sam],vars[var].title, ytitle, cmslabel, "13 TeV");
           } else {
             if(!Samples[isam].mcerr) histo[0][var][sam]->Draw("hist same");
             else histo[0][var][sam]->Draw("ELP same");
@@ -395,7 +395,7 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
       
       if(nentries[sam]) histo[1][var][sam]->Scale(100./nentries[sam]);
       if(maxhisto < histo[1][var][sam]->GetMaximum()) maxhisto = histo[1][var][sam]->GetMaximum();
-      style.setTitles(histo[1][var][sam],vars[var].title, "", cmslabel, "#sqrt{s} = 13 TeV");
+      style.setTitles(histo[1][var][sam],vars[var].title, "", cmslabel, "13 TeV");
       if(sam==0){
         histo[1][var][sam]->SetXTitle(vars[var].title);
         histo[1][var][sam]->GetXaxis()->SetLabelSize(0);
