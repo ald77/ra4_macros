@@ -173,7 +173,7 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
 	if(contains_data){ 
 	  cmslabel = "#font[62]{CMS}";
 	  if(isPreliminary) cmslabel += " #scale[0.8]{#font[52]{Preliminary}}";  
-	  lumilabel = TString::Format("L = %1.1f",luminosity.Atof())+" fb^{-1} (13 TeV)";}
+	  lumilabel = TString::Format("%1.1f",luminosity.Atof())+" fb^{-1} (13 TeV)";}
       }
       if(vars[var].unit!="") {
         int digits(0);
@@ -381,7 +381,7 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
       //label lumi
       pad->cd();
       if(!namestyle.Contains("CMSPaper") || showcuts) {
-	TString lumilbl = TString::Format("L = %1.1f",luminosity.Atof())+" fb^{-1}, "+norm_s;
+	TString lumilbl = TString::Format("%1.1f",luminosity.Atof())+" fb^{-1}, "+norm_s;
 	TLatex llbl;
 	llbl.SetTextSize(style.LegendSize*0.8); 
 	llbl.SetNDC(); llbl.SetTextAlign(33);
@@ -464,6 +464,14 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
     histo[1][var][0]->Draw("axis same");
     style.moveYAxisLabel(histo[1][var][0], maxpad, false);
     can.SetLogy(0);
+    if(vars[var].cuts.Contains("abs(isr_tru_pt)")){
+      TLatex tla;
+      tla.SetTextSize(0.055);
+      tla.SetTextFont(42);
+      if(vars[var].cuts.Contains("abs(isr_tru_pt)<10")) tla.DrawLatexNDC(0.63,0.79,"#font[62]{ISR p_{T} < 10 GeV}");
+      if(vars[var].cuts.Contains("abs(isr_tru_pt)>100")) tla.DrawLatexNDC(0.63,0.79,"#font[62]{ISR p_{T} > 100 GeV}");
+    }
+
     pname = outfolder+"/shapes_"+vars[var].tag+plot_tag;
     if(vars[var].whichPlots.Contains("0") || vars[var].whichPlots.Contains("3")) can.SaveAs(pname);
     float maxpadLog = maxhisto*exp(fracLeg*log(maxhisto/minLog)/(1-fracLeg));
