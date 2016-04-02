@@ -843,7 +843,6 @@ sfeats::sfeats(vector<TString> ifile, TString ilabel, int icolor, int istyle, TS
   isSig = ifile[0].Contains("T1tttt");
   samVariable = isamVariable;
   factor = "1";
-  if (ifile.size() && ifile[0].Contains("ST_")) factor = "0.4";
   tag = label;
   tag.ReplaceAll("(",""); tag.ReplaceAll(",","_");  tag.ReplaceAll(")","");
   tag.ReplaceAll("{",""); tag.ReplaceAll("#,","");  tag.ReplaceAll("}","");
