@@ -5,10 +5,12 @@
 
 #include <fstream>
 #include <string>
+#include <iostream>
+#include <sstream>
 
 void outputShapeSystematics(std::ofstream &file, const std::vector<std::string> shapeSysts);
 void outputLognormalSystematics(std::ofstream &file);
-void outputMCStatisticsSyst(std::ofstream &file, const std::vector<std::string> &bins);
+void outputMCStatisticsSyst(std::ofstream &file, const std::vector<std::string> &bins, const std::string & signalBinName);
 // determine if a histogram has an entry for a given nB
 bool hasEntry(const std::string &sample, const std::string &bin, const int nB);
 
@@ -17,13 +19,14 @@ namespace {
   unsigned int nprocesses;
 }
 
-int main()
+int main(int argc, char *argv[])
 {
   bool includePDFUncert = true;
   bool includeLowMJ = false;
-  bool includeSignalRegion = false;
+  bool includeSignalRegion = true;
 
-  std::vector<std::string> processes = {"signal", "qcd", "ttbar", "wjets", "other"};
+  // signal is added later
+  std::vector<std::string> processes = { "qcd", "ttbar", "wjets", "other"};
   std::vector<std::string> shapeSysts = {"btag_bc", "btag_udsg", "gs",
 					 "jes", "lep_eff",
 					 "ttbar_pt", 
@@ -33,24 +36,39 @@ int main()
 					 "wjets_muf", "wjets_mur", "wjets_murf",
 					 "other_muf", "other_mur", "other_murf"};
 
+  std::string gluinoMass;
+  std::string signalBinName;
+  if(argc<2) {
+    std::cout << "Syntax: make_rpv_datacard.exe [gluino mass, in GeV]" << std::endl;
+    return 1;
+  }
+  else {
+    std::stringstream ss;
+    gluinoMass = argv[1];
+    ss << "signal_M" << gluinoMass;
+    signalBinName = ss.str();
+    // this is supposed to be the first entry in the process list
+    processes.insert(processes.begin(), signalBinName);
+  }
+
   nprocesses=processes.size();
 
   std::vector<std::string> bins = {"bin0", "bin1", "bin2",
 				   "bin3", "bin4", "bin5"};
 
   if(includeLowMJ) {
-    bins.push_back("bins6");
-    bins.push_back("bins7");
-    bins.push_back("bins8");
-    bins.push_back("bins9");
+    bins.push_back("bin6");
+    bins.push_back("bin7");
+    bins.push_back("bin8");
+    bins.push_back("bin9");
   }
   if(includeSignalRegion) {
-    bins.push_back("bins10");
-    bins.push_back("bins11");
-    bins.push_back("bins12");
-    bins.push_back("bins13");
-    bins.push_back("bins14");
-    bins.push_back("bins15");
+    bins.push_back("bin10");
+    bins.push_back("bin11");
+    bins.push_back("bin12");
+    bins.push_back("bin13");
+    bins.push_back("bin14");
+    bins.push_back("bin15");
   }
   nbins = bins.size();
 
@@ -127,7 +145,7 @@ int main()
   outputLognormalSystematics(file);
 
   // output MC statistics nuisance parameters
-  outputMCStatisticsSyst(file, bins);
+  outputMCStatisticsSyst(file, bins, signalBinName);
 
   file.close();
 
@@ -161,13 +179,13 @@ void outputShapeSystematics(std::ofstream &file, const std::vector<std::string> 
 }
 
 // outputs MC statistical uncertainties
-void outputMCStatisticsSyst(std::ofstream &file, const std::vector<std::string> &bins)
+void outputMCStatisticsSyst(std::ofstream &file, const std::vector<std::string> &bins, const std::string & signalBinName)
 {
   //  unsigned int nbins=bins.size();
   const unsigned int maxB=4;
 
   // only signal, qcd, and ttbar have non-negligible MC statistics uncertainties
-  std::vector<std::string> samples = {"signal", "qcd", "ttbar"};
+  std::vector<std::string> samples = {signalBinName, "qcd", "ttbar"};
   for(auto isample : samples) {
     for(unsigned int ibin = 0; ibin<bins.size(); ibin++) {
       for(unsigned int ibbin=1; ibbin<maxB+1; ibbin++) {
@@ -175,7 +193,7 @@ void outputMCStatisticsSyst(std::ofstream &file, const std::vector<std::string> 
 	file << "mcstat_" << isample << "_" << bins.at(ibin) << "_nb" << ibbin << " shape ";
 	for(unsigned int ientry = 0; ientry<bins.size(); ientry++) {
 	  if(ientry == ibin ) {
-	    if( isample == "signal") file << "1 - - - - ";
+	    if( isample.find("signal")!=std::string::npos) file << "1 - - - - ";
 	    else if( isample == "qcd") file << "- 1 - - - ";
 	    else if( isample == "ttbar" ) file << "- - 1 - - ";
 	    else if( isample == "wjets" ) file << "- - - 1 - ";
@@ -201,7 +219,7 @@ void outputMCStatisticsSyst(std::ofstream &file, const std::vector<std::string> 
 // should do this from the histograms themselves!
 bool hasEntry(const std::string &sample, const std::string &bin, const int nB)
 {
-  if(sample=="signal") {
+  if(sample.find("signal")!=std::string::npos) {
     if(bin=="bin0" && nB==3) return false;
     if(bin=="bin2" && nB==4) return false;
     if(bin=="bin3" && nB==4) return false;
@@ -214,6 +232,9 @@ bool hasEntry(const std::string &sample, const std::string &bin, const int nB)
   if(sample=="qcd") {
     if(bin=="bin5" && nB==3) return false;
     if(bin=="bin5" && nB==4) return false;
+    if(bin=="bin11" && nB==4) return false;
+    if(bin=="bin14" && nB==4) return false;
+    if(bin=="bin15" && nB==4) return false;
   }
   return true;
 }
