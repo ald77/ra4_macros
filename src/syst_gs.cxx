@@ -1,0 +1,362 @@
+#include <iostream>
+#include <string>
+#include <vector>
+
+#include "TCanvas.h"
+#include "TFile.h"
+#include "TGraphErrors.h"
+#include "TStyle.h"
+
+#include "small_tree_rpv.hpp"
+#include "utilities.hpp"
+#include "utilities_macros.hpp"
+#include "utilities_macros_rpv.hpp"
+
+namespace{
+  const int nmjbins = 3;
+  const int nnjetbins = 4;
+  //  bool makePlots=false;
+  TString plot_type=".pdf";
+  TString plot_style="RA4";
+  TString outDir="rpv_gs";
+}
+
+using namespace std;
+
+vector<vector<double> >  getYields(small_tree_rpv &tree, vector<vector<double> >& low_drbb, vector<vector<double> >& high_drbb_err, vector<vector<double> >& low_drbb_err, bool isData=false);
+void printPlots(TGraphErrors *graph, TString title="", TString filename="syst_gs.pdf");
+double addError(double error, double added_error);
+double divideErrors(double x, double y, double dx, double dy);
+
+int main(){
+
+  string folder = "/net/cms29/cms29r0/cawest/skims/ht1200/";
+
+  small_tree_rpv data(folder+"*JetHT_Run2015D-05Oct2015-v1*");
+  data.Add(folder+"*JetHT_Run2015D-PromptReco-v4*");
+  small_tree_rpv qcd(folder+"*QCD_HT1000to1500_TuneCUETP8M1_13TeV-madgraphMLM-pythia8*");
+  qcd.Add(folder+"*QCD_HT1500to2000_TuneCUETP8M1_13TeV-madgraphMLM-pythia8*");
+  qcd.Add(folder+"*QCD_HT2000toInf_TuneCUETP8M1_13TeV-madgraphMLM-pythia8*");
+  small_tree_rpv other(folder+"*TT_TuneCUETP8M1_13TeV-powheg-pythia8*");
+  other.Add(folder+"*WJetsToLNu_HT-600ToInf_TuneCUETP8M1_13TeV-madgraphMLM-pythia8*");
+  other.Add(folder+"*ST_s-channel_4f_leptonDecays_13TeV-amcatnlo-pythia8_TuneCUETP8M1*");
+  other.Add(folder+"*ST_t-channel_antitop_4f_leptonDecays_13TeV-powheg-pythia8_TuneCUETP8M1*");
+  other.Add(folder+"*ST_t-channel_top_4f_leptonDecays_13TeV-powheg-pythia8_TuneCUETP8M1*");
+  other.Add(folder+"*ST_tW_antitop_5f_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M1*");
+  other.Add(folder+"*ST_tW_top_5f_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M1*");
+  other.Add(folder+"*DYJetsToLL_M-50_HT-600toInf_TuneCUETP8M1_13TeV-madgraphMLM-pythia8*");
+  other.Add(folder+"*TTWJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-madspin-pythia8*");
+  other.Add(folder+"*TTWJetsToQQ_TuneCUETP8M1_13TeV-amcatnloFXFX-madspin-pythia8*");
+  other.Add(folder+"*TTZToQQ_TuneCUETP8M1_13TeV-amcatnlo-pythia8*");
+  other.Add(folder+"*TTZToLLNuNu_M-10_TuneCUETP8M1_13TeV-amcatnlo-pythia8*");
+  other.Add(folder+"*ttHJetTobb_M125_13TeV_amcatnloFXFX_madspin_pythia8*");
+  other.Add(folder+"*TTTT_TuneCUETP8M1_13TeV-amcatnlo-pythia8*");
+  other.Add(folder+"*WJetsToQQ_HT-600ToInf_TuneCUETP8M1_13TeV-madgraphMLM-pythia8*");
+  other.Add(folder+"*ZJetsToQQ_HT600toInf_13TeV-madgraph*");
+
+  cout<<"[syst_gs] Getting Yields..."<<endl;
+
+  // yields[MJ][Njets]: MJ=0/1/2 --> MJ>500/500<MJ<800/MJ>800 and Njets=0/1/2/3 --> 4-5/6-7/8-9/>10 jets
+  vector<vector<double> > data_yields_ldrbb, data_yields_hdrbb_err, data_yields_ldrbb_err;
+  vector<vector<double> > qcd_yields_ldrbb, qcd_yields_hdrbb_err, qcd_yields_ldrbb_err;
+  vector<vector<double> > other_yields_ldrbb, other_yields_hdrbb_err, other_yields_ldrbb_err;
+  
+  vector<vector<double> > data_yields_hdrbb = getYields(data, data_yields_ldrbb, data_yields_hdrbb_err, data_yields_ldrbb_err, true);
+  vector<vector<double> > qcd_yields_hdrbb = getYields(qcd, qcd_yields_ldrbb, qcd_yields_hdrbb_err, qcd_yields_ldrbb_err);
+  vector<vector<double> > other_yields_hdrbb = getYields(other, other_yields_ldrbb, other_yields_hdrbb_err, other_yields_ldrbb_err);
+
+  vector<vector<double> > norm_hdrbb(nmjbins, vector<double>(nnjetbins)); // normalization from high dr_bb region
+  vector<vector<double> > norm_hdrbb_err(nmjbins, vector<double>(nnjetbins)); // error on the normalization from high dr_bb region
+  vector<vector<double> > dmc_ldrbb(nmjbins, vector<double>(nnjetbins)); // data/mc for low dr_bb region
+  vector<vector<double> > dmc_ldrbb_err(nmjbins, vector<double>(nnjetbins)); // error on data/mc for low dr_bb region
+
+  cout<<"[syst_gs] Finding Normalization..."<<endl;
+
+  for(unsigned int i=0; i<data_yields_hdrbb.size(); i++){
+    if(i==0) cout<<"ALL MJ"<<endl;
+    if(i==1) cout<<"LOW MJ"<<endl;
+    if(i==2) cout<<"HIGH MJ"<<endl;
+
+    for(unsigned int j=0; j<data_yields_hdrbb[i].size(); j++){
+
+      // Subtract yields of other
+            data_yields_hdrbb[i][j] -= other_yields_hdrbb[i][j];
+      // Uncertainty on subtraction of other
+      data_yields_hdrbb_err[i][j] = AddInQuadrature(data_yields_hdrbb_err[i][j], other_yields_hdrbb[i][j]);
+
+      // Find normalization in high dr_bb region
+      norm_hdrbb[i][j] = data_yields_hdrbb[i][j]/qcd_yields_hdrbb[i][j];
+      // Uncertainty on normalization
+      norm_hdrbb_err[i][j] = divideErrors(data_yields_hdrbb[i][j], qcd_yields_hdrbb[i][j], data_yields_hdrbb_err[i][j], qcd_yields_hdrbb_err[i][j]);
+      
+      //Get data/mc in low dr_bb region
+      dmc_ldrbb[i][j] = data_yields_ldrbb[i][j]/((norm_hdrbb[i][j]*qcd_yields_ldrbb[i][j]) + other_yields_ldrbb[i][j]); 
+      // Uncertainty on data/mc in low dr_bb region
+      dmc_ldrbb_err[i][j] = divideErrors(data_yields_ldrbb[i][j], ((norm_hdrbb[i][j]*qcd_yields_ldrbb[i][j]) + other_yields_ldrbb[i][j]), data_yields_ldrbb_err[i][j],
+					 AddInQuadrature( 
+							 divideErrors(data_yields_hdrbb[i][j], qcd_yields_ldrbb[i][j], data_yields_hdrbb_err[i][j], qcd_yields_ldrbb_err[i][j])
+							 , other_yields_ldrbb_err[i][j]));
+    }
+  }
+
+  cout<<"[syst_gs] Writing Files..."<<endl;
+  
+  vector<double> xbins = {0,1,2,3};
+  vector<double> xerr = {0,0,0,0};
+  
+  TGraphErrors *dmc_ldrbb_allmj = new TGraphErrors(dmc_ldrbb[0].size(), &(xbins[0]), &(dmc_ldrbb[0][0]), &(xerr[0]), &(dmc_ldrbb_err[0][0]));
+  dmc_ldrbb_allmj->SetName("dmc_ldrbb_allmj");
+  TGraphErrors *dmc_ldrbb_lowmj = new TGraphErrors(dmc_ldrbb[1].size(), &(xbins[0]), &(dmc_ldrbb[1][0]), &(xerr[0]), &(dmc_ldrbb_err[1][0]));
+  dmc_ldrbb_lowmj->SetName("dmc_ldrbb_lowmj");
+  TGraphErrors *dmc_ldrbb_highmj = new TGraphErrors(dmc_ldrbb[2].size(), &(xbins[0]), &(dmc_ldrbb[2][0]), &(xerr[0]), &(dmc_ldrbb_err[2][0]));
+  dmc_ldrbb_highmj->SetName("dmc_ldrbb_highmj");
+
+  // Write out values
+  TFile *out = new TFile("syst_gs.root","recreate");
+  out->cd();
+  dmc_ldrbb_allmj->Write();
+  dmc_ldrbb_lowmj->Write();
+  dmc_ldrbb_highmj->Write();
+  out->Close();
+
+  // Format Plots
+  printPlots(dmc_ldrbb_allmj, "M_{J}>500", "dmc_ldrbb_allmj.pdf");
+  printPlots(dmc_ldrbb_lowmj, "500 #leq M_{J} #leq 800", "dmc_ldrbb_lowmj.pdf");
+  printPlots(dmc_ldrbb_highmj, "M_{J}>800", "dmc_ldrbb_highmj.pdf");
+
+} 
+
+vector<vector<double> >  getYields(small_tree_rpv &tree, vector<vector<double> >& low_drbb, vector<vector<double> >& high_drbb_err, vector<vector<double> >& low_drbb_err, bool isData){
+  
+  // yields[MJ][Njets]: MJ=0/1/2 --> MJ>500/500<MJ<800/MJ>800 and Njets=0/1/2/3 --> 4-5/6-7/8-9/>10 jets
+  vector<vector<double> > yields_hdrbb(nmjbins, vector<double>(nnjetbins)); //high dr_bb region
+  vector<vector<double> > yields_ldrbb(nmjbins, vector<double>(nnjetbins)); //low dr_bb region
+  vector<vector<double> > yields_hdrbb_err(nmjbins, vector<double>(nnjetbins)); 
+  vector<vector<double> > yields_ldrbb_err(nmjbins, vector<double>(nnjetbins)); 
+
+  double lumi = atof(rpv::luminosity);
+
+  if(isData) lumi=1;
+
+  for(int iEnt=0; iEnt<tree.GetEntries(); iEnt++){
+    tree.GetEntry(iEnt);
+
+    // Pass filters and trigger for data
+    if(isData && (!tree.pass()||!tree.trig()[12])) continue;
+
+    // At least two b-jets
+    if(tree.nbm()<2) continue;
+    
+    // 0-lepton selection
+    if(tree.nleps()==0 && tree.ht()>1500 && tree.mj()>500){
+      
+      // 4-5 jets
+      if(tree.njets()>=4 && tree.njets()<=5){ 
+	for(unsigned int iDrbb=0; iDrbb<tree.dr_bb().size(); iDrbb++){
+	  // High-dr_bb
+	  if(tree.dr_bb()[iDrbb]>=2.4){
+	    //yields_hdrbb[0][0] += 1;
+	    yields_hdrbb[0][0] += lumi*(tree.weight()/tree.eff_trig());
+	    yields_hdrbb_err[0][0] = addError(yields_hdrbb_err[0][0], lumi*(tree.weight()/tree.eff_trig()));
+
+	    // Low-MJ
+	    if(tree.mj()>500 && tree.mj()<=800){
+	      //yields_hdrbb[1][0] += 1;
+	      yields_hdrbb[1][0] += lumi*(tree.weight()/tree.eff_trig());
+	      yields_hdrbb_err[1][0] = addError(yields_hdrbb_err[1][0], lumi*(tree.weight()/tree.eff_trig()));
+	    }
+	    // High-MJ 
+	    else if(tree.mj()>800){
+	      //yields_hdrbb[2][0] += 1;
+	      yields_hdrbb[2][0] += lumi*(tree.weight()/tree.eff_trig());
+	      yields_hdrbb_err[2][0] = addError(yields_hdrbb_err[2][0], lumi*(tree.weight()/tree.eff_trig()));
+	    }
+	  }
+	  // Low-dr_bb
+	  else if(tree.dr_bb()[iDrbb]<=1.6){
+	    yields_ldrbb[0][0] += lumi*(tree.weight()/tree.eff_trig());
+	    //yields_ldrbb[0][0] += 1;
+	    yields_ldrbb_err[0][0] = addError(yields_ldrbb_err[0][0], lumi*(tree.weight()/tree.eff_trig()));
+	    
+	    // Low-MJ
+	    if(tree.mj()>500 && tree.mj()<=800){
+	      //yields_ldrbb[1][0] += 1;
+	      yields_ldrbb[1][0] += lumi*(tree.weight()/tree.eff_trig());
+	      yields_ldrbb_err[1][0] = addError(yields_ldrbb_err[1][0], lumi*(tree.weight()/tree.eff_trig()));
+	    }
+	    // High-MJ
+	    else if(tree.mj()>800){
+	      yields_ldrbb[2][0] += lumi*(tree.weight()/tree.eff_trig());
+	      //yields_ldrbb[2][0] += 1;
+	      yields_ldrbb_err[2][0] = addError(yields_ldrbb_err[2][0], lumi*(tree.weight()/tree.eff_trig()));
+	    }
+	  }
+	}
+      }
+    
+      // 6-7 jets
+      else if(tree.njets()>=6 && tree.njets()<=7){ 
+	for(unsigned int iDrbb=0; iDrbb<tree.dr_bb().size(); iDrbb++){
+	  // High-dr_bb
+	  if(tree.dr_bb()[iDrbb]>=2.4){
+	    yields_hdrbb[0][1] += lumi*(tree.weight()/tree.eff_trig());
+	    yields_hdrbb_err[0][1] = addError(yields_hdrbb_err[0][1], lumi*(tree.weight()/tree.eff_trig()));
+		
+	    // Low-MJ
+	    if(tree.mj()>500 && tree.mj()<=800){
+	      yields_hdrbb[1][1] += lumi*(tree.weight()/tree.eff_trig());
+	      yields_hdrbb_err[1][1] = addError(yields_hdrbb_err[1][1], lumi*(tree.weight()/tree.eff_trig()));
+	    }
+	    // High-MJ
+	    else if(tree.mj()>800){
+	      yields_hdrbb[2][1] += lumi*(tree.weight()/tree.eff_trig());
+	      yields_hdrbb_err[2][1] = addError(yields_hdrbb_err[2][1], lumi*(tree.weight()/tree.eff_trig()));
+	    }
+	  }
+	  // Low-dr_bb
+	  else if(tree.dr_bb()[iDrbb]<=1.6){
+	    yields_ldrbb[0][1] += lumi*(tree.weight()/tree.eff_trig());
+	    yields_ldrbb_err[0][1] = addError(yields_ldrbb_err[0][1], lumi*(tree.weight()/tree.eff_trig()));
+	    
+	    // Low-MJ
+	    if(tree.mj()>500 && tree.mj()<=800){
+	      yields_ldrbb[1][1] += lumi*(tree.weight()/tree.eff_trig());
+	      yields_ldrbb_err[1][1] = addError(yields_ldrbb_err[1][1], lumi*(tree.weight()/tree.eff_trig()));
+	    }
+	    // High-MJ
+	    else if(tree.mj()>800){
+	      yields_ldrbb[2][1] += lumi*(tree.weight()/tree.eff_trig());
+	      yields_ldrbb_err[2][1] = addError(yields_ldrbb_err[2][1], lumi*(tree.weight()/tree.eff_trig()));
+	    }
+	  }
+	}
+
+      }
+
+      // 8-9 jets
+      else if(tree.njets()>=8 && tree.njets()<=9){ 
+	for(unsigned int iDrbb=0; iDrbb<tree.dr_bb().size(); iDrbb++){
+	  
+	  // High-dr_bb
+	  if(tree.dr_bb()[iDrbb]>=2.4){
+	    yields_hdrbb[0][2] += lumi*(tree.weight()/tree.eff_trig());
+	    yields_hdrbb_err[0][2] = addError(yields_hdrbb_err[0][2], lumi*(tree.weight()/tree.eff_trig()));
+		    
+	    // Low-MJ
+	    if(tree.mj()>500 && tree.mj()<=800){
+	      yields_hdrbb[1][2] += lumi*(tree.weight()/tree.eff_trig());
+	      yields_hdrbb_err[1][2] = addError(yields_hdrbb_err[1][2], lumi*(tree.weight()/tree.eff_trig()));
+	    }
+	    // High-MJ
+	    else if(tree.mj()>800){
+	      yields_hdrbb[2][2] += lumi*(tree.weight()/tree.eff_trig());
+	      yields_hdrbb_err[2][2] = addError(yields_hdrbb_err[2][2], lumi*(tree.weight()/tree.eff_trig()));
+	    }
+	  }
+	  // Low-dr_bb
+	  else if(tree.dr_bb()[iDrbb]<=1.6){
+	    yields_ldrbb[0][2] += lumi*(tree.weight()/tree.eff_trig());
+	    yields_ldrbb_err[0][2] = addError(yields_ldrbb_err[0][2], lumi*(tree.weight()/tree.eff_trig()));
+	    
+	    // Low-MJ
+	    if(tree.mj()>500 && tree.mj()<=800){
+	      yields_ldrbb[1][2] += lumi*(tree.weight()/tree.eff_trig());
+	      yields_ldrbb_err[1][2] = addError(yields_ldrbb_err[1][2], lumi*(tree.weight()/tree.eff_trig()));
+	    }
+	    // High-MJ
+	    else if(tree.mj()>800){
+	      yields_ldrbb[2][2] += lumi*(tree.weight()/tree.eff_trig());
+	      yields_ldrbb_err[2][2] = addError(yields_ldrbb_err[2][2], lumi*(tree.weight()/tree.eff_trig()));
+	    }
+	  }
+	}
+      }
+      else if(tree.njets()>=10){ 
+	for(unsigned int iDrbb=0; iDrbb<tree.dr_bb().size(); iDrbb++){
+	  
+	  // High-dr_bb
+	  if(tree.dr_bb()[iDrbb]>=2.4){
+	    yields_hdrbb[0][3] += lumi*(tree.weight()/tree.eff_trig());
+	    yields_hdrbb_err[0][3] = addError(yields_hdrbb_err[0][3], lumi*(tree.weight()/tree.eff_trig()));
+	    
+	    // Low-MJ
+	    if(tree.mj()>500 && tree.mj()<=800){
+	      yields_hdrbb[1][3] += lumi*(tree.weight()/tree.eff_trig());
+	      yields_hdrbb_err[1][3] = addError(yields_hdrbb_err[1][3], lumi*(tree.weight()/tree.eff_trig()));
+	    }
+	    //High-MJ
+	    else if(tree.mj()>800){
+	      yields_hdrbb[2][3] += lumi*(tree.weight()/tree.eff_trig());
+	      yields_hdrbb_err[2][3] = addError(yields_hdrbb_err[2][3], lumi*(tree.weight()/tree.eff_trig()));
+	    }
+	  }
+	  // Low-dr_bb
+	  else if(tree.dr_bb()[iDrbb]<=1.6){
+	    yields_ldrbb[0][3] += lumi*(tree.weight()/tree.eff_trig());
+	    yields_ldrbb_err[0][3] = addError(yields_ldrbb_err[0][3], lumi*(tree.weight()/tree.eff_trig()));
+
+	    // Low-MJ
+	    if(tree.mj()>500 && tree.mj()<=800){
+	      yields_ldrbb[1][3] += lumi*(tree.weight()/tree.eff_trig());
+	      yields_ldrbb_err[1][3] = addError(yields_ldrbb_err[1][3], lumi*(tree.weight()/tree.eff_trig()));
+	    }
+	    // High-MJ
+	    else if(tree.mj()>800){
+	      yields_ldrbb[2][3] += lumi*(tree.weight()/tree.eff_trig());
+	      yields_ldrbb_err[2][3] = addError(yields_ldrbb_err[2][3], lumi*(tree.weight()/tree.eff_trig()));
+	    }
+	  }
+	}
+      }
+    }
+  } 
+  low_drbb = yields_ldrbb;
+  high_drbb_err = yields_hdrbb_err;
+  low_drbb_err = yields_ldrbb_err;
+  return yields_hdrbb;
+} 
+
+void printPlots(TGraphErrors *graph, TString title, TString filename){
+
+  gStyle->SetOptStat(0);
+
+  // Format plot
+  graph->SetMarkerStyle(20);
+
+  TCanvas c1;
+  c1.SetGridy(1);
+
+  // Setup TH1F to provide axis labels
+  double x[nnjetbins];
+  for(int i=0; i<nnjetbins; i++)
+    x[i] = i;
+    
+  TH1F* h = new TH1F("h",title,nnjetbins,x[0]-0.5,x[nnjetbins-1]+0.5);
+  for(int i=0; i<nnjetbins; i++){
+    if(i==0) h->GetXaxis()->SetBinLabel(i+1,"4 #leq N_{jets} #leq5");     
+    if(i==1) h->GetXaxis()->SetBinLabel(i+1,"6 #leq N_{jets} #leq7");     
+    if(i==2) h->GetXaxis()->SetBinLabel(i+1,"8 #leq N_{jets} #leq9");     
+    if(i==3) h->GetXaxis()->SetBinLabel(i+1,"N_{jets} #geq10");     
+  }
+  h->GetYaxis()->SetTitle("Data/MC");
+  h->GetYaxis()->SetTitleSize(0.045);
+  h->SetMaximum(1.5);
+  h->SetLabelSize(0.06);
+  h->SetLabelSize(0.06,"Y");
+  h->Draw();
+
+  graph->Draw("P");
+
+  c1.SaveAs("plots/"+filename);
+
+  h->Delete();
+}
+
+double addError(double error, double added_error){
+  return sqrt(pow(error,2)+pow(added_error,2));
+}
+
+double divideErrors(double x, double y, double dx, double dy){
+  if(x==0||y==0||dx==0||dy==0) cout<<"Dividing by 0 in divideErrors"<<endl;
+  return (x/y)*sqrt(pow(dx/x,2)+pow(dy/y,2));
+}
