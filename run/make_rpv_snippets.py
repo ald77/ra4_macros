@@ -46,7 +46,8 @@ def writescript():
 
 #default path should be changed
 PATH = '/homes/cawest/rpv_2016/ra4_macros'
-VARLIST = ['btag_bc', 'btag_udsg', 'gs',
+VARLIST = ['btag_bc', 'btag_udsg',
+           'gs45', 'gs67', 'gs89', 'gs10Inf',
            'jes', 'lep_eff', 'ttbar_pt', 
            'qcd_flavor',
            'qcd_mur', 'qcd_muf', 'qcd_murf',
@@ -57,8 +58,10 @@ VARLIST = ['btag_bc', 'btag_udsg', 'gs',
 # make directory 'varscripts' to contain condor submit files
 # and directory 'variations' to contain variations
 PATH = os.getcwd()
-os.mkdir('variations')
-os.mkdir('varscripts')
+if not os.path.isdir('variations'):
+    os.mkdir('variations')
+if not os.path.isdir('varscripts'):
+    os.mkdir('varscripts')
 os.chdir('varscripts')
 
 # write condor submission template file

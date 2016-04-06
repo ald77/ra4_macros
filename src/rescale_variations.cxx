@@ -11,7 +11,7 @@ int main()
   TFile *f = TFile::Open("variations/sum_rescaled.root", "update");
 
   // samples for which MC statistics should be considered
-  std::vector<std::string> mcStatisticsList = { "signal", "signal_M1000", "signal_M1100", "qcd", "ttbar"};
+  std::vector<std::string> mcStatisticsList = {"signal_M1000", "signal_M1100", "signal_M1200", "qcd", "ttbar"};
   // systematics for which the template should be rescaled
   std::vector<std::string> rescaleList = {"qcd_flavor", "qcd_mur", "qcd_muf", "qcd_murf",
 					  "ttbar_pt", "jes", "lep_eff",

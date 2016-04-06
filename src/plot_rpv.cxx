@@ -137,8 +137,7 @@ int main(int argc, char *argv[]){
 	    (ibasecut.EqualTo("(nmus+nels)==1") && !ijetcut.EqualTo("njets>=4&&njets<=5"));
 	  // reenable all regions for low mj
 	  if(imjcut.EqualTo("mj>300&&mj<=500" && !ibasecut.EqualTo("(nmus+nels)==1"))) isBlind=false;
-	  // reenable njet>=10 region for (nmus+nels)==0
-	  if(ijetcut.EqualTo("njets>=10") && ibasecut.EqualTo("(nmus+nels)==0")) isBlind=false;
+	  if(ibasecut.EqualTo("(nmus+nels)==0") && (imjcut.EqualTo("mj<=300") || (imjcut.EqualTo("mj>300&&mj<=500")))) isBlind=false;
 	  if(isBlind && showData) continue;
 	  if(ibasecut=="(nmus+nels)==1") {
 	    ijetcut.ReplaceAll("njets>=10","njets>=8");

@@ -75,7 +75,9 @@ int main(int argc, char *argv[])
   std::string dataCardPath("/homes/cawest/rpv_2016/ra4_macros/variations/sum_rescaled.root");
   TFile *variations = TFile::Open(dataCardPath.c_str());
   std::ofstream file;
-  std::string filename("datacard.dat");
+  std::string filename("datacard_M");
+  filename+=gluinoMass;
+
   if(includePDFUncert) {
     for(unsigned int i=0; i<100; i++) {
       TString pdf(Form("w_pdf%d", i));
@@ -83,8 +85,9 @@ int main(int argc, char *argv[])
     }
   }
   else {
-    filename="datacard_nopdf.dat";
+    filename+="_nopdf";
   }
+  filename+=".dat";
   file.open(filename);
 
   // output header

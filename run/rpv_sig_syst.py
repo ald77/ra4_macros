@@ -1,28 +1,27 @@
 #!/usr/bin/env python
-import os, sys, re
-import glob
-import string
-from array import array 
-from pprint import pprint
+"""This script plots signal systematics for the RPV analysis"""
+import sys
 import math
 import ROOT
-from ROOT import TMath
 import argparse
 parser = argparse.ArgumentParser()
-parser.add_argument("-i","--input")
+parser.add_argument("-i", "--input")
+parser.add_argument("-m", "--mass")
 args = parser.parse_args()
+GLUINOMASS = 1000
 if (args.input):
   infile = args.input
+if (args.mass):
+  GLUINOMASS = args.mass
 else:
   sys.exit("Please provide an input root file")
 
 
 verbose = False  
 
-
 ROOT.gROOT.SetBatch(ROOT.kTRUE) #prevent th1->Draw() from trying to open X11 window
-ROOT.gStyle.SetCanvasDefW(600);
-ROOT.gStyle.SetCanvasDefH(600);
+ROOT.gStyle.SetCanvasDefW(600)
+ROOT.gStyle.SetCanvasDefH(600)
 ROOT.gStyle.SetTitleOffset(1.2,"x") 
 #ROOT.gStyle.SetTitleOffset(1.7,"y")
 ROOT.gStyle.SetTitleOffset(1.7,"z") 
@@ -72,11 +71,11 @@ binList.append(["bin15","n_{jets} #geq 8","M_{J} #geq 800 GeV","n_{lep} = 1"])
 
 
 sysFile = ROOT.TFile(infile,"read")
-for bin in binList:
-    dir= bin[0]
+for ibin in binList:
+    directory = ibin[0]
     if verbose:
-        print "dir is "+dir
-    nominal = sysFile.Get(dir+"/signal")
+        print "directory is "+directory
+    nominal = sysFile.Get(directory + "/signal_M" + str(GLUINOMASS))
     #add overflow to last bin
     nbinsX = nominal.GetNbinsX()
     if verbose:
@@ -91,15 +90,15 @@ for bin in binList:
     c = ROOT.TCanvas()
     leg = ROOT.TLegend(0.12,0.7,0.54,0.92)
 
-    table = ROOT.TH2F("table_"+dir,"",nbinsX,-0.5,nbinsX-0.5,nSyst,0,nSyst)
+    table = ROOT.TH2F("table_"+directory,"",nbinsX,-0.5,nbinsX-0.5,nSyst,0,nSyst)
     
-    for isys,sys in enumerate(systList,start=1):
-        sysName = sys[0]
+    for isys, syst in enumerate(systList,start=1):
+        sysName = syst[0]
         if verbose:
             print "starting "+sysName
         if "mc_stat" not in sysName:
-            histUp = sysFile.Get(dir+"/signal_"+sysName+"Up")
-            histDown = sysFile.Get(dir+"/signal_"+sysName+"Down")
+            histUp = sysFile.Get(directory + "/signal_M" + str(GLUINOMASS) + "_" + sysName + "Up")
+            histDown = sysFile.Get(directory + "/signal_M" + str(GLUINOMASS) + "_" + sysName + "Down")
 
             #add overflow to last bin
             contentUp = histUp.GetBinContent(nbinsX) + histUp.GetBinContent(nbinsX+1)
@@ -149,10 +148,10 @@ for bin in binList:
             if verbose:
                 print "symmetrized rel error bin "+str(i)+" "+str(histUp.GetBinContent(i))        
 
-        table.GetYaxis().SetBinLabel(isys,sys[1])        
+        table.GetYaxis().SetBinLabel(isys,syst[1])
         histUp.SetTitle(";N_{b};Relative Error")
-        histUp.SetLineColor(sys[2])
-        histUp.SetLineStyle(sys[3])
+        histUp.SetLineColor(syst[2])
+        histUp.SetLineStyle(syst[3])
         histUp.SetLineWidth(2)
         histUp.SetMaximum(1.)
         histUp.SetMinimum(0.)
@@ -162,7 +161,7 @@ for bin in binList:
         histUp.GetYaxis().SetTitleSize(0.04)
         histUp.GetXaxis().SetTitleSize(0.04)
         histUp.GetXaxis().SetNdivisions(505)
-        leg.AddEntry(histUp,sys[1],"l")
+        leg.AddEntry(histUp,syst[1],"l")
         histUp.Draw("hist same")    
 
     leg.Draw()
@@ -172,10 +171,10 @@ for bin in binList:
     tla.SetTextFont(42)
     tla.DrawLatexNDC(0.71,0.93,"#sqrt{s} = 13 TeV")
 #    tla.SetTextSize(0.045)
-    tla.DrawLatexNDC(0.17,0.65,bin[3])
-    tla.DrawLatexNDC(0.17,0.6,bin[1])
-    tla.DrawLatexNDC(0.17,0.55,bin[2])
-    outname = "plots/sig_systs_"+dir+".pdf"
+    tla.DrawLatexNDC(0.17, 0.65, ibin[3])
+    tla.DrawLatexNDC(0.17, 0.6, ibin[1])
+    tla.DrawLatexNDC(0.17, 0.55, ibin[2])
+    outname = "plots/sig_systs_" + directory + "_M" + str(GLUINOMASS) + ".pdf"
     c.Print(outname)
 
 
@@ -200,6 +199,6 @@ for bin in binList:
     tla.DrawLatexNDC(0.25,0.93,"#font[62]{CMS} #scale[0.8]{#font[52]{Simulation}}")
     tla.SetTextFont(42)
     tla.DrawLatexNDC(0.66,0.93,"#sqrt{s} = 13 TeV")
-    outname = "plots/table_sig_systs_"+dir+".pdf"
+    outname = "plots/table_sig_systs_" + directory + "_M" + str(GLUINOMASS) + ".pdf"
     c2.Print(outname)
     

@@ -256,6 +256,14 @@ void makeVariations(std::string &syst){
   if(syst=="btag_udsgDown") extraWeight="sys_udsgtag[1]";
   if(syst=="gsUp") extraWeight="(1+0.2*fromGS)";
   if(syst=="gsDown") extraWeight="(1-0.2*fromGS)";
+  if(syst=="gs45Up") extraWeight="(1+0.2*fromGS*(njets==4 || njets==5))";
+  if(syst=="gs45Down") extraWeight="(1-0.2*fromGS*(njets==4 || njets==5))";
+  if(syst=="gs67Up") extraWeight="(1+0.2*fromGS*(njets==6 || njets==7))";
+  if(syst=="gs67Down") extraWeight="(1-0.2*fromGS*(njets==6 || njets==7))";
+  if(syst=="gs89Up") extraWeight="(1+0.2*fromGS*(njets==8 || njets==9))";
+  if(syst=="gs89Down") extraWeight="(1-0.2*fromGS*(njets==8 || njets==9))";
+  if(syst=="gs10InfUp") extraWeight="(1+0.2*fromGS*(njets>=10))";
+  if(syst=="gs10InfDown") extraWeight="(1-0.2*fromGS*(njets>=10))";
   if(syst=="lep_effUp") extraWeight="w_lep";
   if(syst=="lep_effDown") extraWeight="(2-w_lep)";
 
@@ -361,13 +369,12 @@ void makeVariations(std::string &syst){
 
   TString folder_links="/homes/cawest/links/";
 
-  // the following line is kept only for backward compatibility
-  std::vector<TString> s_rpv_LO;
-  s_rpv_LO.push_back("/homes/cawest/babymaker/CMSSW_7_4_14/src/babymaker/RPV_M1000_LO.root");
   std::vector<TString> s_rpv_1000;
-  s_rpv_1000.push_back("/homes/cawest/babymaker/CMSSW_7_4_14/src/babymaker/RPV_M1000_LO.root");
+  s_rpv_1000.push_back("/homes/cawest/babymaker/CMSSW_7_4_14/src/babymaker/RPV_M1000.root");
   std::vector<TString> s_rpv_1100;
-  s_rpv_1100.push_back("/homes/cawest/babymaker/CMSSW_7_4_14/src/babymaker/RPV_M1100_LO.root");
+  s_rpv_1100.push_back("/homes/cawest/babymaker/CMSSW_7_4_14/src/babymaker/RPV_M1100.root");
+  std::vector<TString> s_rpv_1200;
+  s_rpv_1200.push_back("/homes/cawest/babymaker/CMSSW_7_4_14/src/babymaker/RPV_M1200.root");
   std::vector<TString> s_tt;
   //  s_tt.push_back(filestring("TTJets_TuneCUETP8M1_13TeV-madgraphMLM"));
   s_tt.push_back(filestring("TT_TuneCUETP8M1_13TeV-powheg-pythia8"));
@@ -402,9 +409,9 @@ void makeVariations(std::string &syst){
   // Reading ntuples
   std::string blinding("((njets<10 && (nmus+nels)==0) || (nmus+nels==1 && njets<6))");
   std::vector<sfeats> Samples; 
-  Samples.push_back(sfeats(s_rpv_LO, "#tilde{g}(1000), LO", ra4::c_t1tttt, 1,cutandweightForVariations("1",extraWeight)));
   Samples.push_back(sfeats(s_rpv_1000, "#tilde{g}(1000)", ra4::c_t1tttt, 1,cutandweightForVariations("1",extraWeight)));
   Samples.push_back(sfeats(s_rpv_1100, "#tilde{g}(1100)", ra4::c_t1tttt, 1,cutandweightForVariations("1",extraWeight)));
+  Samples.push_back(sfeats(s_rpv_1200, "#tilde{g}(1200)", ra4::c_t1tttt, 1,cutandweightForVariations("1",extraWeight)));
   Samples.push_back(sfeats(s_wjets, "W+jets", kTeal, 1,cutandweightForVariations("1", wjetsWeight)));
   Samples.push_back(sfeats(s_qcd, "QCD", kYellow, 1,cutandweightForVariationsQCD("1",qcdWeight, qcdFlavorWeight))); 
   Samples.push_back(sfeats(s_tt, "t#bar{t}", kTeal, 1,cutandweightForVariations("1", ttbarWeight)));
@@ -414,9 +421,9 @@ void makeVariations(std::string &syst){
   Samples.back().doStack = false;
 
   prettySampleName["Data"] = "data_obs";
-  prettySampleName["#tilde{g}(1000), LO"] = "signal";
   prettySampleName["#tilde{g}(1000)"] = "signal_M1000";
   prettySampleName["#tilde{g}(1100)"] = "signal_M1100";
+  prettySampleName["#tilde{g}(1200)"] = "signal_M1200";
   prettySampleName["QCD"] = "qcd";
   prettySampleName["W+jets"] = "wjets";
   prettySampleName["t#bar{t}"] = "ttbar";
