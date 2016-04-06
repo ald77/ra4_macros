@@ -73,7 +73,7 @@ int main(){
   Samples.push_back(sfeats(s_tt, "t#bar{t}, 1 true lepton", dps::c_tt_1l, 1,"ntruleps<=1&&stitch"));
   Samples.push_back(sfeats(s_tt, "t#bar{t}, 2 true leptons", dps::c_tt_2l,1,"ntruleps>=2&&stitch"));
   Samples.push_back(sfeats(s_wjets, "W+jets", dps::c_wjets,1));
-  Samples.push_back(sfeats(s_single, "Single top", dps::c_singlet));
+  Samples.push_back(sfeats(s_single, "Single t", dps::c_singlet));
   Samples.push_back(sfeats(s_ttv, "ttV", ra4::c_ttv));
   Samples.push_back(sfeats(s_other, "Other", 2001, 1)); 
 
