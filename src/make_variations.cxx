@@ -361,8 +361,13 @@ void makeVariations(std::string &syst){
 
   TString folder_links="/homes/cawest/links/";
 
+  // the following line is kept only for backward compatibility
   std::vector<TString> s_rpv_LO;
   s_rpv_LO.push_back("/homes/cawest/babymaker/CMSSW_7_4_14/src/babymaker/RPV_M1000_LO.root");
+  std::vector<TString> s_rpv_1000;
+  s_rpv_1000.push_back("/homes/cawest/babymaker/CMSSW_7_4_14/src/babymaker/RPV_M1000_LO.root");
+  std::vector<TString> s_rpv_1100;
+  s_rpv_1100.push_back("/homes/cawest/babymaker/CMSSW_7_4_14/src/babymaker/RPV_M1100_LO.root");
   std::vector<TString> s_tt;
   //  s_tt.push_back(filestring("TTJets_TuneCUETP8M1_13TeV-madgraphMLM"));
   s_tt.push_back(filestring("TT_TuneCUETP8M1_13TeV-powheg-pythia8"));
@@ -397,7 +402,9 @@ void makeVariations(std::string &syst){
   // Reading ntuples
   std::string blinding("((njets<10 && (nmus+nels)==0) || (nmus+nels==1 && njets<6))");
   std::vector<sfeats> Samples; 
-  Samples.push_back(sfeats(s_rpv_LO, "#tilde{g}(1000)", ra4::c_t1tttt, 1,cutandweightForVariations("1",extraWeight))); 
+  Samples.push_back(sfeats(s_rpv_LO, "#tilde{g}(1000), LO", ra4::c_t1tttt, 1,cutandweightForVariations("1",extraWeight)));
+  Samples.push_back(sfeats(s_rpv_1000, "#tilde{g}(1000)", ra4::c_t1tttt, 1,cutandweightForVariations("1",extraWeight)));
+  Samples.push_back(sfeats(s_rpv_1100, "#tilde{g}(1100)", ra4::c_t1tttt, 1,cutandweightForVariations("1",extraWeight)));
   Samples.push_back(sfeats(s_wjets, "W+jets", kTeal, 1,cutandweightForVariations("1", wjetsWeight)));
   Samples.push_back(sfeats(s_qcd, "QCD", kYellow, 1,cutandweightForVariationsQCD("1",qcdWeight, qcdFlavorWeight))); 
   Samples.push_back(sfeats(s_tt, "t#bar{t}", kTeal, 1,cutandweightForVariations("1", ttbarWeight)));
@@ -407,7 +414,9 @@ void makeVariations(std::string &syst){
   Samples.back().doStack = false;
 
   prettySampleName["Data"] = "data_obs";
-  prettySampleName["#tilde{g}(1000)"] = "signal";
+  prettySampleName["#tilde{g}(1000), LO"] = "signal";
+  prettySampleName["#tilde{g}(1000)"] = "signal_M1000";
+  prettySampleName["#tilde{g}(1100)"] = "signal_M1100";
   prettySampleName["QCD"] = "qcd";
   prettySampleName["W+jets"] = "wjets";
   prettySampleName["t#bar{t}"] = "ttbar";

@@ -4,25 +4,33 @@
 #include "TH1.h"
 #include <iostream>
 
+bool isBlinded(const std::string &binName, const std::vector<std::string>& blindBins);
+
 int main()
 {
-  TFile *f = TFile::Open("variations/sum_rescaled_test.root", "update");
+  TFile *f = TFile::Open("variations/sum_rescaled.root", "update");
 
-  std::vector<std::string> mcStatisticsList = { "signal", "qcd", "ttbar"};
+  // samples for which MC statistics should be considered
+  std::vector<std::string> mcStatisticsList = { "signal", "signal_M1000", "signal_M1100", "qcd", "ttbar"};
+  // systematics for which the template should be rescaled
   std::vector<std::string> rescaleList = {"qcd_flavor", "qcd_mur", "qcd_muf", "qcd_murf",
 					  "ttbar_pt", "jes", "lep_eff",
   					  "ttbar_mur", "ttbar_muf", "ttbar_murf"};
   std::vector<std::string> upAndDown = {"Up", "Down"};
-  std::vector<std::string> binNames = {"bin0", "bin1", "bin2",
-				       "bin3", "bin4", "bin5",
-				       "bin6", "bin7", "bin8", "bin9"};
-  
-  int nbins=binNames.size();
+  std::vector<std::string> binNames = {"bin0", "bin1", "bin2", // bins for control region fit
+				       "bin3", "bin4", "bin5", // bins for control region fit
+				       "bin6", "bin7", "bin8", "bin9", // lower mj bins
+				       "bin10", "bin11", "bin12", // signal bins
+				       "bin13", "bin14", "bin15"}; // signal bins
+  std::vector<std::string> blindedBins = {"bin10", "bin11", "bin12",
+					  "bin13", "bin14", "bin15"};
+
+  unsigned int nbins=binNames.size();
   
   // only QCD and ttbar shapes should be rescaled
   // as only these processes have a floating normalization
   // in the fit
-  for(int i=0; i<100; i++) {
+  for(unsigned int i=0; i<100; i++) {
     std::string qcd_pdf("qcd_w_pdf");
     qcd_pdf+=std::to_string(i);
     rescaleList.push_back(qcd_pdf);
@@ -31,14 +39,10 @@ int main()
     rescaleList.push_back(ttbar_pdf);
   }
 
-  for(int ibin=0; ibin<nbins; ibin++) {
+  for(unsigned int ibin=0; ibin<nbins; ibin++) {
     TString binname(binNames.at(ibin).c_str());
     f->cd(binname);
-    // ************************
-    // the next line is a hack!
-    // ************************
-    for(unsigned int isyst=0; isyst<rescaleList.size() && nbins<6; isyst++) {
-      //    for(int isyst=0; isyst<rescaleList.size(); isyst++) {
+    for(unsigned int isyst=0; isyst<rescaleList.size(); isyst++) {
       for(unsigned int idir=0; idir<upAndDown.size(); idir++) {
 	std::string process("qcd");
 	if(rescaleList.at(isyst).find("ttbar")!=std::string::npos) process="ttbar";
@@ -67,7 +71,7 @@ int main()
     for(auto isample : mcStatisticsList) {
       TString histnameNominal(Form("%s/%s", binNames.at(ibin).c_str(), isample.c_str()));
       TH1F *nominal = static_cast<TH1F*>(f->Get(histnameNominal));
-      for(int ib=1; ib<=nbins; ib++) {
+      for(unsigned int ib=1; ib<=nbins; ib++) {
 	// only add uncertainties for bins with non-zero entries
 	if(nominal->GetBinContent(ib)==0) continue;
 	TH1F *up = static_cast<TH1F*>(nominal->Clone());
@@ -87,10 +91,36 @@ int main()
       }
     }
 
+    if(isBlinded(binNames.at(ibin), blindedBins)) {
+      // add fake data_obs histogram for blinded bins
+      TH1F *data_obs = static_cast<TH1F*>(f->Get(Form("%s/data_obs", binNames.at(ibin).c_str())));
+      TH1F *qcd = static_cast<TH1F*>(f->Get(Form("%s/qcd", binNames.at(ibin).c_str())));
+      TH1F *ttbar = static_cast<TH1F*>(f->Get(Form("%s/ttbar", binNames.at(ibin).c_str())));
+      TH1F *wjets = static_cast<TH1F*>(f->Get(Form("%s/wjets", binNames.at(ibin).c_str())));
+      TH1F *other = static_cast<TH1F*>(f->Get(Form("%s/other", binNames.at(ibin).c_str())));
+      for(int i=1; i<=data_obs->GetNbinsX(); i++) {
+	data_obs->SetBinContent(i, static_cast<int>(qcd->GetBinContent(i)
+						    + ttbar->GetBinContent(i)
+						    + wjets->GetBinContent(i)
+						    + other->GetBinContent(i)));
+      }
+      data_obs->Write();
+    }
+
     // go back to the top left directory to start processing next bin
     f->cd("/");
   }
 
+
+
   return 0;
 }
 
+bool isBlinded(const std::string &binName, const std::vector<std::string>& blindBins)
+{
+  for(auto iblind : blindBins) {
+    if(binName == iblind) return true;
+  }
+
+  return false;
+}
