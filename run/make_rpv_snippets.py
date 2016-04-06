@@ -49,11 +49,13 @@ PATH = '/homes/cawest/rpv_2016/ra4_macros'
 VARLIST = ['btag_bc', 'btag_udsg',
            'gs45', 'gs67', 'gs89', 'gs10Inf',
            'jes', 'lep_eff', 'ttbar_pt', 
+           'pileup',
            'qcd_flavor',
            'qcd_mur', 'qcd_muf', 'qcd_murf',
            'ttbar_mur', 'ttbar_muf', 'ttbar_murf',
            'wjets_mur', 'wjets_muf', 'wjets_murf',
-           'other_mur', 'other_muf', 'other_murf']
+           'other_mur', 'other_muf', 'other_murf',
+           'signal_mur', 'signal_muf', 'signal_murf']
 
 # make directory 'varscripts' to contain condor submit files
 # and directory 'variations' to contain variations

@@ -11,10 +11,10 @@ args = parser.parse_args()
 GLUINOMASS = 1000
 if (args.input):
   infile = args.input
-if (args.mass):
-  GLUINOMASS = args.mass
 else:
   sys.exit("Please provide an input root file")
+if (args.mass):
+  GLUINOMASS = args.mass
 
 
 verbose = False  

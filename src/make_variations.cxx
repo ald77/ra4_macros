@@ -247,9 +247,9 @@ void makeVariations(std::string &syst){
   std::string ttbarWeight("1");
   std::string wjetsWeight("1");
   std::string otherWeight("1");
+  std::string signalWeight("1");
 
-
-  // weights directly affecting b-tagging
+  // weights directly affecting b-tagging in all samples
   if(syst=="btag_bcUp") extraWeight="sys_bctag[0]";
   if(syst=="btag_bcDown") extraWeight="sys_bctag[1]";
   if(syst=="btag_udsgUp") extraWeight="sys_udsgtag[0]";
@@ -264,8 +264,12 @@ void makeVariations(std::string &syst){
   if(syst=="gs89Down") extraWeight="(1-0.2*fromGS*(njets==8 || njets==9))";
   if(syst=="gs10InfUp") extraWeight="(1+0.2*fromGS*(njets>=10))";
   if(syst=="gs10InfDown") extraWeight="(1-0.2*fromGS*(njets>=10))";
+
+  // other weights affecting all samples
   if(syst=="lep_effUp") extraWeight="w_lep";
   if(syst=="lep_effDown") extraWeight="(2-w_lep)";
+  if(syst=="pileupUp") extraWeight="w_pu";
+  if(syst=="pileupDown") extraWeight="(2-w_pu)";
 
   // pdf weights
   if(syst.find("w_pdf")!=std::string::npos) {
@@ -292,7 +296,7 @@ void makeVariations(std::string &syst){
   }
 
   // for the variations that do not depend on sample type
-  qcdWeight=otherWeight=wjetsWeight=ttbarWeight=extraWeight;
+  signalWeight=qcdWeight=otherWeight=wjetsWeight=ttbarWeight=extraWeight;
 
   TFile *csv_weight_file = TFile::Open("data/low_njet.root");
   TH1F *csv_weight = static_cast<TH1F*>(csv_weight_file->Get("csv_weight"));
@@ -360,6 +364,13 @@ void makeVariations(std::string &syst){
   if(syst=="other_murfUp") otherWeight="sys_murf[0]";
   if(syst=="other_murfDown") otherWeight="sys_murf[1]";
 
+  if(syst=="signal_mufUp") signalWeight="sys_muf[0]";
+  if(syst=="signal_mufDown") signalWeight="sys_muf[1]";
+  if(syst=="signal_murUp") signalWeight="sys_mur[0]";
+  if(syst=="signal_murDown") signalWeight="sys_mur[1]";
+  if(syst=="signal_murfUp") signalWeight="sys_murf[0]";
+  if(syst=="signal_murfDown") signalWeight="sys_murf[1]";
+
   if(syst=="wjets_mufUp") wjetsWeight="sys_muf[0]";
   if(syst=="wjets_mufDown") wjetsWeight="sys_muf[1]";
   if(syst=="wjets_murUp") wjetsWeight="sys_mur[0]";
@@ -393,7 +404,6 @@ void makeVariations(std::string &syst){
   s_other.push_back(filestring("ST_t-channel_top_4f_leptonDecays_13TeV-powheg-pythia8_TuneCUETP8M1"));
   s_other.push_back(filestring("ST_tW_antitop_5f_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M1"));
   s_other.push_back(filestring("ST_tW_top_5f_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M1"));
-  s_other.push_back(filestring("ZJetsToQQ_HT600toInf_13TeV-madgraph"));
   s_other.push_back(filestring("DYJetsToLL_M-50_HT-600toInf_TuneCUETP8M1_13TeV-madgraphMLM-pythia8"));
   s_other.push_back(filestring("TTWJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-madspin-pythia8"));
   s_other.push_back(filestring("TTWJetsToQQ_TuneCUETP8M1_13TeV-amcatnloFXFX-madspin-pythia8"));
@@ -420,6 +430,7 @@ void makeVariations(std::string &syst){
   Samples.back().isData = true;
   Samples.back().doStack = false;
 
+  // convert pretty sample name to the name used in the datacard
   prettySampleName["Data"] = "data_obs";
   prettySampleName["#tilde{g}(1000)"] = "signal_M1000";
   prettySampleName["#tilde{g}(1100)"] = "signal_M1100";
