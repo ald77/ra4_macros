@@ -7,6 +7,7 @@
 #include "TChain.h"
 #include "TH1D.h"
 #include "TCanvas.h"
+#include "TGraphErrors.h"
 #include "TLegend.h"
 #include "TLine.h"
 #include "TString.h"
@@ -249,6 +250,19 @@ void makeVariations(std::string &syst){
   std::string otherWeight("1");
   std::string signalWeight("1");
 
+
+  std::vector<double> gs_dmc(4);
+  //Get values for GS syst
+  if(std::string::npos != syst.find("gs")){
+
+    TFile *gs_file = TFile::Open("syst_gs.root");
+    TGraphErrors* h_gs_dmc = static_cast<TGraphErrors*>(gs_file->Get("dmc_ldrbb_allmj"));
+    
+    double temp_val;
+    for(unsigned int ibin=0; ibin<4; ibin++)
+      h_gs_dmc->GetPoint(ibin,temp_val,gs_dmc[ibin]);   
+  }
+
   // weights directly affecting b-tagging in all samples
   if(syst=="btag_bcUp") extraWeight="sys_bctag[0]";
   if(syst=="btag_bcDown") extraWeight="sys_bctag[1]";
@@ -256,14 +270,14 @@ void makeVariations(std::string &syst){
   if(syst=="btag_udsgDown") extraWeight="sys_udsgtag[1]";
   if(syst=="gsUp") extraWeight="(1+0.2*fromGS)";
   if(syst=="gsDown") extraWeight="(1-0.2*fromGS)";
-  if(syst=="gs45Up") extraWeight="(1+0.2*fromGS*(njets==4 || njets==5))";
-  if(syst=="gs45Down") extraWeight="(1-0.2*fromGS*(njets==4 || njets==5))";
-  if(syst=="gs67Up") extraWeight="(1+0.2*fromGS*(njets==6 || njets==7))";
-  if(syst=="gs67Down") extraWeight="(1-0.2*fromGS*(njets==6 || njets==7))";
-  if(syst=="gs89Up") extraWeight="(1+0.2*fromGS*(njets==8 || njets==9))";
-  if(syst=="gs89Down") extraWeight="(1-0.2*fromGS*(njets==8 || njets==9))";
-  if(syst=="gs10InfUp") extraWeight="(1+0.2*fromGS*(njets>=10))";
-  if(syst=="gs10InfDown") extraWeight="(1-0.2*fromGS*(njets>=10))";
+  if(syst=="gs45Up") extraWeight="(1+(1-"+std::to_string(gs_dmc[0])+")*fromGS*(njets==4 || njets==5))";
+  if(syst=="gs45Down") extraWeight="(1-(1-"+std::to_string(gs_dmc[0])+")*fromGS*(njets==4 || njets==5))";
+  if(syst=="gs67Up") extraWeight="(1+(1-"+std::to_string(gs_dmc[1])+")*fromGS*(njets==6 || njets==7))";
+  if(syst=="gs67Down") extraWeight="(1-(1-"+std::to_string(gs_dmc[1])+")*fromGS*(njets==6 || njets==7))";
+  if(syst=="gs89Up") extraWeight="(1+(1-"+std::to_string(gs_dmc[2])+")*fromGS*(njets==8 || njets==9))";
+  if(syst=="gs89Down") extraWeight="(1-(1-"+std::to_string(gs_dmc[2])+")*fromGS*(njets==8 || njets==9))";
+  if(syst=="gs10InfUp") extraWeight="(1+(1-"+std::to_string(gs_dmc[3])+")*fromGS*(njets>=10))";
+  if(syst=="gs10InfDown") extraWeight="(1-(1-"+std::to_string(gs_dmc[3])+")*fromGS*(njets>=10))";
 
   // other weights affecting all samples
   if(syst=="lep_effUp") extraWeight="w_lep";
