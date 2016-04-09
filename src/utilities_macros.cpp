@@ -29,6 +29,7 @@
 #include "TEfficiency.h"
 #include "TSystem.h"
 #include "TDirectory.h"
+#include "TROOT.h"
 
 #include "styles.hpp"
 #include "utilities.hpp"
@@ -42,7 +43,16 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
   TString outfolder("plots/"+dir);
   gSystem->mkdir(outfolder, kTRUE);
 
-  bool isPreliminary(false);
+  TString CMStype("");
+  if(namestyle.Contains("_Supplementary")) {
+    CMStype = "Supplementary";
+    namestyle.ReplaceAll("_Supplementary","");
+  }
+  if(namestyle.Contains("_Preliminary")) {
+    CMStype = "Preliminary";
+    namestyle.ReplaceAll("_Preliminary","");
+  }
+
   if (doRatio) namestyle = "CMSPaper";
   styles style(namestyle);
   if(namestyle.Contains("CMSPaper")) style.nDivisions = 706;
@@ -126,6 +136,7 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
       for(unsigned sam(0); sam < Nsam; sam++){ 
 	if(Samples[vars[var].samples[sam]].doBand) someBands = true;
         hname = "histo"; hname += var; hname += his; hname += sam;  
+	delete gROOT->FindObject(hname); // For some reason, the deletion at the end is not enough
         if(variableBins) { 
           vars[var].minx = vars[var].binning[0];
           varhisto.push_back(new TH1D(hname, title, vars[var].nbins, vars[var].binning));
@@ -172,7 +183,7 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
 	for(unsigned is=0;is<Samples.size();is++){if(Samples[is].isData){contains_data=true; break;} }
 	if(contains_data){ 
 	  cmslabel = "#font[62]{CMS}";
-	  if(isPreliminary) cmslabel += " #scale[0.8]{#font[52]{Preliminary}}";  
+	  cmslabel += " #scale[0.8]{#font[52]{"+CMStype+"}}";  
 	  lumilabel = TString::Format("%1.1f",luminosity.Atof())+" fb^{-1} (13 TeV)";}
       }
       if(vars[var].unit!="") {
@@ -485,10 +496,13 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
   }// Loop over variables
   cout<<endl;
 
-  for(unsigned his(0); his < 2; his++){
-    for(unsigned var(0); var<vars.size(); var++){
+  for(unsigned var(0); var<vars.size(); var++){
+    for(unsigned his(0); his < 2; his++){
       for(unsigned sam(0); sam < vars[var].samples.size(); sam++)
-        if(histo[his][var][sam]) histo[his][var][sam]->Delete();
+        if(histo[his][var][sam]) {
+	  //cout<<"Deleting "<<histo[his][var][sam]->GetName()<<endl;
+	  delete histo[his][var][sam];
+	}
     }
   }
 }

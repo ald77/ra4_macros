@@ -1,4 +1,4 @@
-#include "/homes/cawest/tdrstyle.C"
+#include "tdrstyle.C"
 #include "TH1.h"
 #include "TFile.h"
 #include "TString.h"
