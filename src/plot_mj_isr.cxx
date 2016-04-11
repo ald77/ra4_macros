@@ -22,7 +22,7 @@ int main(){
 
   // Reading ntuples
   vector<sfeats> Samples;
-  Samples.push_back(sfeats(s_t4t_nc, "#scale[0.92]{#tilde{g}#kern[0.2]{#tilde{g}}, #tilde{g}#rightarrowt#bar{t}#tilde{#chi}#lower[0.2]{#scale[0.85]{^{0}}}#kern[-1.3]{#scale[0.85]{_{1}}} (1500,100)}",ra4::c_t1tttt,1, "stitch")); 
+  Samples.push_back(sfeats(s_t4t_nc, "#scale[0.92]{#tilde{g}#kern[0.2]{#tilde{g}}, #tilde{g}#rightarrowt#bar{t}#tilde{#chi}#lower[0.2]{#scale[0.85]{^{0}}}#kern[-1.3]{#scale[0.85]{_{1}}} (1500,100)}",ra4::c_t1tttt,7, "stitch")); 
   Samples.push_back(sfeats(s_tt, "t#bar{t}, 1 true lepton",dps::c_tt_1l,1,"ntruleps==1&&stitch"));
   Samples.push_back(sfeats(s_tt, "t#bar{t}, 2 true leptons", dps::c_tt_2l,1,"ntruleps==2&&stitch"));
   

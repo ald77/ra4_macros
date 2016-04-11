@@ -398,6 +398,17 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
 	llbl.SetNDC(); llbl.SetTextAlign(33);
 	llbl.DrawLatex(1-style.PadRightMargin-0.02,leg[0].GetY1NDC()-0.02,lumilbl);
       }
+      // label nb
+      if(vars[var].tag.Contains("results") && vars[var].cuts.Contains("nbm")){
+	TLatex tla;
+	tla.SetTextSize(0.055);
+	tla.SetTextFont(42);
+	if(vars[var].cuts.Contains("nbm==1")) tla.DrawLatexNDC(0.73,0.64,"#font[62]{N_{b} = 1}");
+	if(vars[var].cuts.Contains("nbm>=2")) tla.DrawLatexNDC(0.73,0.64,"#font[62]{N_{b} #geq 2}");
+      }
+
+
+
       //save canvas
       pad->SetLogy(1);
       pname = outfolder+"/log_lumi_"+vars[var].tag+plot_tag;
