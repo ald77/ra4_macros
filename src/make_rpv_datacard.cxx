@@ -27,11 +27,13 @@ int main(int argc, char *argv[])
 
   // signal is added later
   std::vector<std::string> processes = { "qcd", "ttbar", "wjets", "other"};
-  std::vector<std::string> shapeSysts = {"btag_bc", "btag_udsg", "gs",
-					 "jes", "lep_eff",
-					 "ttbar_pt", 
+  std::vector<std::string> shapeSysts = {"btag_bc", "btag_udsg",
+					 "gs45", "gs67", "gs89", "gs10Inf",
+					 "jes", "jer",
+					 "pileup","lep_eff", "ttbar_pt",
 					 "qcd_flavor",
 					 "qcd_muf", "qcd_mur", "qcd_murf", 
+					 "isr",
 					 "ttbar_muf", "ttbar_mur", "ttbar_murf",
 					 "wjets_muf", "wjets_mur", "wjets_murf",
 					 "other_muf", "other_mur", "other_murf"};

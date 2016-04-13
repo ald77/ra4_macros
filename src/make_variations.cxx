@@ -101,7 +101,8 @@ void jetVariations(TString &nbm, TString &cut, const std::string &variation)
 {
   std::cout << "Processing variation: " << variation << std::endl;
   // variations have index 0 (JER smearing), 1 (JES up) and 2 (JES down)
-  if(variation.find("jer")!=std::string::npos) {
+  // only include 1-sided variations of resolution
+  if(variation.find("jerUp")!=std::string::npos) {
     cut.ReplaceAll("ht", "sys_ht[0]");
     cut.ReplaceAll("njets", "sys_njets[0]");
     cut.ReplaceAll("nbm", "sys_nbm[0]");
@@ -282,8 +283,8 @@ void makeVariations(std::string &syst){
   // other weights affecting all samples
   if(syst=="lep_effUp") extraWeight="w_lep";
   if(syst=="lep_effDown") extraWeight="(2-w_lep)";
-  if(syst=="pileupUp") extraWeight="w_pu";
-  if(syst=="pileupDown") extraWeight="(2-w_pu)";
+  if(syst=="pileupUp") extraWeight="sys_pu_rpv[0]";
+  if(syst=="pileupDown") extraWeight="sys_pu_rpv[1]";
 
   // pdf weights
   if(syst.find("w_pdf")!=std::string::npos) {
@@ -384,6 +385,9 @@ void makeVariations(std::string &syst){
   if(syst=="signal_murDown") signalWeight="sys_mur[1]";
   if(syst=="signal_murfUp") signalWeight="sys_murf[0]";
   if(syst=="signal_murfDown") signalWeight="sys_murf[1]";
+  // only apply ISR systematic to signal
+  if(syst=="isrUp") signalWeight="sys_isr[0]";
+  if(syst=="isrDown") signalWeight="sys_isr[1]";
 
   if(syst=="wjets_mufUp") wjetsWeight="sys_muf[0]";
   if(syst=="wjets_mufDown") wjetsWeight="sys_muf[1]";
@@ -400,6 +404,10 @@ void makeVariations(std::string &syst){
   s_rpv_1100.push_back("/homes/cawest/babymaker/CMSSW_7_4_14/src/babymaker/RPV_M1100.root");
   std::vector<TString> s_rpv_1200;
   s_rpv_1200.push_back("/homes/cawest/babymaker/CMSSW_7_4_14/src/babymaker/RPV_M1200.root");
+  std::vector<TString> s_rpv_1300;
+  s_rpv_1300.push_back("/homes/cawest/babymaker/CMSSW_7_4_14/src/babymaker/RPV_M1300.root");
+  std::vector<TString> s_rpv_1400;
+  s_rpv_1400.push_back("/homes/cawest/babymaker/CMSSW_7_4_14/src/babymaker/RPV_M1400.root");
   std::vector<TString> s_tt;
   //  s_tt.push_back(filestring("TTJets_TuneCUETP8M1_13TeV-madgraphMLM"));
   s_tt.push_back(filestring("TT_TuneCUETP8M1_13TeV-powheg-pythia8"));
@@ -433,9 +441,11 @@ void makeVariations(std::string &syst){
   // Reading ntuples
   std::string blinding("((njets<10 && (nmus+nels)==0) || (nmus+nels==1 && njets<6))");
   std::vector<sfeats> Samples; 
-  Samples.push_back(sfeats(s_rpv_1000, "#tilde{g}(1000)", ra4::c_t1tttt, 1,cutandweightForVariations("1",extraWeight)));
-  Samples.push_back(sfeats(s_rpv_1100, "#tilde{g}(1100)", ra4::c_t1tttt, 1,cutandweightForVariations("1",extraWeight)));
-  Samples.push_back(sfeats(s_rpv_1200, "#tilde{g}(1200)", ra4::c_t1tttt, 1,cutandweightForVariations("1",extraWeight)));
+  Samples.push_back(sfeats(s_rpv_1000, "#tilde{g}(1000)", ra4::c_t1tttt, 1,cutandweightForVariations("1",signalWeight)));
+  Samples.push_back(sfeats(s_rpv_1100, "#tilde{g}(1100)", ra4::c_t1tttt, 1,cutandweightForVariations("1",signalWeight)));
+  Samples.push_back(sfeats(s_rpv_1200, "#tilde{g}(1200)", ra4::c_t1tttt, 1,cutandweightForVariations("1",signalWeight)));
+  Samples.push_back(sfeats(s_rpv_1300, "#tilde{g}(1300)", ra4::c_t1tttt, 1,cutandweightForVariations("1",signalWeight)));
+  Samples.push_back(sfeats(s_rpv_1400, "#tilde{g}(1400)", ra4::c_t1tttt, 1,cutandweightForVariations("1",signalWeight)));
   Samples.push_back(sfeats(s_wjets, "W+jets", kTeal, 1,cutandweightForVariations("1", wjetsWeight)));
   Samples.push_back(sfeats(s_qcd, "QCD", kYellow, 1,cutandweightForVariationsQCD("1",qcdWeight, qcdFlavorWeight))); 
   Samples.push_back(sfeats(s_tt, "t#bar{t}", kTeal, 1,cutandweightForVariations("1", ttbarWeight)));
@@ -449,6 +459,8 @@ void makeVariations(std::string &syst){
   prettySampleName["#tilde{g}(1000)"] = "signal_M1000";
   prettySampleName["#tilde{g}(1100)"] = "signal_M1100";
   prettySampleName["#tilde{g}(1200)"] = "signal_M1200";
+  prettySampleName["#tilde{g}(1300)"] = "signal_M1300";
+  prettySampleName["#tilde{g}(1400)"] = "signal_M1400";
   prettySampleName["QCD"] = "qcd";
   prettySampleName["W+jets"] = "wjets";
   prettySampleName["t#bar{t}"] = "ttbar";
