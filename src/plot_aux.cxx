@@ -16,7 +16,7 @@
 #include "utilities_macros.hpp"
 
 namespace {
-  TString plotSet = "Signal,Syst";
+  TString plotSet = "Syst";
 
   int sigcolor(kRed);
   int stcolor(kMagenta-2);
@@ -346,10 +346,12 @@ void doSyst(){
   s_ttv.push_back(foldermc+"*_TTTT*");
   vector<TString> s_dy;
   s_dy.push_back(folderdy+"*DYJetsToLL_M-50_*");
+  vector<TString> s_st;
+  s_st.push_back(foldermc+"*_ST_*");
   vector<TString> s_other;
   s_other.push_back(foldermc+"*_ZJet*");
   s_other.push_back(foldermc+"*_WJetsToLNu*");
-  s_other.push_back(foldermc+"*_ST_*");
+  //  s_other.push_back(foldermc+"*_ST_*");
   s_other.push_back(foldermc+"*ggZH_HToBB*");
   s_other.push_back(foldermc+"*ttHJetTobb*");
   s_other.push_back(foldermc+"*QCD*");
@@ -364,6 +366,7 @@ void doSyst(){
   Sam_isr.push_back(sfeats(s_tt, "t#bar{t}, 1 true lepton", dps::c_tt_1l, 1,"ntruleps<=1&&stitch"));
   Sam_isr.push_back(sfeats(s_dy, "Z+jets",dps::c_wjets,1,"stitch"));
   Sam_isr.push_back(sfeats(s_ttv, "ttV", ra4::c_ttv));
+  Sam_isr.push_back(sfeats(s_st, "Single t", stcolor));
   Sam_isr.push_back(sfeats(s_other, "Other", 2001, 1));
 
   vector<int> ra4_sam;
