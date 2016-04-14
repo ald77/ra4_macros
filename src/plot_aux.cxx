@@ -16,7 +16,7 @@
 #include "utilities_macros.hpp"
 
 namespace {
-  TString plotSet = "N1_R4";
+  TString plotSet = "Signal,Syst";
 
   int sigcolor(kRed);
   int stcolor(kMagenta-2);
@@ -32,12 +32,14 @@ using std::endl;
 void doN1_R4(); // N-1 and R4 plots
 void doSignal(); // Signal plots
 void do_MJ_validation();
+void doSyst(); // Syst plots (rohanplot is made in plot_rohanplots.cxx)
 
 int main(){ 
 
   if(plotSet.Contains("N1_R4")) doN1_R4();
   if(plotSet.Contains("Signal")) doSignal();
   if(plotSet.Contains("MJ_validation")) do_MJ_validation();
+  if(plotSet.Contains("Syst")) doSyst();
 
 }
 
@@ -292,10 +294,92 @@ void do_MJ_validation(){
   vars.push_back(hfeats("fjets08_m[2]",16,0,480, ra4_sam, "m(J_{3}) [GeV], R = 0.8",
 			baseline,-10,"MJ_validation"));
   vars.back().whichPlots = "12"; vars.back().normalize = true;
-  
-
-
-  plot_distributions(Samples, vars, luminosity, plot_type, plot_style, "aux",true);
+ 
+ 
+ plot_distributions(Samples, vars, luminosity, plot_type, plot_style, "aux",true);
 }
 
+// Systematic plots
+void doSyst(){
 
+  TString bfolder("");
+  string hostname = execute("echo $HOSTNAME");
+  if(Contains(hostname, "cms") || Contains(hostname, "compute-"))
+    bfolder = "/net/cms2"; // In laptops, you can't create a /net folder
+
+  // 1l vs 2l MJ Data Comparison
+  TString folder1l(bfolder+"/cms2r0/babymaker/babies/2015_11_20/data/singlelep/combined/skim_1lht500met200/");
+  vector<TString> s_slep;
+  s_slep.push_back(folder1l+"*root"); // With "__Single" you exclude the extra 48 ipb
+
+  vector<sfeats> Sam_dilep;
+  Sam_dilep.push_back(sfeats(s_slep, "Data 2l, N_{jets} #geq 5", kBlack,1,"(trig[4]||trig[8])&&pass&&njets>=5&&nleps==2&&nbm<=2"));
+  Sam_dilep.back().isData=true;
+  Sam_dilep.push_back(sfeats(s_slep, "Data 1l, N_{jets} #geq 6, m_{T} #leq 140, N_{b} #geq 1", kBlue+2,1,
+			     "(trig[4]||trig[8])&&pass&&mt<=140&&njets>=6&&nleps==1&&nbm>=1")); Sam_dilep.back().doBand= true;
+  vector<int> dilep_sam;
+  dilep_sam.push_back(0);
+  dilep_sam.push_back(1);
+
+  vector<hfeats> vars_dilep;
+  vars_dilep.push_back(hfeats("mj",6,250,700, dilep_sam, "M_{J} [GeV]","ht>500&&met>200&&pass&&met<=400",-1,"aux"));
+  vars_dilep.back().whichPlots = "12"; vars_dilep.back().normalize = true;
+
+  plot_distributions(Sam_dilep, vars_dilep, luminosity, plot_type, plot_style, "aux",true);
+
+  // ISR pT plots
+  TString skim = "ttisr";
+  TString folder1l_isr(bfolder+"/cms2r0/babymaker/babies/2015_11_20/data/singlelep/combined/skim_"+skim+"/");
+  TString foldermc(bfolder+"/cms2r0/babymaker/babies/2015_11_28/mc/skim_"+skim+"/");
+  TString folderdy(bfolder+"/cms2r0/babymaker/babies/2015_11_28/mc/skim_"+skim+"/");
+
+  vector<TString> s_slep_isr;
+  s_slep_isr.push_back(folder1l_isr+"*root");
+
+  vector<TString> s_tt;
+  s_tt.push_back(foldermc+"*_TTJets*Lept*");
+  s_tt.push_back(foldermc+"*_TTJets_HT*");
+  vector<TString> s_ttv;
+  s_ttv.push_back(foldermc+"*_TTWJets*");
+  s_ttv.push_back(foldermc+"*_TTZTo*");
+  s_ttv.push_back(foldermc+"*_TTG*");
+  s_ttv.push_back(foldermc+"*_TTTT*");
+  vector<TString> s_dy;
+  s_dy.push_back(folderdy+"*DYJetsToLL_M-50_*");
+  vector<TString> s_other;
+  s_other.push_back(foldermc+"*_ZJet*");
+  s_other.push_back(foldermc+"*_WJetsToLNu*");
+  s_other.push_back(foldermc+"*_ST_*");
+  s_other.push_back(foldermc+"*ggZH_HToBB*");
+  s_other.push_back(foldermc+"*ttHJetTobb*");
+  s_other.push_back(foldermc+"*QCD*");
+  s_other.push_back(foldermc+"*_WZTo*");
+  s_other.push_back(foldermc+"*_WWTo*");
+  s_other.push_back(foldermc+"*_ZZTo*");
+
+
+  vector<sfeats> Sam_isr;
+  Sam_isr.push_back(sfeats(s_slep_isr, "Data", kBlack,1,"pass&&(trig[18]||trig[21]||trig[23]||trig[24])")); Sam_isr.back().isData = true;
+  Sam_isr.push_back(sfeats(s_tt, "t#bar{t}, 2 true leptons", dps::c_tt_2l,1,"ntruleps>=2&&stitch"));
+  Sam_isr.push_back(sfeats(s_tt, "t#bar{t}, 1 true lepton", dps::c_tt_1l, 1,"ntruleps<=1&&stitch"));
+  Sam_isr.push_back(sfeats(s_dy, "Z+jets",dps::c_wjets,1,"stitch"));
+  Sam_isr.push_back(sfeats(s_ttv, "ttV", ra4::c_ttv));
+  Sam_isr.push_back(sfeats(s_other, "Other", 2001, 1));
+
+  vector<int> ra4_sam;
+  unsigned nsam(Sam_isr.size());
+  for(unsigned sam(0); sam < nsam; sam++){
+    ra4_sam.push_back(sam);
+  } // Loop over samples
+
+  vector<hfeats> vars_isr;
+  float ibinning[] = {0., 50., 100., 150., 200., 300., 400.,600., 800.};
+  int nbins = sizeof(ibinning)/sizeof(float)-1;
+
+  //---------- TTBAR ISR --------------------
+  vars_isr.push_back(hfeats("jetsys_nob_pt",nbins,ibinning, ra4_sam, "p_{T}(ISR jets) [GeV]","nleps==2&&Max$(leps_pt)>30&&njets>2&&nbm==2"));
+  vars_isr.back().whichPlots = "12"; vars_isr.back().normalize = true;
+
+  plot_distributions(Sam_isr, vars_isr, luminosity, plot_type, plot_style, "aux",true);
+
+}

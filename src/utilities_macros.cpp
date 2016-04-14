@@ -159,7 +159,7 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
       if(vars[var].PU_reweight && !Samples[isam].isData) totCut = Samples[isam].factor+"*"+luminosity+"*weight*wpu*("+vars[var].cuts+"&&"+Samples[isam].cut+")";
       //cout<<totCut<<endl;
       histo[0][var][sam]->Sumw2();
-      //      histo[0][var][sam]->SetBinErrorOption(TH1::kPoisson);
+      //histo[0][var][sam]->SetBinErrorOption(TH1::kPoisson);
       if(samVariable=="noPlot") chain[isam]->Project(histo[0][var][sam]->GetName(), variable, totCut);
       else chain[isam]->Project(histo[0][var][sam]->GetName(), samVariable, totCut);
       histo[0][var][sam]->SetBinContent(vars[var].nbins,
@@ -177,8 +177,9 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
         cmslabel = "";
       } else {
         //lumilabel = TString::Format("L = %1.f",luminosity.Atof()*1000.)+" pb^{-1} (13 TeV)";
-	lumilabel = TString::Format("13 TeV");
+	lumilabel = TString::Format("#scale[0.8]{13 TeV}");
         cmslabel = "#font[62]{CMS} #scale[0.8]{#font[52]{Simulation}}";
+        if(CMStype=="Supplementary")cmslabel = "#scale[0.8]{#font[62]{CMS}} #scale[0.6]{#font[52]{Supplementary (Simulation)}}";
 	bool contains_data = false;
 	for(unsigned is=0;is<Samples.size();is++){if(Samples[is].isData){contains_data=true; break;} }
 	if(contains_data){ 

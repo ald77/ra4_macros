@@ -153,7 +153,7 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
         cmslabel = "";
       } else {
         lumilabel = TString::Format("L = %1.f",luminosity.Atof())+" fb^{-1} (13 TeV)";
-        cmslabel = "#font[62]{CMS} #scale[0.8]{#font[52]{Simulation}}";
+        cmslabel = "#font[62]{CMS} #scale[0.8]{#font[52]{Supplementary (Simulation)}}";
       }
       if(vars[var].unit!="") {
         int digits(0);
