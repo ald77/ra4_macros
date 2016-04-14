@@ -497,7 +497,7 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
       TLatex tla;
       tla.SetTextSize(0.045);
       tla.SetTextFont(42);
-      tla.DrawLatexNDC(0.52,0.73,"#font[62]{"+t1t_label+" (1500,100)}}");
+      tla.DrawLatexNDC(0.52,0.70,"#font[62]{"+t1t_label+" (1500,100)}}");
       histo[1][var][0]->SetMaximum(60);
     }
 

@@ -31,7 +31,6 @@ using std::endl;
 void doN1_R4(); // N-1 and R4 plots
 void doSignal(); // Signal plots
 
-
 int main(){ 
 
   if(plotSet.Contains("N1_R4")) doN1_R4();
@@ -201,9 +200,6 @@ void doSignal(){
   vector<sfeats> Samples; 
   Samples.push_back(sfeats(s_t1t, "N_{true leptons}", sigcolor, 1, "1","ntruels+ntrumus"));
   Samples.push_back(sfeats(s_t1t, "N_{reco. leptons}", 31, 2));
-  Samples.push_back(sfeats(s_t1tc, "N_{true. leptons}", sigcolor, 1, "1","ntruels+ntrumus"));
-  Samples.push_back(sfeats(s_t1tc, "N_{reco. leptons}", 31, 2));
-
 
   vector<int> ra4_t1t;
   ra4_t1t.push_back(0);
@@ -212,7 +208,7 @@ void doSignal(){
   vector<hfeats> vars;
 
   // nleps<1234 used as a hack to get signal point printed on canvas
-  vars.push_back(hfeats("nleps",5,-0.5,4.5, ra4_t1t, "N_{e+#mu}","nleps<1234",-1,"signal"));
+  vars.push_back(hfeats("nleps",5,-0.5,4.5, ra4_t1t, "N_{prompt e+#mu}","nleps<1234",-1,"signal"));
   vars.back().whichPlots = "3";
  
   plot_distributions(Samples, vars, luminosity, plot_type, plot_style, "aux", false);
