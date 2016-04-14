@@ -16,9 +16,10 @@
 #include "utilities_macros.hpp"
 
 namespace {
-  TString plotSet = "Signal";
+  TString plotSet = "N1_R4";
 
-  int sigcolor(kMagenta-2);
+  int sigcolor(kRed);
+  int stcolor(kMagenta-2);
   TString luminosity="2.3";
   TString plot_type=".pdf";
   TString plot_style="CMSPaper_Supplementary";
@@ -30,11 +31,13 @@ using std::endl;
 
 void doN1_R4(); // N-1 and R4 plots
 void doSignal(); // Signal plots
+void do_MJ_validation();
 
 int main(){ 
 
   if(plotSet.Contains("N1_R4")) doN1_R4();
   if(plotSet.Contains("Signal")) doSignal();
+  if(plotSet.Contains("MJ_validation")) do_MJ_validation();
 
 }
 
@@ -114,7 +117,7 @@ void doN1_R4(){
   Samples.push_back(sfeats(s_tt, "t#bar{t}, 1 true lepton", dps::c_tt_1l, 1,"ntruleps<=1&&stitch"));
   Samples.push_back(sfeats(s_tt, "t#bar{t}, 2 true leptons", dps::c_tt_2l,1,"ntruleps>=2&&stitch"));
   Samples.push_back(sfeats(s_wjets, "W+jets", dps::c_wjets,1));
-  Samples.push_back(sfeats(s_single, "Single t", dps::c_singlet));
+  Samples.push_back(sfeats(s_single, "Single t", stcolor));
   Samples.push_back(sfeats(s_ttv, "ttV", ra4::c_ttv));
   Samples.push_back(sfeats(s_other, "Other", 2001, 1)); 
 
@@ -132,7 +135,7 @@ void doN1_R4(){
   Samples.push_back(sfeats(s_tt_met, "t#bar{t}, 1 true lepton", dps::c_tt_1l, 1,"ntruleps<=1&&stitch"));
   Samples.push_back(sfeats(s_tt_met, "t#bar{t}, 2 true leptons", dps::c_tt_2l,1,"ntruleps>=2&&stitch"));
   Samples.push_back(sfeats(s_wjets_met, "W+jets", dps::c_wjets,1));
-  Samples.push_back(sfeats(s_single_met, "Single t", dps::c_singlet));
+  Samples.push_back(sfeats(s_single_met, "Single t", stcolor));
   Samples.push_back(sfeats(s_ttv_met, "ttV", ra4::c_ttv));
   Samples.push_back(sfeats(s_other_met, "Other", 2001, 1)); 
   vector<int> met_sam;
@@ -213,3 +216,86 @@ void doSignal(){
  
   plot_distributions(Samples, vars, luminosity, plot_type, plot_style, "aux", false);
 }
+
+void do_MJ_validation(){
+
+  TString bfolder("");
+  string hostname = execute("echo $HOSTNAME");
+  if(Contains(hostname, "cms") || Contains(hostname, "compute-"))  
+    bfolder = "/net/cms2"; // In laptops, you can't create a /net folder
+  
+  TString folder1l(bfolder+"/cms2r0/babymaker/babies/2016_02_04/data/singlelep/combined/skim_1lht500met200/");
+  TString foldermc(bfolder+"/cms2r0/babymaker/babies/2015_11_28/mc/skim_1lht500met200/");
+
+  vector<TString> s_slep;
+  s_slep.push_back(folder1l+"*root"); 
+
+  vector<TString> s_tt;
+  s_tt.push_back(foldermc+"*_TTJets*Lept*");
+  s_tt.push_back(foldermc+"*_TTJets_HT*");
+  vector<TString> s_wjets;
+  s_wjets.push_back(foldermc+"*_WJetsToLNu*");
+  vector<TString> s_ttv;
+  s_ttv.push_back(foldermc+"*_TTWJets*");
+  s_ttv.push_back(foldermc+"*_TTZTo*");
+  vector<TString> s_single;
+  s_single.push_back(foldermc+"*_ST_*");
+  vector<TString> s_other;
+  s_other.push_back(foldermc+"*DYJetsToLL*");
+  s_other.push_back(foldermc+"*_QCD_HT*");
+  s_other.push_back(foldermc+"*_ZJet*");
+  s_other.push_back(foldermc+"*_WWTo*");
+  s_other.push_back(foldermc+"*ggZH_HToBB*");
+  s_other.push_back(foldermc+"*ttHJetTobb*");
+
+
+  // Reading ntuples
+  vector<sfeats> Samples; 
+  Samples.push_back(sfeats(s_slep, "Data", kBlack,1,"(trig[4]||trig[8])&&pass")); Samples.back().isData = true;
+  Samples.push_back(sfeats(s_tt, "t#bar{t}, 1 true lepton", dps::c_tt_1l, 1,"ntruleps<=1&&stitch"));
+  Samples.push_back(sfeats(s_tt, "t#bar{t}, 2 true leptons", dps::c_tt_2l,1,"ntruleps>=2&&stitch"));
+  Samples.push_back(sfeats(s_wjets, "W+jets", dps::c_wjets,1));
+  Samples.push_back(sfeats(s_single, "Single t", stcolor));
+  Samples.push_back(sfeats(s_ttv, "ttV", ra4::c_ttv));
+  Samples.push_back(sfeats(s_other, "Other", 2001, 1)); 
+
+  vector<int> ra4_sam;
+  unsigned nsam(Samples.size());
+  for(unsigned sam(0); sam < nsam; sam++){
+    ra4_sam.push_back(sam);
+  } // Loop over samples
+
+
+  vector<hfeats> vars;
+  TString baseline = "nleps==1&&njets>=6&&nbm>=1&&met>200&&ht>500";
+
+  /* vars.push_back(hfeats("fjets_m[0]",16,0,480, ra4_sam, "m(J_{1}) [GeV]",
+			baseline,-10,"MJ_validation"));
+  vars.back().whichPlots = "12"; vars.back().normalize = true;
+
+  vars.push_back(hfeats("fjets_m[1]",16,0,480, ra4_sam, "m(J_{2}) [GeV]",
+			baseline,-10,"MJ_validation"));
+  vars.back().whichPlots = "12"; vars.back().normalize = true;
+
+  vars.push_back(hfeats("fjets_m[2]",16,0,480, ra4_sam, "m(J_{3}) [GeV]",
+			baseline,-10,"MJ_validation"));
+  vars.back().whichPlots = "12"; vars.back().normalize = true;
+  */
+   vars.push_back(hfeats("fjets08_m[0]",16,0,480, ra4_sam, "m(J_{1}) [GeV], R = 0.8",
+			baseline,-10,"MJ_validation"));
+  vars.back().whichPlots = "12"; vars.back().normalize = true;
+
+  vars.push_back(hfeats("fjets08_m[1]",16,0,480, ra4_sam, "m(J_{2}) [GeV], R = 0.8",
+			baseline,-10,"MJ_validation"));
+  vars.back().whichPlots = "12"; vars.back().normalize = true;
+
+  vars.push_back(hfeats("fjets08_m[2]",16,0,480, ra4_sam, "m(J_{3}) [GeV], R = 0.8",
+			baseline,-10,"MJ_validation"));
+  vars.back().whichPlots = "12"; vars.back().normalize = true;
+  
+
+
+  plot_distributions(Samples, vars, luminosity, plot_type, plot_style, "aux",true);
+}
+
+

@@ -158,8 +158,8 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
       if(Samples[isam].isData) totCut= vars[var].cuts+"&&"+Samples[isam].cut;
       if(vars[var].PU_reweight && !Samples[isam].isData) totCut = Samples[isam].factor+"*"+luminosity+"*weight*wpu*("+vars[var].cuts+"&&"+Samples[isam].cut+")";
       //cout<<totCut<<endl;
-      //histo[0][var][sam]->Sumw2();
-      histo[0][var][sam]->SetBinErrorOption(TH1::kPoisson);
+      histo[0][var][sam]->Sumw2();
+      //      histo[0][var][sam]->SetBinErrorOption(TH1::kPoisson);
       if(samVariable=="noPlot") chain[isam]->Project(histo[0][var][sam]->GetName(), variable, totCut);
       else chain[isam]->Project(histo[0][var][sam]->GetName(), samVariable, totCut);
       histo[0][var][sam]->SetBinContent(vars[var].nbins,
