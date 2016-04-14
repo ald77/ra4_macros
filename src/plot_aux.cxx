@@ -203,8 +203,8 @@ void doSignal(){
   TString t1t_label = "#scale[0.95]{#tilde{g}#kern[0.2]{#tilde{g}}, #tilde{g}#rightarrowt#kern[0.18]{#bar{t}}#kern[0.18]"+lsp;
 
   vector<sfeats> Samples; 
-  Samples.push_back(sfeats(s_t1t, "N_{true leptons}", sigcolor, 1, "1","ntruels+ntrumus"));
-  Samples.push_back(sfeats(s_t1t, "N_{reco. leptons}", 31, 2));
+  Samples.push_back(sfeats(s_t1t, "N_{true leptons}", sigcolor, 1, "pass","ntruels+ntrumus"));
+  Samples.push_back(sfeats(s_t1t, "N_{reco. leptons}", 31, 2, "pass"));
 
   vector<int> ra4_t1t;
   ra4_t1t.push_back(0);
@@ -313,7 +313,7 @@ void doSyst(){
   s_slep.push_back(folder1l+"*root"); // With "__Single" you exclude the extra 48 ipb
 
   vector<sfeats> Sam_dilep;
-  Sam_dilep.push_back(sfeats(s_slep, "Data 2l, N_{jets} #geq 5", kBlack,1,"(trig[4]||trig[8])&&pass&&njets>=5&&nleps==2&&nbm<=2"));
+  Sam_dilep.push_back(sfeats(s_slep, "Data 2l, N_{jets} #geq 5, N_{b} #leq 2", kBlack,1,"(trig[4]||trig[8])&&pass&&njets>=5&&nleps==2&&nbm<=2"));
   Sam_dilep.back().isData=true;
   Sam_dilep.push_back(sfeats(s_slep, "Data 1l, N_{jets} #geq 6, m_{T} #leq 140, N_{b} #geq 1", kBlue+2,1,
 			     "(trig[4]||trig[8])&&pass&&mt<=140&&njets>=6&&nleps==1&&nbm>=1")); Sam_dilep.back().doBand= true;
@@ -351,7 +351,6 @@ void doSyst(){
   vector<TString> s_other;
   s_other.push_back(foldermc+"*_ZJet*");
   s_other.push_back(foldermc+"*_WJetsToLNu*");
-  //  s_other.push_back(foldermc+"*_ST_*");
   s_other.push_back(foldermc+"*ggZH_HToBB*");
   s_other.push_back(foldermc+"*ttHJetTobb*");
   s_other.push_back(foldermc+"*QCD*");
@@ -380,7 +379,7 @@ void doSyst(){
   int nbins = sizeof(ibinning)/sizeof(float)-1;
 
   //---------- TTBAR ISR --------------------
-  vars_isr.push_back(hfeats("jetsys_nob_pt",nbins,ibinning, ra4_sam, "p_{T}(ISR jets) [GeV]","nleps==2&&Max$(leps_pt)>30&&njets>2&&nbm==2",-1,"syst"));
+  vars_isr.push_back(hfeats("jetsys_nob_pt",nbins,ibinning, ra4_sam, "p_{T}(ISR jets) [GeV]","nleps==2&&Max$(leps_pt)>30&&njets>2&&nbm==2&&pass",-1,"syst"));
   vars_isr.back().whichPlots = "12"; vars_isr.back().normalize = true;
 
   plot_distributions(Sam_isr, vars_isr, luminosity, plot_type, plot_style, "aux",true);
