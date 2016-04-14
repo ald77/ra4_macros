@@ -16,7 +16,7 @@
 #include "utilities_macros.hpp"
 
 namespace {
-  TString plotSet = "Syst";
+  TString plotSet = "Signal,Syst";
 
   int sigcolor(kRed);
   int stcolor(kMagenta-2);
@@ -322,7 +322,7 @@ void doSyst(){
   dilep_sam.push_back(1);
 
   vector<hfeats> vars_dilep;
-  vars_dilep.push_back(hfeats("mj",6,250,700, dilep_sam, "M_{J} [GeV]","ht>500&&met>200&&pass&&met<=400",-1,"aux"));
+  vars_dilep.push_back(hfeats("mj",6,250,700, dilep_sam, "M_{J} [GeV]","ht>500&&met>200&&pass&&met<=400",-1,"syst"));
   vars_dilep.back().whichPlots = "12"; vars_dilep.back().normalize = true;
 
   plot_distributions(Sam_dilep, vars_dilep, luminosity, plot_type, plot_style, "aux",true);
@@ -380,7 +380,7 @@ void doSyst(){
   int nbins = sizeof(ibinning)/sizeof(float)-1;
 
   //---------- TTBAR ISR --------------------
-  vars_isr.push_back(hfeats("jetsys_nob_pt",nbins,ibinning, ra4_sam, "p_{T}(ISR jets) [GeV]","nleps==2&&Max$(leps_pt)>30&&njets>2&&nbm==2"));
+  vars_isr.push_back(hfeats("jetsys_nob_pt",nbins,ibinning, ra4_sam, "p_{T}(ISR jets) [GeV]","nleps==2&&Max$(leps_pt)>30&&njets>2&&nbm==2",-1,"syst"));
   vars_isr.back().whichPlots = "12"; vars_isr.back().normalize = true;
 
   plot_distributions(Sam_isr, vars_isr, luminosity, plot_type, plot_style, "aux",true);

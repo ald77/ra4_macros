@@ -46,7 +46,7 @@ int main(){
   vars_paper.back().whichPlots = "14"; vars_paper.back().maxRatio = 0.29;
   // vars_paper.push_back(hfeats("mj",30,0,1500, mt140_2l, "M_{J} [GeV]",baseline,400,"dilep")); 
   //vars_paper.back().maxRatio = 0.99;
-  vars_aux.push_back(hfeats("mj",30,0,1500, mt140_1l, "M_{J} [GeV]",baseline,400,"aux")); 
+  vars_aux.push_back(hfeats("mj",30,0,1500, mt140_1l, "M_{J} [GeV]",baseline,400,"syst")); 
   vars_aux.back().whichPlots = "14"; vars_aux.back().maxRatio = 0.29;
 
   baseline = "mj>250&&ht>500&&met>200&&nbm>=1&&nleps==1&&stitch&&pass";
