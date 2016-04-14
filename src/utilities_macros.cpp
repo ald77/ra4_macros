@@ -407,8 +407,6 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
 	if(vars[var].cuts.Contains("nbm>=2")) tla.DrawLatexNDC(0.73,0.64,"#font[62]{N_{b} #geq 2}");
       }
 
-
-
       //save canvas
       pad->SetLogy(1);
       pname = outfolder+"/log_lumi_"+vars[var].tag+plot_tag;
@@ -492,6 +490,15 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
       tla.SetTextFont(42);
       if(vars[var].cuts.Contains("abs(isr_tru_pt)<10")) tla.DrawLatexNDC(0.63,0.79,"#font[62]{ISR p_{T} < 10 GeV}");
       if(vars[var].cuts.Contains("abs(isr_tru_pt)>100")) tla.DrawLatexNDC(0.63,0.79,"#font[62]{ISR p_{T} > 100 GeV}");
+    }
+    else if(vars[var].cuts.Contains("nleps<1234")){
+      TString lsp = "{#lower[-0.1]{#tilde{#chi}}#lower[0.2]{#scale[0.85]{^{0}}}#kern[-1.3]{#scale[0.85]{_{1}}}}";
+      TString t1t_label = "#scale[0.95]{#tilde{g}#kern[0.2]{#tilde{g}}, #tilde{g}#rightarrowt#kern[0.18]{#bar{t}}#kern[0.18]"+lsp;
+      TLatex tla;
+      tla.SetTextSize(0.045);
+      tla.SetTextFont(42);
+      tla.DrawLatexNDC(0.52,0.73,"#font[62]{"+t1t_label+" (1500,100)}}");
+      histo[1][var][0]->SetMaximum(60);
     }
 
     pname = outfolder+"/shapes_"+vars[var].tag+plot_tag;

@@ -16,7 +16,7 @@
 #include "utilities_macros.hpp"
 
 namespace {
-  TString plotSet = "N1_R4";
+  TString plotSet = "Signal";
 
   int sigcolor(kMagenta-2);
   TString luminosity="2.3";
@@ -29,11 +29,13 @@ using std::cout;
 using std::endl;
 
 void doN1_R4(); // N-1 and R4 plots
+void doSignal(); // Signal plots
 
 
 int main(){ 
 
-  if(plotSet=="N1_R4") doN1_R4();
+  if(plotSet.Contains("N1_R4")) doN1_R4();
+  if(plotSet.Contains("Signal")) doSignal();
 
 }
 
@@ -175,4 +177,43 @@ void doN1_R4(){
   vars.back().whichPlots = "12"; vars.back().normalize = true;
 
   plot_distributions(Samples, vars, luminosity, plot_type, plot_style, "aux",true);
+}
+
+// Signal
+void doSignal(){
+
+  TString bfolder("");
+  string hostname = execute("echo $HOSTNAME");
+  if(Contains(hostname, "cms") || Contains(hostname, "compute-"))  
+    bfolder = "/net/cms2"; // In laptops, you can't create a /net folder
+  
+  TString foldermc(bfolder+"/cms2r0/babymaker/babies/2015_11_28/mc/");
+
+  vector<TString> s_t1t;
+  s_t1t.push_back(foldermc+"*T1tttt*1500_*");
+  vector<TString> s_t1tc;
+  s_t1tc.push_back(foldermc+"*T1tttt*1200_*");
+
+  // Reading ntuples
+  TString lsp = "{#lower[-0.1]{#tilde{#chi}}#lower[0.2]{#scale[0.85]{^{0}}}#kern[-1.3]{#scale[0.85]{_{1}}}}";
+  TString t1t_label = "#scale[0.95]{#tilde{g}#kern[0.2]{#tilde{g}}, #tilde{g}#rightarrowt#kern[0.18]{#bar{t}}#kern[0.18]"+lsp;
+
+  vector<sfeats> Samples; 
+  Samples.push_back(sfeats(s_t1t, "N_{true leptons}", sigcolor, 1, "1","ntruels+ntrumus"));
+  Samples.push_back(sfeats(s_t1t, "N_{reco. leptons}", 31, 2));
+  Samples.push_back(sfeats(s_t1tc, "N_{true. leptons}", sigcolor, 1, "1","ntruels+ntrumus"));
+  Samples.push_back(sfeats(s_t1tc, "N_{reco. leptons}", 31, 2));
+
+
+  vector<int> ra4_t1t;
+  ra4_t1t.push_back(0);
+  ra4_t1t.push_back(1);
+
+  vector<hfeats> vars;
+
+  // nleps<1234 used as a hack to get signal point printed on canvas
+  vars.push_back(hfeats("nleps",5,-0.5,4.5, ra4_t1t, "N_{e+#mu}","nleps<1234",-1,"signal"));
+  vars.back().whichPlots = "3";
+ 
+  plot_distributions(Samples, vars, luminosity, plot_type, plot_style, "aux", false);
 }
