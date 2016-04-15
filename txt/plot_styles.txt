@@ -10,10 +10,10 @@
     LabelSize	    = 0.06     
     PadRightMargin  = 0.047
     PadTopMargin    = 0.075
-    PadBottomMargin = 0.14
-    xTitleOffset    = 1.05     
+    PadBottomMargin = 0.145
+    xTitleOffset    = 1.08     
     PadLeftMargin   = 0.175
-    yTitleOffset    = 1.5
+    yTitleOffset    = 1.22
 
 [RA4_Log]
     yTitleOffset    = 1.2
