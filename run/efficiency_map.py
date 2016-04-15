@@ -132,8 +132,10 @@ if not skipcalc: # if not supplying root file
        ## if sofar>10: continue
         print "m is " +m
         ch = ROOT.TChain("tree")
-        print "looking for file "+outdir+"/baby_SMS-"+topo+"_"+m+"_TuneCUETP8M1_13TeV-madgraphMLM-pythia8_RunIISpring15FSPremix-MCRUN2_74_V9*.root"
-        ch.Add(outdir+"/baby_SMS-"+topo+"_"+m+"_TuneCUETP8M1_13TeV-madgraphMLM-pythia8_RunIISpring15FSPremix-MCRUN2_74_V9*.root")
+        #print "looking for file "+outdir+"/baby_SMS-"+topo+"_"+m+"_TuneCUETP8M1_13TeV-madgraphMLM-pythia8_RunIISpring15FSPremix-MCRUN2_74_V9*.root"
+        #ch.Add(outdir+"/baby_SMS-"+topo+"_"+m+"_TuneCUETP8M1_13TeV-madgraphMLM-pythia8_RunIISpring15FSPremix-MCRUN2_74_V9*.root")
+        print "looking for file "+outdir+"/baby_SMS-"+topo+"_"+m+"_TuneCUETP8M1*.root"
+        ch.Add(outdir+"/baby_SMS-"+topo+"_"+m+"_TuneCUETP8M1*.root")
         print "nentries is " + str(ch.GetEntries())
         glu = float(m.split("mGluino-").pop().split("_")[0])
         lsp = float(m.split("mLSP-").pop().split("_")[0])
@@ -169,7 +171,10 @@ if not skipcalc: # if not supplying root file
             num = float(get_weighted_entries(ch,"mj>400&&mt>140&&"+cut)) # ASSUMES ABCD SKIM!
             #print "num is " + str(num)
             #print "frac is " +str(num/reg4)
-            effs[i+1].append(num/reg4)
+            if reg4 > 0:
+                effs[i+1].append(num/reg4)
+            else:
+                effs[i+1].append(0)    
             yields[i+1].append(lumi*num)
             #num = num*2.1
            # print "Bin: "+cut+", S: "+str(num)+", B: " + str(bg[i])+", S/rt(B): "+ str(num/math.sqrt(bg[i]))+", Q: " + str(2*(math.sqrt(num+bg[i])-math.sqrt(bg[i])))  
@@ -258,9 +263,12 @@ for name,title in graphTitles:
 set_palette()
 if "T1" in topo or "T5" in topo:
      frame = ROOT.TH2F("frame","",100,700,1950,152,0,1900)
+if "T5tttt" in topo:
+     frame = ROOT.TH2F("frame","",100,700,1700,152,0,1700)     
 elif "T2" in topo or "T6" in topo:
      frame = ROOT.TH2F("frame","",100,200,1000,152,0,500)
 frame.SetStats(0)
+frame.GetXaxis().SetNdivisions(506)
 #ROOT.gStyle.SetPalette(56)
 #frame = ROOT.TFrame(700,1950,0,1900)
 #npx = int((max(glumass) - min(glumass))/5)
@@ -293,18 +301,26 @@ for name,title in graphTitles:
     if("T1" in topo):
          graph.GetHistogram().SetAxisRange(700,1950,"X")
          graph.GetHistogram().SetAxisRange(0,1900,"Y")
+
+    if("T5tttt" in topo):
+        graph.GetHistogram().SetAxisRange(700,1700,"X")
+        graph.GetHistogram().GetXaxis().SetNdivisions(506)
+
+        
     graph.GetHistogram().Draw("colz same")
     #graph.Draw("colz same")
     frame.Draw("X axis same")
+    
     tla = ROOT.TLatex()
     tla.SetTextSize(0.038)
     #if "yield" in name:
-    tla.DrawLatexNDC(0.14,0.93,"#font[62]{CMS} #scale[0.8]{#font[52]{Simulation}}")
+    tla.DrawLatexNDC(0.14,0.93,"#font[62]{CMS} #scale[0.8]{#font[52]{Supplementary (Simulation)}}")
     if "T1tttt" in topo: tla.DrawLatexNDC(0.17,0.87,"pp #rightarrow #tilde{g}#tilde{g},  #tilde{g} #rightarrow t#bar{t} #tilde{#chi}_{1}^{0}")
+    elif "T5tttt" in topo:  tla.DrawLatexNDC(0.17,0.87,"pp #rightarrow #tilde{g}#tilde{g},  #tilde{g} #rightarrow #tilde{t}#bar{t}, #tilde{t} #rightarrow t#tilde{#chi}_{1}^{0}")
     elif "T5ZZ" in topo: tla.DrawLatexNDC(0.17,0.87,"pp #rightarrow #tilde{g}#tilde{g},  #tilde{g} #rightarrow q#bar{q} #tilde{#chi}_{1}^{0},  #tilde{#chi}_{1}^{0} #rightarrow Z^{0} #tilde{G}")
     tla.SetTextFont(42)
-    if "yield" in name: tla.DrawLatexNDC(0.56,0.93,"L = 2.2 fb^{-1} (13 TeV)")
-    else: tla.DrawLatexNDC(0.66,0.93,"#sqrt{s} = 13 TeV")
+    if "yield" in name: tla.DrawLatexNDC(0.62,0.93,"2.2 fb^{-1} (13 TeV)")
+    else: tla.DrawLatexNDC(0.75,0.93,"13 TeV")
     
    
     if "yield" not in name:

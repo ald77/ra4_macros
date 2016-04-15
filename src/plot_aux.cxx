@@ -16,7 +16,7 @@
 #include "utilities_macros.hpp"
 
 namespace {
-  TString plotSet = "Signal,Syst";
+  TString plotSet = "MC1D";
 
   int sigcolor(kRed);
   int stcolor(kMagenta-2);
@@ -33,6 +33,7 @@ void doN1_R4(); // N-1 and R4 plots
 void doSignal(); // Signal plots
 void do_MJ_validation();
 void doSyst(); // Syst plots (rohanplot is made in plot_rohanplots.cxx)
+void doMC1D();
 
 int main(){ 
 
@@ -40,7 +41,7 @@ int main(){
   if(plotSet.Contains("Signal")) doSignal();
   if(plotSet.Contains("MJ_validation")) do_MJ_validation();
   if(plotSet.Contains("Syst")) doSyst();
-
+  if(plotSet.Contains("MC1D")) doMC1D();
 }
 
 // N-1 and R4 plots
@@ -149,18 +150,18 @@ void doN1_R4(){
   vector<hfeats> vars;
 
   // // N-1 plots
-  vars.push_back(hfeats("ht",39,0,1950, met_sam, "H_{T} [GeV]","nleps==1&&met>200&&njets>=6&&nbm>=1",500,"N1"));
+  vars.push_back(hfeats("ht",39,0,1950, met_sam, "H_{T} [GeV]","nleps==1&&met>200&&njets>=6&&nbm>=1&&pass",500,"N1"));
   vars.back().whichPlots = "12"; vars.back().normalize = true;
-  vars.push_back(hfeats("met",32,0,800, met_sam, "E_{T}^{miss} [GeV]","nleps==1&&ht>500&&njets>=6&&nbm>=1",200,"N1"));
+  vars.push_back(hfeats("met",32,0,800, met_sam, "E_{T}^{miss} [GeV]","nleps==1&&ht>500&&njets>=6&&nbm>=1&&pass",200,"N1"));
   vars.back().whichPlots = "12"; vars.back().normalize = true;
 
-  vars.push_back(hfeats("njets",12, 0.5,12.5, ra4_sam, "N_{jets}","nleps==1&&ht>500&&met>200&&nbm>=1",5.5,"N1"));
+  vars.push_back(hfeats("njets",12, 0.5,12.5, ra4_sam, "N_{jets}","nleps==1&&ht>500&&met>200&&nbm>=1&&pass",5.5,"N1"));
   vars.back().whichPlots = "12"; vars.back().normalize = true;
-  vars.push_back(hfeats("nbm",5, -0.5,4.5, ra4_sam, "N_{b}","nleps==1&&ht>500&&met>200&&njets>=6",0.5,"N1"));
+  vars.push_back(hfeats("nbm",5, -0.5,4.5, ra4_sam, "N_{b}","nleps==1&&ht>500&&met>200&&njets>=6&&pass",0.5,"N1"));
   vars.back().whichPlots = "12"; vars.back().normalize = true;
 
   // Distributions in R4
-  TString skimCuts("nleps==1&&ht>500&&met>200");
+  TString skimCuts("nleps==1&&ht>500&&met>200&&pass");
   vars.push_back(hfeats("met",10,200,700, ra4_sam, "E_{T}^{miss} [GeV]",
   			skimCuts+"&&mt>140&&mj>400&&nbm>=1&&njets>=6",400,"R4"));
   vars.back().whichPlots = "12"; vars.back().normalize = true;
@@ -177,7 +178,7 @@ void doN1_R4(){
   			skimCuts+"&&mt>140&&mj>400&&nbm>=1",8.5,"R4"));
   vars.back().whichPlots = "12"; vars.back().normalize = true;
   vars.push_back(hfeats("nbm",5, -0.5,4.5, ra4_sam, "N_{b}",
-  			skimCuts+"&&mt>140&&mj>400&&njets>=6",1.5,"R4"));
+  			skimCuts+"&&mt>140&&mj>400&&njets>=6",2.5,"R4"));
   vars.back().whichPlots = "12"; vars.back().normalize = true;
 
   plot_distributions(Samples, vars, luminosity, plot_type, plot_style, "aux",true);
@@ -220,7 +221,6 @@ void doSignal(){
 }
 
 void do_MJ_validation(){
-
   TString bfolder("");
   string hostname = execute("echo $HOSTNAME");
   if(Contains(hostname, "cms") || Contains(hostname, "compute-"))  
@@ -228,6 +228,9 @@ void do_MJ_validation(){
   
   TString folder1l(bfolder+"/cms2r0/babymaker/babies/2016_02_04/data/singlelep/combined/skim_1lht500met200/");
   TString foldermc(bfolder+"/cms2r0/babymaker/babies/2015_11_28/mc/skim_1lht500met200/");
+
+  TString folder1l_zisr(bfolder+"/cms2r0/babymaker/babies/2015_11_20/data/singlelep/combined/skim_dy_ht300/"); //skim doesn't exist
+  TString foldermc_zisr(bfolder+"/cms2r0/babymaker/babies/2015_11_28/mc/skim_dy_ht300/");
 
   vector<TString> s_slep;
   s_slep.push_back(folder1l+"*root"); 
@@ -251,7 +254,32 @@ void do_MJ_validation(){
   s_other.push_back(foldermc+"*ttHJetTobb*");
 
 
-  // Reading ntuples
+
+  vector<TString> s_slep_dy;
+  s_slep_dy.push_back(folder1l_zisr+"*root"); 
+
+  vector<TString> s_tt_dy;
+  s_tt_dy.push_back(foldermc_zisr+"*_TTJets*Lept*");
+  s_tt_dy.push_back(foldermc_zisr+"*_TTJets_HT*");
+
+  vector<TString> s_ttv_dy;
+  s_ttv_dy.push_back(foldermc_zisr+"*_TTWJets*");
+  s_ttv_dy.push_back(foldermc_zisr+"*_TTZTo*");
+  
+  vector<TString> s_dyjets;
+  s_dyjets.push_back(foldermc_zisr+"*_DYJetsToLL*");
+
+  vector<TString> s_other_dy;
+  s_other_dy.push_back(foldermc_zisr+"*_WJetsToLNu*");
+  s_other_dy.push_back(foldermc_zisr+"*_QCD_HT*");
+  s_other_dy.push_back(foldermc_zisr+"*_ZJet*");
+  s_other_dy.push_back(foldermc_zisr+"*_WWTo*");
+  s_other_dy.push_back(foldermc_zisr+"*ggZH_HToBB*");
+  s_other_dy.push_back(foldermc_zisr+"*ttHJetTobb*");
+  s_other_dy.push_back(foldermc_zisr+"*_ST_*");
+
+
+  // ttbar selection
   vector<sfeats> Samples; 
   Samples.push_back(sfeats(s_slep, "Data", kBlack,1,"(trig[4]||trig[8])&&pass")); Samples.back().isData = true;
   Samples.push_back(sfeats(s_tt, "t#bar{t}, 1 true lepton", dps::c_tt_1l, 1,"ntruleps<=1&&stitch"));
@@ -267,11 +295,28 @@ void do_MJ_validation(){
     ra4_sam.push_back(sam);
   } // Loop over samples
 
+  //Z+jets selection
+  int idy(Samples.size());
+  Samples.push_back(sfeats(s_slep_dy, "Data", kBlack,1,"(trig[4]||trig[8])&&pass")); Samples.back().isData = true;
+  Samples.push_back(sfeats(s_dyjets, "Z+jets", dps::c_wjets,1,"stitch"));
+  Samples.push_back(sfeats(s_tt_dy, "t#bar{t}, 2 true leptons", dps::c_tt_2l,1,"ntruleps>=2&&stitch"));
+  Samples.push_back(sfeats(s_tt_dy, "t#bar{t}, 1 true lepton", dps::c_tt_1l,1,"ntruleps<=1&&stitch"));
+  Samples.push_back(sfeats(s_ttv_dy, "ttV", ra4::c_ttv));
+  Samples.push_back(sfeats(s_other_dy, "Other", 2001, 1));
+  
+  vector<int> dy_sam;
+  for(unsigned sam(idy); sam < Samples.size(); sam++){
+    dy_sam.push_back(sam);
+  } // Loop over samples
 
   vector<hfeats> vars;
-  TString baseline = "nleps==1&&njets>=6&&nbm>=1&&met>200&&ht>500";
-
-  /* vars.push_back(hfeats("fjets_m[0]",16,0,480, ra4_sam, "m(J_{1}) [GeV]",
+  TString baseline = "nleps==1&&njets>=6&&nbm>=1&&met>200&&ht>500&&pass";
+  
+  vars.push_back(hfeats("mj",30,0,900, ra4_sam, "M_{J} [GeV]",
+			baseline,-10,"MJ_validation"));
+  vars.back().whichPlots = "12"; vars.back().normalize = true;
+  
+  vars.push_back(hfeats("fjets_m[0]",16,0,480, ra4_sam, "m(J_{1}) [GeV]",
 			baseline,-10,"MJ_validation"));
   vars.back().whichPlots = "12"; vars.back().normalize = true;
 
@@ -282,8 +327,8 @@ void do_MJ_validation(){
   vars.push_back(hfeats("fjets_m[2]",16,0,480, ra4_sam, "m(J_{3}) [GeV]",
 			baseline,-10,"MJ_validation"));
   vars.back().whichPlots = "12"; vars.back().normalize = true;
-  */
-   vars.push_back(hfeats("fjets08_m[0]",16,0,480, ra4_sam, "m(J_{1}) [GeV], R = 0.8",
+  
+  vars.push_back(hfeats("fjets08_m[0]",16,0,480, ra4_sam, "m(J_{1}) [GeV], R = 0.8",
 			baseline,-10,"MJ_validation"));
   vars.back().whichPlots = "12"; vars.back().normalize = true;
 
@@ -294,9 +339,44 @@ void do_MJ_validation(){
   vars.push_back(hfeats("fjets08_m[2]",16,0,480, ra4_sam, "m(J_{3}) [GeV], R = 0.8",
 			baseline,-10,"MJ_validation"));
   vars.back().whichPlots = "12"; vars.back().normalize = true;
+  
+
+  //TString mll("(mumuv_m*(mumuv_m>0&&mumu_pt1>25)+elelv_m*(elelv_m>0&&elel_pt1>30))>80&&(mumuv_m*(mumuv_m>0&&mumu_pt1>25)+elelv_m*(elelv_m>0&&elel_pt1>30))<100");
+  TString mll("(mumu_m*(mumu_m>0&&mumu_pt1>30)+elel_m*(elel_m>0&&elel_pt1>30))>80&&(mumu_m*(mumu_m>0&&mumu_pt1>30)+elel_m*(elel_m>0&&elel_pt1>30))<100");
+  vars.push_back(hfeats("fjets_m[0]",20,0,500, dy_sam, "m(J_{1}) [GeV]",
+			"pass&&ht>500&&(nmus>=2||nels>=2)&&njets>=4&&"+mll));
+  vars.back().whichPlots = "12"; vars.back().normalize = true;
+
+  vars.push_back(hfeats("mj",24,0,600, dy_sam, "M_{J} [GeV]",
+   			"pass&&ht>500&&(nmus>=2||nels>=2)&&njets>=4&&"+mll));
+  vars.back().whichPlots = "12"; vars.back().normalize = true;
  
- 
- plot_distributions(Samples, vars, luminosity, plot_type, plot_style, "aux",true);
+ //For investigating Z+ jets normalization
+  /* vars.push_back(hfeats("njets",10,0,10, dy_sam, "N_{jets}",
+   			"pass&&ht>500&&(nmus>=2||nels>=2)&&"+mll));
+  vars.back().whichPlots = "12"; 
+
+  vars.push_back(hfeats("ht",30,0,1500, dy_sam, "H_{T}",
+   			"pass&&(nmus>=2||nels>=2)&&njets>=4&&"+mll));
+  vars.back().whichPlots = "12"; 
+
+  vars.push_back(hfeats("nels",4,0,4, dy_sam, "nels",
+   			"pass&&ht>500&&(nmus>=2||nels>=2)&&njets>=4&&"+mll));
+  vars.back().whichPlots = "12"; 
+
+  vars.push_back(hfeats("nmus",4,0,4, dy_sam, "nmus",
+   			"pass&&ht>500&&(nmus>=2||nels>=2)&&njets>=4&&"+mll));
+  vars.back().whichPlots = "12"; 
+
+  vars.push_back(hfeats("mumu_m",30,0,300, dy_sam, "m_{mumu}",
+   			"pass&&(nmus>=2||nels>=2)&&njets>=4&&ht>500"));
+  vars.back().whichPlots = "12";
+
+  vars.push_back(hfeats("elel_m",30,0,300, dy_sam, "m_{elel}",
+   			"pass&&(nmus>=2||nels>=2)&&njets>=4&&ht>500"));
+			vars.back().whichPlots = "12";*/
+
+  plot_distributions(Samples, vars, luminosity, plot_type, plot_style, "aux",true);
 }
 
 // Systematic plots
@@ -383,5 +463,57 @@ void doSyst(){
   vars_isr.back().whichPlots = "12"; vars_isr.back().normalize = true;
 
   plot_distributions(Sam_isr, vars_isr, luminosity, plot_type, plot_style, "aux",true);
+
+}
+
+void doMC1D(){
+  TString folder="/cms2r0/babymaker/babies/2015_11_28/mc/skim_1lht500met200/";
+  string hostname = execute("echo $HOSTNAME");
+  if(Contains(hostname, "cms") || Contains(hostname, "compute-"))  folder = "/net/cms2"+folder;
+  if(Contains(hostname, "lxplus"))     
+    folder="/afs/cern.ch/user/m/manuelf/work/babies/2015_11_28/mc/skim_1lht500met200/";
+
+  vector<TString> s_tt, s_t4t_nc,s_t4t_c; 
+  s_tt.push_back(folder+"*TTJets*Lept*");
+  s_tt.push_back(folder+"*TTJets*HT*");
+  s_t4t_nc.push_back(folder+"*T1tttt*1500*100*.root");
+  s_t4t_c.push_back(folder+"*T1tttt*1200*800*.root");
+
+  // Reading ntuples
+  vector<sfeats> Samples;
+  Samples.push_back(sfeats(s_t4t_nc, "#scale[0.92]{#tilde{g}#kern[0.2]{#tilde{g}}, #tilde{g}#rightarrowt#bar{t}#tilde{#chi}#lower[0.2]{#scale[0.85]{^{0}}}#kern[-1.3]{#scale[0.85]{_{1}}} (1500,100)}",ra4::c_t1tttt,1, "stitch")); 
+  Samples.push_back(sfeats(s_t4t_c, "#scale[0.92]{#tilde{g}#kern[0.2]{#tilde{g}}, #tilde{g}#rightarrowt#bar{t}#tilde{#chi}#lower[0.2]{#scale[0.85]{^{0}}}#kern[-1.3]{#scale[0.85]{_{1}}} (1200,800)}",ra4::c_t1tttt,2, "stitch")); 
+  Samples.push_back(sfeats(s_tt, "t#bar{t}, 1 true lepton",dps::c_tt_1l,1,"ntruleps==1&&stitch"));
+  Samples.push_back(sfeats(s_tt, "t#bar{t}, 2 true leptons", dps::c_tt_2l,1,"ntruleps==2&&stitch"));
+  
+ 
+  vector<int> clean;
+  clean.push_back(2);
+  clean.push_back(3);
+  clean.push_back(0);
+  clean.push_back(1);
+
+  vector<hfeats> vars;
+
+  
+  vars.push_back(hfeats("mj",35,0,1400, clean,"M_{J} [GeV]","ht>500&&met>200&&njets>=6&&nbm>=1&&nleps>=1&&pass"));
+  vars.back().whichPlots = "34";
+
+  vars.push_back(hfeats("mt",12,0,420, clean,"m_{T} [GeV]","ht>500&&met>200&&njets>=6&&nbm>=1&&nleps>=1&&pass"));
+  vars.back().whichPlots = "34";
+
+  vars.push_back(hfeats("njets",12,0.5,12.5, clean,"N_{jets}","ht>500&&met>200&&nbm>=1&&nleps>=1&&pass"));
+  vars.back().whichPlots = "4";
+
+  vars.push_back(hfeats("nbm",5,-0.5,4.5, clean,"N_{b}","ht>500&&met>200&&njets>=6&&nleps>=1&&pass"));
+  vars.back().whichPlots = "4";
+
+  vars.push_back(hfeats("met",12,200,800, clean,"MET [GeV]","ht>500&&met>200&&njets>=6&&nbm>=1&&nleps>=1&&pass"));
+  vars.back().whichPlots = "4";
+  
+
+  //NOTE: Make sure RohanHack is turned off
+  plot_distributions(Samples, vars, luminosity, plot_type, "CMSPaperNoRatio_Supplementary", "aux",false);
+
 
 }
