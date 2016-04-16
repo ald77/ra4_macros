@@ -16,7 +16,7 @@
 #include "utilities_macros.hpp"
 
 namespace {
-  TString plotSet = "MC1D";
+  TString plotSet = "MJ_validation";
 
   int sigcolor(kRed);
   int stcolor(kMagenta-2);
@@ -132,7 +132,7 @@ void doN1_R4(){
 
   //// Samples for the HT and MET N-1 plots
   int imet(Samples.size());
-  Samples.push_back(sfeats(s_slep_met, "Data", kBlack,1,"(trig[4]||trig[8])&&pass")); Samples.back().isData = true;
+  Samples.push_back(sfeats(s_slep_met, "Data", kBlack,1,"(trig[4]||trig[8])")); Samples.back().isData = true;
   Samples.push_back(sfeats(s_t1t_met, t1t_label+" (1500,100)}", sigcolor, 1));
   Samples.push_back(sfeats(s_t1tc_met, t1t_label+" (1200,800)}", sigcolor, 2));
   Samples.push_back(sfeats(s_tt_met, "t#bar{t}, 1 true lepton", dps::c_tt_1l, 1,"ntruleps<=1&&stitch"));
@@ -150,18 +150,18 @@ void doN1_R4(){
   vector<hfeats> vars;
 
   // // N-1 plots
-  vars.push_back(hfeats("ht",39,0,1950, met_sam, "H_{T} [GeV]","nleps==1&&met>200&&njets>=6&&nbm>=1&&pass",500,"N1"));
+  vars.push_back(hfeats("ht",39,0,1950, met_sam, "H_{T} [GeV]","nleps==1&&pass&&met>200&&njets>=6&&nbm>=1",500,"N1"));
   vars.back().whichPlots = "12"; vars.back().normalize = true;
-  vars.push_back(hfeats("met",32,0,800, met_sam, "E_{T}^{miss} [GeV]","nleps==1&&ht>500&&njets>=6&&nbm>=1&&pass",200,"N1"));
+  vars.push_back(hfeats("met",32,0,800, met_sam, "E_{T}^{miss} [GeV]","nleps==1&&pass&&ht>500&&njets>=6&&nbm>=1",200,"N1"));
   vars.back().whichPlots = "12"; vars.back().normalize = true;
 
-  vars.push_back(hfeats("njets",12, 0.5,12.5, ra4_sam, "N_{jets}","nleps==1&&ht>500&&met>200&&nbm>=1&&pass",5.5,"N1"));
+  vars.push_back(hfeats("njets",12, 0.5,12.5, ra4_sam, "N_{jets}","nleps==1&&pass&&ht>500&&met>200&&nbm>=1",5.5,"N1"));
   vars.back().whichPlots = "12"; vars.back().normalize = true;
-  vars.push_back(hfeats("nbm",5, -0.5,4.5, ra4_sam, "N_{b}","nleps==1&&ht>500&&met>200&&njets>=6&&pass",0.5,"N1"));
+  vars.push_back(hfeats("nbm",5, -0.5,4.5, ra4_sam, "N_{b}","nleps==1&&pass&&ht>500&&met>200&&njets>=6",0.5,"N1"));
   vars.back().whichPlots = "12"; vars.back().normalize = true;
 
   // Distributions in R4
-  TString skimCuts("nleps==1&&ht>500&&met>200&&pass");
+  TString skimCuts("nleps==1&&pass&&ht>500&&met>200");
   vars.push_back(hfeats("met",10,200,700, ra4_sam, "E_{T}^{miss} [GeV]",
   			skimCuts+"&&mt>140&&mj>400&&nbm>=1&&njets>=6",400,"R4"));
   vars.back().whichPlots = "12"; vars.back().normalize = true;
@@ -235,6 +235,10 @@ void do_MJ_validation(){
   vector<TString> s_slep;
   s_slep.push_back(folder1l+"*root"); 
 
+  vector<TString> s_t1t;
+  s_t1t.push_back(foldermc+"*T1tttt*1500_*");
+  vector<TString> s_t1tc;
+  s_t1tc.push_back(foldermc+"*T1tttt*1200_*");
   vector<TString> s_tt;
   s_tt.push_back(foldermc+"*_TTJets*Lept*");
   s_tt.push_back(foldermc+"*_TTJets_HT*");
@@ -280,8 +284,12 @@ void do_MJ_validation(){
 
 
   // ttbar selection
+  TString lsp = "{#lower[-0.1]{#tilde{#chi}}#lower[0.2]{#scale[0.85]{^{0}}}#kern[-1.3]{#scale[0.85]{_{1}}}}";
+  TString t1t_label = "#scale[0.95]{#tilde{g}#kern[0.2]{#tilde{g}}, #tilde{g}#rightarrowt#kern[0.18]{#bar{t}}#kern[0.18]"+lsp;
   vector<sfeats> Samples; 
   Samples.push_back(sfeats(s_slep, "Data", kBlack,1,"(trig[4]||trig[8])&&pass")); Samples.back().isData = true;
+  Samples.push_back(sfeats(s_t1t, t1t_label+" (1500,100)}", sigcolor, 1));
+  Samples.push_back(sfeats(s_t1tc, t1t_label+" (1200,800)}", sigcolor, 2));
   Samples.push_back(sfeats(s_tt, "t#bar{t}, 1 true lepton", dps::c_tt_1l, 1,"ntruleps<=1&&stitch"));
   Samples.push_back(sfeats(s_tt, "t#bar{t}, 2 true leptons", dps::c_tt_2l,1,"ntruleps>=2&&stitch"));
   Samples.push_back(sfeats(s_wjets, "W+jets", dps::c_wjets,1));
@@ -310,33 +318,33 @@ void do_MJ_validation(){
   } // Loop over samples
 
   vector<hfeats> vars;
-  TString baseline = "nleps==1&&njets>=6&&nbm>=1&&met>200&&ht>500&&pass";
+  TString baseline = "nleps==1&&njets>=4&&nbm>=1&&met>200&&ht>500&&pass";
   
-  vars.push_back(hfeats("mj",30,0,900, ra4_sam, "M_{J} [GeV]",
-			baseline,-10,"MJ_validation"));
-  vars.back().whichPlots = "12"; vars.back().normalize = true;
-  
-  vars.push_back(hfeats("fjets_m[0]",16,0,480, ra4_sam, "m(J_{1}) [GeV]",
+  vars.push_back(hfeats("fjets_m[0]",39,0,390, ra4_sam, "m(J_{1}) [GeV]",
 			baseline,-10,"MJ_validation"));
   vars.back().whichPlots = "12"; vars.back().normalize = true;
 
-  vars.push_back(hfeats("fjets_m[1]",16,0,480, ra4_sam, "m(J_{2}) [GeV]",
+  vars.push_back(hfeats("fjets_m[1]",29,0,290, ra4_sam, "m(J_{2}) [GeV]",
 			baseline,-10,"MJ_validation"));
   vars.back().whichPlots = "12"; vars.back().normalize = true;
 
-  vars.push_back(hfeats("fjets_m[2]",16,0,480, ra4_sam, "m(J_{3}) [GeV]",
+  vars.push_back(hfeats("fjets_m[2]",18,0,180, ra4_sam, "m(J_{3}) [GeV]",
 			baseline,-10,"MJ_validation"));
   vars.back().whichPlots = "12"; vars.back().normalize = true;
   
-  vars.push_back(hfeats("fjets08_m[0]",16,0,480, ra4_sam, "m(J_{1}) [GeV], R = 0.8",
+  vars.push_back(hfeats("fjets08_m[0]",39,0,390, ra4_sam, "m(J_{1}) [GeV], R = 0.8",
 			baseline,-10,"MJ_validation"));
   vars.back().whichPlots = "12"; vars.back().normalize = true;
 
-  vars.push_back(hfeats("fjets08_m[1]",16,0,480, ra4_sam, "m(J_{2}) [GeV], R = 0.8",
+  vars.push_back(hfeats("fjets08_m[1]",29,0,290, ra4_sam, "m(J_{2}) [GeV], R = 0.8",
 			baseline,-10,"MJ_validation"));
   vars.back().whichPlots = "12"; vars.back().normalize = true;
 
-  vars.push_back(hfeats("fjets08_m[2]",16,0,480, ra4_sam, "m(J_{3}) [GeV], R = 0.8",
+  vars.push_back(hfeats("fjets08_m[2]",18,0,180, ra4_sam, "m(J_{3}) [GeV], R = 0.8",
+			baseline,-10,"MJ_validation"));
+  vars.back().whichPlots = "12"; vars.back().normalize = true;
+  
+  vars.push_back(hfeats("mj",39,0,780, ra4_sam, "M_{J} [GeV]",
 			baseline,-10,"MJ_validation"));
   vars.back().whichPlots = "12"; vars.back().normalize = true;
   

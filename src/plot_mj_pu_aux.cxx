@@ -58,7 +58,7 @@ int main(){
   TString lsp = "{#lower[-0.1]{#tilde{#chi}}#lower[0.2]{#scale[0.85]{^{0}}}#kern[-1.3]{#scale[0.85]{_{1}}}}";
   TString t1t_label = "#tilde{g}#kern[0.2]{#tilde{g}}, #tilde{g}#rightarrowt#kern[0.18]{#bar{t}}#kern[0.18]"+lsp;
   vector<sfeats> Samples; 
-  Samples.push_back(sfeats(s_t1t, t1t_label+" (1500,100)", kAzure+2));
+  //Samples.push_back(sfeats(s_t1t, t1t_label+" (1500,100)", kAzure+2));
   Samples.push_back(sfeats(s_t1tc, t1t_label+" (1200,800)", kGreen+1));
   Samples.push_back(sfeats(s_tt, "t#bar{t}", kRed+1));
 
@@ -123,7 +123,7 @@ int main(){
     } // Loop over MJ types
     leg.Draw();
     label.DrawLatex(1-style.PadRightMargin-0.03, style.PadBottomMargin+0.05, "Sample: "+Samples[sam].label);  
-
+    Samples[sam].label.ReplaceAll(t1t_label, "T1tttt");
     TString pname = "plots/mj_pu_"+format_tag(Samples[sam].label)+".pdf";
     can.SaveAs(pname);
     leg.Clear();

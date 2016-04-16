@@ -58,8 +58,8 @@
     LabelSize	    = 0.06     
     PadRightMargin  = 0.05
     PadTopMargin    = 0.09
-    PadBottomMargin = 0.14
-    xTitleOffset    = 1.1     
+    PadBottomMargin = 0.16
+    xTitleOffset    = 1.4    
     PadLeftMargin   = 0.19
     yTitleOffset    = 1.5
 
