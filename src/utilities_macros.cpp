@@ -856,7 +856,8 @@ void hfeats::format_tag(){
 
 TString format_tag(TString tag){
 
-  tag.ReplaceAll(".","");
+  tag.ReplaceAll(" ","");
+  tag.ReplaceAll(".","");tag.ReplaceAll(",","");
   tag.ReplaceAll("(",""); tag.ReplaceAll("$","");  tag.ReplaceAll(")","");
   tag.ReplaceAll("[",""); tag.ReplaceAll("]",""); tag.ReplaceAll("||","_");
   tag.ReplaceAll("/","_"); tag.ReplaceAll("*",""); tag.ReplaceAll("&&","_");
