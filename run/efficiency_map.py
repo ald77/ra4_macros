@@ -27,11 +27,23 @@ def get_weighted_entries(chain, cuts):
      temphist.Delete()
      return n
 
+   
+if (args.topology):
+  topo = args.topology
+else: topo="T1tttt"
+
+if topo == "T5tttt":
+    print "Did you mean to use T5ttttDM175 ???"
 
 if (args.babydir):
   outdir = args.babydir
 else:
-  sys.exit("Please provide a baby directory")
+  if topo == "T1tttt":
+    outdir = "/net/cms2/cms2r0/babymaker/babies/2016_01_11/mc/T1tttt/skim_abcd/"
+  elif topo == "T5ttttDM175":
+    outdir = "/net/cms2/cms2r0/babymaker/babies/2016_02_09/mc/T5tttt/skim_abcd/"
+  else:  
+    sys.exit("Please provide a baby directory")
 
 
   
@@ -39,9 +51,6 @@ else:
 #Just combined output rootfiles using hadd and feed back into this script to complete cosmetics
 # Usage example: one job with -l 350 (no need to specify -f) and one job with -f 350 (no need to specify -l) to split roughly in half
 
-if (args.topology):
-  topo = args.topology
-else: topo="T1tttt"
 
 
 if (args.first):
@@ -91,7 +100,7 @@ ROOT.gStyle.SetTitleSize(0.05)
 
 bdir = os.getcwd()
 
-lumi = 2.2
+lumi = 2.3
 #outdir = os.path.join(bdir,'out',timestamp)
 
 print outdir
@@ -103,7 +112,7 @@ if not skipcalc and not os.path.exists("plots/maps"):
 
 
 ###### With the fake dataset names:
-masspoints = set([x.split(topo+"_").pop().split("_Tune")[0] for x in glob.glob(outdir+"/baby_SMS-"+topo+"*_renorm_nleps1__htg500__metg200__njetsge6__nbmge1__mjg250.root")])
+masspoints = set([x.split(topo+"_").pop().split("_Tune")[0] for x in glob.glob(outdir+"/baby_SMS-"+topo+"*.root")])
 # Needs renormalized ABCD skim
 #masspoints = masspoints - set(["mGluino-725_mLSP-425","mGluino-1850_mLSP-850","mGluino-1350_mLSP-750"]) ## remove points with weight NaN
 #masspoints = ["mGluino-1550_mLSP-100","mGluino-1500_mLSP-700"]
@@ -262,9 +271,9 @@ for name,title in graphTitles:
             
 set_palette()
 if "T1" in topo or "T5" in topo:
-     frame = ROOT.TH2F("frame","",100,700,1950,152,0,1900)
+     frame = ROOT.TH2F("frame","",100,700,1950,152,0,1450)
 if "T5tttt" in topo:
-     frame = ROOT.TH2F("frame","",100,700,1700,152,0,1700)     
+     frame = ROOT.TH2F("frame","",100,700,1700,152,0,1300)     
 elif "T2" in topo or "T6" in topo:
      frame = ROOT.TH2F("frame","",100,200,1000,152,0,500)
 frame.SetStats(0)
@@ -273,8 +282,9 @@ frame.GetXaxis().SetNdivisions(506)
 #frame = ROOT.TFrame(700,1950,0,1900)
 #npx = int((max(glumass) - min(glumass))/5)
 #npy = int((max(lspmass) - min(lspmass))/5)
-npx = int((1950-600)/12.5)
-npy = int(1450/12.5)
+npx = int((1950-700)/17.68)
+npy = int(1450/17.68)
+if "T5tttt" in topo: npy = int(1300/17.68)
 #print "max frac is "+str(maxfrac) 
 for name,title in graphTitles:
     graph = outputFile.Get(name)
@@ -300,10 +310,10 @@ for name,title in graphTitles:
     frame.Draw()
     if("T1" in topo):
          graph.GetHistogram().SetAxisRange(700,1950,"X")
-         graph.GetHistogram().SetAxisRange(0,1900,"Y")
+         graph.GetHistogram().SetAxisRange(0,1450,"Y")
 
     if("T5tttt" in topo):
-        graph.GetHistogram().SetAxisRange(700,1700,"X")
+       # graph.GetHistogram().SetAxisRange(700,1600,"X")
         graph.GetHistogram().GetXaxis().SetNdivisions(506)
 
         
@@ -316,10 +326,12 @@ for name,title in graphTitles:
     #if "yield" in name:
     tla.DrawLatexNDC(0.14,0.93,"#font[62]{CMS} #scale[0.8]{#font[52]{Supplementary (Simulation)}}")
     if "T1tttt" in topo: tla.DrawLatexNDC(0.17,0.87,"pp #rightarrow #tilde{g}#tilde{g},  #tilde{g} #rightarrow t#bar{t} #tilde{#chi}_{1}^{0}")
-    elif "T5tttt" in topo:  tla.DrawLatexNDC(0.17,0.87,"pp #rightarrow #tilde{g}#tilde{g},  #tilde{g} #rightarrow #tilde{t}#bar{t}, #tilde{t} #rightarrow t#tilde{#chi}_{1}^{0}")
+    elif "T5tttt" in topo:
+      tla.DrawLatexNDC(0.17,0.87,"pp #rightarrow #tilde{g}#tilde{g},  #tilde{g} #rightarrow #tilde{t}#bar{t}, #tilde{t} #rightarrow t#tilde{#chi}_{1}^{0}")
+      tla.DrawLatexNDC(0.2,0.82,"m_{#tilde{t}} - m_{#tilde{#chi}_{1}^{0}} = 175 GeV")
     elif "T5ZZ" in topo: tla.DrawLatexNDC(0.17,0.87,"pp #rightarrow #tilde{g}#tilde{g},  #tilde{g} #rightarrow q#bar{q} #tilde{#chi}_{1}^{0},  #tilde{#chi}_{1}^{0} #rightarrow Z^{0} #tilde{G}")
     tla.SetTextFont(42)
-    if "yield" in name: tla.DrawLatexNDC(0.62,0.93,"2.2 fb^{-1} (13 TeV)")
+    if "yield" in name: tla.DrawLatexNDC(0.62,0.93, str(lumi)+" fb^{-1} (13 TeV)")
     else: tla.DrawLatexNDC(0.75,0.93,"13 TeV")
     
    

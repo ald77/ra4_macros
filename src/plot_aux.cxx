@@ -16,7 +16,7 @@
 #include "utilities_macros.hpp"
 
 namespace {
-  TString plotSet = "MJ_validation";
+  TString plotSet = "MC1D";
 
   int sigcolor(kRed);
   int stcolor(kMagenta-2);
@@ -504,20 +504,20 @@ void doMC1D(){
   vector<hfeats> vars;
 
   
-  vars.push_back(hfeats("mj",35,0,1400, clean,"M_{J} [GeV]","ht>500&&met>200&&njets>=6&&nbm>=1&&nleps>=1&&pass"));
-  vars.back().whichPlots = "34";
+  vars.push_back(hfeats("mj",35,0,1400, clean,"M_{J} [GeV]","ht>500&&met>200&&njets>=6&&nbm>=1&&nleps==1&&pass"));
+  vars.back().whichPlots = "34"; vars.back().moveRLegend = -0.05;
 
-  vars.push_back(hfeats("mt",12,0,420, clean,"m_{T} [GeV]","ht>500&&met>200&&njets>=6&&nbm>=1&&nleps>=1&&pass"));
-  vars.back().whichPlots = "34";
+  vars.push_back(hfeats("mt",12,0,420, clean,"m_{T} [GeV]","ht>500&&met>200&&njets>=6&&nbm>=1&&nleps==1&&pass"));
+  vars.back().whichPlots = "34"; vars.back().moveRLegend = -0.05;
 
-  vars.push_back(hfeats("njets",12,0.5,12.5, clean,"N_{jets}","ht>500&&met>200&&nbm>=1&&nleps>=1&&pass"));
-  vars.back().whichPlots = "4";
+  vars.push_back(hfeats("njets",12,0.5,12.5, clean,"N_{jets}","ht>500&&met>200&&nbm>=1&&nleps==1&&pass"));
+  vars.back().whichPlots = "34"; vars.back().moveRLegend = -0.05;
 
-  vars.push_back(hfeats("nbm",5,-0.5,4.5, clean,"N_{b}","ht>500&&met>200&&njets>=6&&nleps>=1&&pass"));
-  vars.back().whichPlots = "4";
+  vars.push_back(hfeats("nbm",5,-0.5,4.5, clean,"N_{b}","ht>500&&met>200&&njets>=6&&nleps==1&&pass"));
+  vars.back().whichPlots = "34"; vars.back().moveRLegend = -0.05;
 
-  vars.push_back(hfeats("met",12,200,800, clean,"MET [GeV]","ht>500&&met>200&&njets>=6&&nbm>=1&&nleps>=1&&pass"));
-  vars.back().whichPlots = "4";
+  vars.push_back(hfeats("met",12,200,800, clean,"MET [GeV]","ht>500&&met>200&&njets>=6&&nbm>=1&&nleps==1&&pass"));
+  vars.back().whichPlots = "34"; vars.back().moveRLegend = -0.05;
   
 
   //NOTE: Make sure RohanHack is turned off
