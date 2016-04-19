@@ -121,7 +121,8 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
     if (vars[var].minx == -1) vars[var].minx = vars[var].binning[0];
     const unsigned Nsam(vars[var].samples.size());
     legH = (Nsam<=3?legSingle*Nsam:legSingle*(Nsam+1)/2);
-    fracLeg = legH/(1-style.PadTopMargin-style.PadBottomMargin)*1.15;
+    // Calculating fraction of internal pad taken by the legend, and adding a 3% buffer
+    fracLeg = (legH+1-style.PadTopMargin-legY)/(1-style.PadTopMargin-style.PadBottomMargin) + 0.03;
     for(int ileg(0); ileg<nLegs; ileg++) leg[ileg].SetY1NDC(legY-legH); 
     leg[1].SetX1NDC(legX1[1]+vars[var].moveRLegend); leg[1].SetX2NDC(legX1[1]+legW+vars[var].moveRLegend); 
 
@@ -328,6 +329,8 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
         if(Samples[isam].isData) histo[0][var][sam]->Draw("e0 same");
       }
       for(int ileg(0); ileg<nLegs; ileg++) leg[ileg].Draw(); 
+
+      // Setting Y-axis for log_lumi plot
       if(histo[0][var][firstplotted]->GetMinimum() > minLog) histo[0][var][firstplotted]->SetMinimum(minLog);
       float maxpadLog(maxhisto*exp(fracLeg*log(maxhisto/minLog)/(1-fracLeg)));
       histo[0][var][firstplotted]->SetMinimum(minLog);
@@ -416,9 +419,11 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
       if(!vars[var].skiplog && (vars[var].whichPlots.Contains("0") || vars[var].whichPlots.Contains("1"))) 
         can.SaveAs(pname);
       pad->SetLogy(0);
-      float maxpad(maxhisto + fracLeg*(maxhisto-minLog)/(1-fracLeg));
+ 
+      // Setting Y-axis for lumi plot (non-log)
+      float minhisto(0), maxpad(minhisto + (maxhisto-minhisto)/(1-fracLeg));
       if(vars[var].maxYaxis > 0) maxpad = vars[var].maxYaxis;
-      histo[0][var][firstplotted]->SetMinimum(0);
+      histo[0][var][firstplotted]->SetMinimum(minhisto);
       histo[0][var][firstplotted]->SetMaximum(maxpad);
       // pad = static_cast<TPad *>(can.cd(1));
       if (!doRatio) style.moveYAxisLabel(histo[0][var][firstplotted], maxpad, false);
@@ -480,9 +485,11 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
     } // Loop over samples
     for(int ileg(0); ileg<nLegs; ileg++) leg[ileg].Draw(); 
     if(vars[var].cut>0) line.DrawLine(vars[var].cut, 0, vars[var].cut, maxhisto);
-    float maxpad = maxhisto + fracLeg*maxhisto/(1-fracLeg);
+
+    // Setting Y-axis for shapes plot (non-log)
+    float minhisto(0), maxpad(minhisto + (maxhisto-minhisto)/(1-fracLeg));
+    histo[1][var][0]->SetMinimum(minhisto);
     histo[1][var][0]->SetMaximum(maxpad);
-    histo[1][var][0]->SetMinimum(0);
     histo[1][var][0]->Draw("axis same");
     style.moveYAxisLabel(histo[1][var][0], maxpad, false);
     can.SetLogy(0);
@@ -678,6 +685,7 @@ TString cuts2title(TString title){
   title.ReplaceAll("njets30","n_{jets}^{30}"); 
   title.ReplaceAll("els_pt","p^{e}_{T}"); title.ReplaceAll("mus_pt","p^{#mu}_{T}");
   title.ReplaceAll("fjets_nconst","n_{const}^{fat jet}");
+  title.ReplaceAll("fjets_30_m[0]","m(J_{1})"); title.ReplaceAll("fjets_m[0]","m(J_{1})");
   title.ReplaceAll("(fjets_pt*cosh(fjets_eta))","p_{fatjet}"); title.ReplaceAll("fjets_pt","p^{fatjet}_{T}"); title.ReplaceAll("jets_pt","p^{jet}_{T}");
   title.ReplaceAll("mus_reliso","RelIso"); title.ReplaceAll("els_reliso","RelIso");
   title.ReplaceAll("mus_miniso_tr15","MiniIso"); title.ReplaceAll("els_miniso_tr15","MiniIso");
