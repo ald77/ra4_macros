@@ -101,8 +101,6 @@ int main(){
 	//histo[ind][var]->SetBinErrorOption(TH1::kPoisson);
 	histo[ind][var]->SetLineColor(mj_vars[var].color);
 	histo[ind][var]->SetLineWidth(4);
-	style.setTitles(histo[ind][var], "True n_{PV}", "Average "+mj_s+" [GeV]",
-			"#scale[0.8]{#font[62]{CMS}} #scale[0.6]{#font[52]{Supplementary (Simulation)}}", "#scale[0.8]{13 TeV}");
       }
       for(int bin=1; bin<=nbins[0]; bin++){
 	TString cuts = "weight*(ntrupv>="+RoundNumber(minh[0]+(bin-1)*binw,1)+"&&ntrupv<"+RoundNumber(minh[0]+bin*binw,1)+")";
@@ -114,9 +112,11 @@ int main(){
       histo[0][var]->SetMaximum(histo[0][var]->GetMaximum()*1.6);
       histo[0][var]->Fit(&linFit, "QEMN+");
       TString mean0 = RoundNumber(linFit.GetParameter(0),1), slope = RoundNumber(linFit.GetParameter(1),1);
-      leg.AddEntry(histo[0][var], mj_vars[var].title+" (<"+mj_s+"> = "+mean0+" + "+slope+"n_{PV})");
+      leg.AddEntry(histo[0][var], mj_vars[var].title+" (<"+mj_s+"#kern[0.3]{>} = "+mean0+" + "+slope+"n_{PV})");
       if(var==0){
 	histo[0][var]->Draw("");
+	style.setTitles(histo[0][var], "True n_{PV}", "Average "+mj_s+" [GeV]",
+			"#scale[0.8]{#font[62]{CMS}} #scale[0.6]{#font[52]{Supplementary (Simulation)}}", "#scale[0.8]{13 TeV}");
 	TLine line; line.SetLineStyle(2);
 	line.DrawLine(minh[0], 1, maxh[0], 1);
       } else histo[0][var]->Draw("same");
@@ -125,7 +125,7 @@ int main(){
     label.DrawLatex(1-style.PadRightMargin-0.03, style.PadBottomMargin+0.05, "Sample: "+Samples[sam].label);  
     Samples[sam].label.ReplaceAll(t1t_label, "T1tttt");
     TString pname = "plots/mj_pu_"+format_tag(Samples[sam].label)+".pdf";
-    can.SaveAs(pname);
+    can.Print(pname);
     leg.Clear();
 
     for(unsigned var(0); var<mj_vars.size(); var++){

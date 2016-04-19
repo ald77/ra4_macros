@@ -99,12 +99,12 @@ int main(){
   v_sam.push_back(&tt_t1tc); vs_sam.push_back("tt_t1tc");
 
   vector<vector<var_class>*> v_vars;
-  v_vars.push_back(&mj_general); vs_vars.push_back("general");
+  //v_vars.push_back(&mj_general); vs_vars.push_back("general");
   v_vars.push_back(&mj_cands); vs_vars.push_back("cands");
   v_vars.push_back(&mj_sizes); vs_vars.push_back("size");
 
   vector<TString> v_cuts;
-  v_cuts.push_back("ht>500&&met>200&&(nmus+nels)==1");
+  v_cuts.push_back("ht>500&&met>200");
  
   for(unsigned ivar(0); ivar<v_vars.size(); ivar++){
     for(unsigned icut(0); icut<v_cuts.size(); icut++){
