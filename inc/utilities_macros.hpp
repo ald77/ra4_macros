@@ -70,6 +70,7 @@ public:
   bool normalize; //normalizes isData to sum of histograms
   bool PU_reweight; 
   float moveRLegend; // Moves the right legend by this amount
+  bool addOverflow; // If true, the overflow is added to the last bin
   
 };
 
