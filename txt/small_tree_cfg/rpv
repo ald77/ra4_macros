@@ -5,6 +5,7 @@ int event
 
 ####################   Global   ###################
 float weight
+float w_pu_rpv
 float eff_trig
 int npv
 int ntrupv

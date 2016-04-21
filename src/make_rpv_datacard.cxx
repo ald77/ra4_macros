@@ -173,8 +173,7 @@ void outputShapeSystematics(std::ofstream &file, const std::vector<std::string> 
     file << shapeSysts.at(isyst) << "     shape     ";
     if(shapeSysts.at(isyst).find("pdf")!=std::string::npos) {
       // there are 100 NNPDF variations and so each needs to be scaled down by a factor 1/sqrt(100)
-      // signal histograms currently do not contain PDF uncertainties
-      for(unsigned int index=0; index<nbins; index++) file << "- 0.1 0.1 0.1 0.1 ";
+      for(unsigned int index=0; index<nbins; index++) file << "0.1 0.1 0.1 0.1 0.1 ";
     }
     else {
       for(unsigned int index=0; index<nbins*nprocesses; index++) file << 1.0 << " ";
@@ -224,11 +223,28 @@ void outputMCStatisticsSyst(std::ofstream &file, const std::vector<std::string> 
 // should do this from the histograms themselves!
 bool hasEntry(const std::string &sample, const std::string &bin, const int nB)
 {
-  if(sample.find("signal")!=std::string::npos) {
-    if(bin=="bin0" && nB==3) return false;
+  if(sample.find("signal_M1000")!=std::string::npos) {
+    if(bin=="bin2" && nB==4) return false;
+    if(bin=="bin3" && nB==1) return false;
+    if(bin=="bin3" && nB==3) return false;
+    if(bin=="bin3" && nB==4) return false;
+  }
+  if(sample.find("signal_M1100")!=std::string::npos) {
+    if(bin=="bin3" && nB==4) return false;
+    if(bin=="bin5" && nB==4) return false;
+  }
+  if(sample.find("signal_M1200")!=std::string::npos) {
+    if(bin=="bin0" && nB==4) return false;
     if(bin=="bin2" && nB==4) return false;
     if(bin=="bin3" && nB==4) return false;
     if(bin=="bin5" && nB==4) return false;
+  }
+  if(sample.find("signal_M1300")!=std::string::npos) {
+    if(bin=="bin2" && nB==4) return false;
+    if(bin=="bin3" && nB==1) return false;
+  }
+  if(sample.find("signal_M1400")!=std::string::npos) {
+    if(bin=="bin0" && nB==4) return false;
   }
   if(sample=="ttbar") {
     if(bin=="bin0" && nB==4) return false;

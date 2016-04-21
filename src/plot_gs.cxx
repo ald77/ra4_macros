@@ -28,9 +28,9 @@ using std::endl;
 
 int main(){ 
   std::string extraWeight("w_lumi/weight");
-  std::string extraWeightGsUp("w_lumi/weight*(1+0.5*fromGS)");
+  std::string extraWeightGsUp("w_lumi/weight*(1+0.2*fromGS)");
   std::string extraWeightGs("w_lumi/weight*(fromGS)");
-  std::string extraWeightGsDown("w_lumi/weight*(1-0.5*fromGS)");
+  std::string extraWeightGsDown("w_lumi/weight*(1-0.2*fromGS)");
 
   bool showData=false;
 

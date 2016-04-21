@@ -157,9 +157,9 @@ void makeCSVHist(TFile *file, const std::vector<TString>& samples, const TString
   TString cut("(nmus+nels)==0&&ht>1500&&nbm>=2&&njets>=6");
   TString weightandcut;
   if(extracut.Length()==0) {
-    weightandcut=Form("%s*weight/eff_trig*(%s)", rpv::luminosity.Data(), cut.Data());
+    weightandcut=Form("%s*weight*w_pu_rpv/eff_trig*(%s)", rpv::luminosity.Data(), cut.Data());
   }
-  else weightandcut=Form("%s*weight/eff_trig*(%s&&%s)", rpv::luminosity.Data(), cut.Data(), extracut.Data());
+  else weightandcut=Form("%s*weight*w_pu_rpv/eff_trig*(%s&&%s)", rpv::luminosity.Data(), cut.Data(), extracut.Data());
   TString cutAndExtraCut(Form("(%s&&%s)", cut.Data(), extracut.Data()));
 
   // weighted histogram for convenient display

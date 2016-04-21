@@ -159,39 +159,39 @@ vector<vector<double> >  getYields(small_tree_rpv &tree, vector<vector<double> >
 	  // High-dr_bb
 	  if(tree.dr_bb()[iDrbb]>=2.4){
 	    //yields_hdrbb[0][0] += 1;
-	    yields_hdrbb[0][0] += lumi*(tree.weight()/tree.eff_trig());
-	    yields_hdrbb_err[0][0] = addError(yields_hdrbb_err[0][0], lumi*(tree.weight()/tree.eff_trig()));
+	    yields_hdrbb[0][0] += lumi*(tree.weight()*tree.w_pu_rpv()/tree.eff_trig());
+	    yields_hdrbb_err[0][0] = addError(yields_hdrbb_err[0][0], lumi*(tree.weight()*tree.w_pu_rpv()/tree.eff_trig()));
 
 	    // Low-MJ
 	    if(tree.mj()>500 && tree.mj()<=800){
 	      //yields_hdrbb[1][0] += 1;
-	      yields_hdrbb[1][0] += lumi*(tree.weight()/tree.eff_trig());
-	      yields_hdrbb_err[1][0] = addError(yields_hdrbb_err[1][0], lumi*(tree.weight()/tree.eff_trig()));
+	      yields_hdrbb[1][0] += lumi*(tree.weight()*tree.w_pu_rpv()/tree.eff_trig());
+	      yields_hdrbb_err[1][0] = addError(yields_hdrbb_err[1][0], lumi*(tree.weight()*tree.w_pu_rpv()/tree.eff_trig()));
 	    }
 	    // High-MJ 
 	    else if(tree.mj()>800){
 	      //yields_hdrbb[2][0] += 1;
-	      yields_hdrbb[2][0] += lumi*(tree.weight()/tree.eff_trig());
-	      yields_hdrbb_err[2][0] = addError(yields_hdrbb_err[2][0], lumi*(tree.weight()/tree.eff_trig()));
+	      yields_hdrbb[2][0] += lumi*(tree.weight()*tree.w_pu_rpv()/tree.eff_trig());
+	      yields_hdrbb_err[2][0] = addError(yields_hdrbb_err[2][0], lumi*(tree.weight()*tree.w_pu_rpv()/tree.eff_trig()));
 	    }
 	  }
 	  // Low-dr_bb
 	  else if(tree.dr_bb()[iDrbb]<=1.6){
-	    yields_ldrbb[0][0] += lumi*(tree.weight()/tree.eff_trig());
+	    yields_ldrbb[0][0] += lumi*(tree.weight()*tree.w_pu_rpv()/tree.eff_trig());
 	    //yields_ldrbb[0][0] += 1;
-	    yields_ldrbb_err[0][0] = addError(yields_ldrbb_err[0][0], lumi*(tree.weight()/tree.eff_trig()));
+	    yields_ldrbb_err[0][0] = addError(yields_ldrbb_err[0][0], lumi*(tree.weight()*tree.w_pu_rpv()/tree.eff_trig()));
 	    
 	    // Low-MJ
 	    if(tree.mj()>500 && tree.mj()<=800){
 	      //yields_ldrbb[1][0] += 1;
-	      yields_ldrbb[1][0] += lumi*(tree.weight()/tree.eff_trig());
-	      yields_ldrbb_err[1][0] = addError(yields_ldrbb_err[1][0], lumi*(tree.weight()/tree.eff_trig()));
+	      yields_ldrbb[1][0] += lumi*(tree.weight()*tree.w_pu_rpv()/tree.eff_trig());
+	      yields_ldrbb_err[1][0] = addError(yields_ldrbb_err[1][0], lumi*(tree.weight()*tree.w_pu_rpv()/tree.eff_trig()));
 	    }
 	    // High-MJ
 	    else if(tree.mj()>800){
-	      yields_ldrbb[2][0] += lumi*(tree.weight()/tree.eff_trig());
+	      yields_ldrbb[2][0] += lumi*(tree.weight()*tree.w_pu_rpv()/tree.eff_trig());
 	      //yields_ldrbb[2][0] += 1;
-	      yields_ldrbb_err[2][0] = addError(yields_ldrbb_err[2][0], lumi*(tree.weight()/tree.eff_trig()));
+	      yields_ldrbb_err[2][0] = addError(yields_ldrbb_err[2][0], lumi*(tree.weight()*tree.w_pu_rpv()/tree.eff_trig()));
 	    }
 	  }
 	}
@@ -202,34 +202,34 @@ vector<vector<double> >  getYields(small_tree_rpv &tree, vector<vector<double> >
 	for(unsigned int iDrbb=0; iDrbb<tree.dr_bb().size(); iDrbb++){
 	  // High-dr_bb
 	  if(tree.dr_bb()[iDrbb]>=2.4){
-	    yields_hdrbb[0][1] += lumi*(tree.weight()/tree.eff_trig());
-	    yields_hdrbb_err[0][1] = addError(yields_hdrbb_err[0][1], lumi*(tree.weight()/tree.eff_trig()));
+	    yields_hdrbb[0][1] += lumi*(tree.weight()*tree.w_pu_rpv()/tree.eff_trig());
+	    yields_hdrbb_err[0][1] = addError(yields_hdrbb_err[0][1], lumi*(tree.weight()*tree.w_pu_rpv()/tree.eff_trig()));
 		
 	    // Low-MJ
 	    if(tree.mj()>500 && tree.mj()<=800){
-	      yields_hdrbb[1][1] += lumi*(tree.weight()/tree.eff_trig());
-	      yields_hdrbb_err[1][1] = addError(yields_hdrbb_err[1][1], lumi*(tree.weight()/tree.eff_trig()));
+	      yields_hdrbb[1][1] += lumi*(tree.weight()*tree.w_pu_rpv()/tree.eff_trig());
+	      yields_hdrbb_err[1][1] = addError(yields_hdrbb_err[1][1], lumi*(tree.weight()*tree.w_pu_rpv()/tree.eff_trig()));
 	    }
 	    // High-MJ
 	    else if(tree.mj()>800){
-	      yields_hdrbb[2][1] += lumi*(tree.weight()/tree.eff_trig());
-	      yields_hdrbb_err[2][1] = addError(yields_hdrbb_err[2][1], lumi*(tree.weight()/tree.eff_trig()));
+	      yields_hdrbb[2][1] += lumi*(tree.weight()*tree.w_pu_rpv()/tree.eff_trig());
+	      yields_hdrbb_err[2][1] = addError(yields_hdrbb_err[2][1], lumi*(tree.weight()*tree.w_pu_rpv()/tree.eff_trig()));
 	    }
 	  }
 	  // Low-dr_bb
 	  else if(tree.dr_bb()[iDrbb]<=1.6){
-	    yields_ldrbb[0][1] += lumi*(tree.weight()/tree.eff_trig());
-	    yields_ldrbb_err[0][1] = addError(yields_ldrbb_err[0][1], lumi*(tree.weight()/tree.eff_trig()));
+	    yields_ldrbb[0][1] += lumi*(tree.weight()*tree.w_pu_rpv()/tree.eff_trig());
+	    yields_ldrbb_err[0][1] = addError(yields_ldrbb_err[0][1], lumi*(tree.weight()*tree.w_pu_rpv()/tree.eff_trig()));
 	    
 	    // Low-MJ
 	    if(tree.mj()>500 && tree.mj()<=800){
-	      yields_ldrbb[1][1] += lumi*(tree.weight()/tree.eff_trig());
-	      yields_ldrbb_err[1][1] = addError(yields_ldrbb_err[1][1], lumi*(tree.weight()/tree.eff_trig()));
+	      yields_ldrbb[1][1] += lumi*(tree.weight()*tree.w_pu_rpv()/tree.eff_trig());
+	      yields_ldrbb_err[1][1] = addError(yields_ldrbb_err[1][1], lumi*(tree.weight()*tree.w_pu_rpv()/tree.eff_trig()));
 	    }
 	    // High-MJ
 	    else if(tree.mj()>800){
-	      yields_ldrbb[2][1] += lumi*(tree.weight()/tree.eff_trig());
-	      yields_ldrbb_err[2][1] = addError(yields_ldrbb_err[2][1], lumi*(tree.weight()/tree.eff_trig()));
+	      yields_ldrbb[2][1] += lumi*(tree.weight()*tree.w_pu_rpv()/tree.eff_trig());
+	      yields_ldrbb_err[2][1] = addError(yields_ldrbb_err[2][1], lumi*(tree.weight()*tree.w_pu_rpv()/tree.eff_trig()));
 	    }
 	  }
 	}
@@ -242,34 +242,34 @@ vector<vector<double> >  getYields(small_tree_rpv &tree, vector<vector<double> >
 	  
 	  // High-dr_bb
 	  if(tree.dr_bb()[iDrbb]>=2.4){
-	    yields_hdrbb[0][2] += lumi*(tree.weight()/tree.eff_trig());
-	    yields_hdrbb_err[0][2] = addError(yields_hdrbb_err[0][2], lumi*(tree.weight()/tree.eff_trig()));
+	    yields_hdrbb[0][2] += lumi*(tree.weight()*tree.w_pu_rpv()/tree.eff_trig());
+	    yields_hdrbb_err[0][2] = addError(yields_hdrbb_err[0][2], lumi*(tree.weight()*tree.w_pu_rpv()/tree.eff_trig()));
 		    
 	    // Low-MJ
 	    if(tree.mj()>500 && tree.mj()<=800){
-	      yields_hdrbb[1][2] += lumi*(tree.weight()/tree.eff_trig());
-	      yields_hdrbb_err[1][2] = addError(yields_hdrbb_err[1][2], lumi*(tree.weight()/tree.eff_trig()));
+	      yields_hdrbb[1][2] += lumi*(tree.weight()*tree.w_pu_rpv()/tree.eff_trig());
+	      yields_hdrbb_err[1][2] = addError(yields_hdrbb_err[1][2], lumi*(tree.weight()*tree.w_pu_rpv()/tree.eff_trig()));
 	    }
 	    // High-MJ
 	    else if(tree.mj()>800){
-	      yields_hdrbb[2][2] += lumi*(tree.weight()/tree.eff_trig());
-	      yields_hdrbb_err[2][2] = addError(yields_hdrbb_err[2][2], lumi*(tree.weight()/tree.eff_trig()));
+	      yields_hdrbb[2][2] += lumi*(tree.weight()*tree.w_pu_rpv()/tree.eff_trig());
+	      yields_hdrbb_err[2][2] = addError(yields_hdrbb_err[2][2], lumi*(tree.weight()*tree.w_pu_rpv()/tree.eff_trig()));
 	    }
 	  }
 	  // Low-dr_bb
 	  else if(tree.dr_bb()[iDrbb]<=1.6){
-	    yields_ldrbb[0][2] += lumi*(tree.weight()/tree.eff_trig());
-	    yields_ldrbb_err[0][2] = addError(yields_ldrbb_err[0][2], lumi*(tree.weight()/tree.eff_trig()));
+	    yields_ldrbb[0][2] += lumi*(tree.weight()*tree.w_pu_rpv()/tree.eff_trig());
+	    yields_ldrbb_err[0][2] = addError(yields_ldrbb_err[0][2], lumi*(tree.weight()*tree.w_pu_rpv()/tree.eff_trig()));
 	    
 	    // Low-MJ
 	    if(tree.mj()>500 && tree.mj()<=800){
-	      yields_ldrbb[1][2] += lumi*(tree.weight()/tree.eff_trig());
-	      yields_ldrbb_err[1][2] = addError(yields_ldrbb_err[1][2], lumi*(tree.weight()/tree.eff_trig()));
+	      yields_ldrbb[1][2] += lumi*(tree.weight()*tree.w_pu_rpv()/tree.eff_trig());
+	      yields_ldrbb_err[1][2] = addError(yields_ldrbb_err[1][2], lumi*(tree.weight()*tree.w_pu_rpv()/tree.eff_trig()));
 	    }
 	    // High-MJ
 	    else if(tree.mj()>800){
-	      yields_ldrbb[2][2] += lumi*(tree.weight()/tree.eff_trig());
-	      yields_ldrbb_err[2][2] = addError(yields_ldrbb_err[2][2], lumi*(tree.weight()/tree.eff_trig()));
+	      yields_ldrbb[2][2] += lumi*(tree.weight()*tree.w_pu_rpv()/tree.eff_trig());
+	      yields_ldrbb_err[2][2] = addError(yields_ldrbb_err[2][2], lumi*(tree.weight()*tree.w_pu_rpv()/tree.eff_trig()));
 	    }
 	  }
 	}
@@ -279,34 +279,34 @@ vector<vector<double> >  getYields(small_tree_rpv &tree, vector<vector<double> >
 	  
 	  // High-dr_bb
 	  if(tree.dr_bb()[iDrbb]>=2.4){
-	    yields_hdrbb[0][3] += lumi*(tree.weight()/tree.eff_trig());
-	    yields_hdrbb_err[0][3] = addError(yields_hdrbb_err[0][3], lumi*(tree.weight()/tree.eff_trig()));
+	    yields_hdrbb[0][3] += lumi*(tree.weight()*tree.w_pu_rpv()/tree.eff_trig());
+	    yields_hdrbb_err[0][3] = addError(yields_hdrbb_err[0][3], lumi*(tree.weight()*tree.w_pu_rpv()/tree.eff_trig()));
 	    
 	    // Low-MJ
 	    if(tree.mj()>500 && tree.mj()<=800){
-	      yields_hdrbb[1][3] += lumi*(tree.weight()/tree.eff_trig());
-	      yields_hdrbb_err[1][3] = addError(yields_hdrbb_err[1][3], lumi*(tree.weight()/tree.eff_trig()));
+	      yields_hdrbb[1][3] += lumi*(tree.weight()*tree.w_pu_rpv()/tree.eff_trig());
+	      yields_hdrbb_err[1][3] = addError(yields_hdrbb_err[1][3], lumi*(tree.weight()*tree.w_pu_rpv()/tree.eff_trig()));
 	    }
 	    //High-MJ
 	    else if(tree.mj()>800){
-	      yields_hdrbb[2][3] += lumi*(tree.weight()/tree.eff_trig());
-	      yields_hdrbb_err[2][3] = addError(yields_hdrbb_err[2][3], lumi*(tree.weight()/tree.eff_trig()));
+	      yields_hdrbb[2][3] += lumi*(tree.weight()*tree.w_pu_rpv()/tree.eff_trig());
+	      yields_hdrbb_err[2][3] = addError(yields_hdrbb_err[2][3], lumi*(tree.weight()*tree.w_pu_rpv()/tree.eff_trig()));
 	    }
 	  }
 	  // Low-dr_bb
 	  else if(tree.dr_bb()[iDrbb]<=1.6){
-	    yields_ldrbb[0][3] += lumi*(tree.weight()/tree.eff_trig());
-	    yields_ldrbb_err[0][3] = addError(yields_ldrbb_err[0][3], lumi*(tree.weight()/tree.eff_trig()));
+	    yields_ldrbb[0][3] += lumi*(tree.weight()*tree.w_pu_rpv()/tree.eff_trig());
+	    yields_ldrbb_err[0][3] = addError(yields_ldrbb_err[0][3], lumi*(tree.weight()*tree.w_pu_rpv()/tree.eff_trig()));
 
 	    // Low-MJ
 	    if(tree.mj()>500 && tree.mj()<=800){
-	      yields_ldrbb[1][3] += lumi*(tree.weight()/tree.eff_trig());
-	      yields_ldrbb_err[1][3] = addError(yields_ldrbb_err[1][3], lumi*(tree.weight()/tree.eff_trig()));
+	      yields_ldrbb[1][3] += lumi*(tree.weight()*tree.w_pu_rpv()/tree.eff_trig());
+	      yields_ldrbb_err[1][3] = addError(yields_ldrbb_err[1][3], lumi*(tree.weight()*tree.w_pu_rpv()/tree.eff_trig()));
 	    }
 	    // High-MJ
 	    else if(tree.mj()>800){
-	      yields_ldrbb[2][3] += lumi*(tree.weight()/tree.eff_trig());
-	      yields_ldrbb_err[2][3] = addError(yields_ldrbb_err[2][3], lumi*(tree.weight()/tree.eff_trig()));
+	      yields_ldrbb[2][3] += lumi*(tree.weight()*tree.w_pu_rpv()/tree.eff_trig());
+	      yields_ldrbb_err[2][3] = addError(yields_ldrbb_err[2][3], lumi*(tree.weight()*tree.w_pu_rpv()/tree.eff_trig()));
 	    }
 	  }
 	}
@@ -357,14 +357,12 @@ void printPlots(TGraphErrors *graph, TString title, TString filename){
 
 void print1D(vector<vector<double> > norm){
 
-    string extraWeight("1/eff_trig");
+    string extraWeight("w_pu_rpv/eff_trig");
 
-    vector<TString> s_rpv_LO;
-    s_rpv_LO.push_back("/homes/cawest/babymaker/CMSSW_7_4_14/src/babymaker/RPV_M1000_LO.root");
-    vector<TString> s_rpv_LO_M1100;
-    s_rpv_LO_M1100.push_back("/homes/cawest/babymaker/CMSSW_7_4_14/src/babymaker/RPV_M1100_LO.root");
-    vector<TString> s_rpv_NLO;
-    s_rpv_NLO.push_back("/homes/cawest/CMSSW_7_4_14/src/babymaker/RPV_M1000_NLO.root");
+    vector<TString> s_rpv_M1000;
+    s_rpv_M1000.push_back("/homes/cawest/babymaker/CMSSW_7_4_14/src/babymaker/RPV_M1000.root");
+    vector<TString> s_rpv_M1100;
+    s_rpv_M1100.push_back("/homes/cawest/babymaker/CMSSW_7_4_14/src/babymaker/RPV_M1100.root");
 
     vector<TString> s_tt;
     //  s_tt.push_back(filestring("TTJets_TuneCUETP8M1_13TeV-madgraphMLM"));
@@ -404,25 +402,25 @@ void print1D(vector<vector<double> > norm){
     Samples.back().isData = true;
     Samples.back().doStack = false;
 
-    Samples.push_back(sfeats(s_rpv_LO, "#tilde{g}(1.0 TeV)#rightarrow tbs", ra4::c_t1tttt));
+    Samples.push_back(sfeats(s_rpv_M1000, "#tilde{g}(1.0 TeV)#rightarrow tbs", ra4::c_t1tttt));
     Samples.back().doStack = false;
     Samples.back().isSig = true;
-    Samples.push_back(sfeats(s_rpv_LO_M1100, "#tilde{g}(1.1 TeV)#rightarrow tbs", ra4::c_t1tttt, 2));
+    Samples.push_back(sfeats(s_rpv_M1100, "#tilde{g}(1.1 TeV)#rightarrow tbs", ra4::c_t1tttt, 2));
     Samples.back().doStack = false;
     Samples.back().isSig = true;
 
-    Samples.push_back(sfeats(s_qcd, "QCD", kYellow, 1, cutandweight("1",to_string(norm[0][0])+"/eff_trig"))); // 0 leps, All MJ, 4-5 jets
-    Samples.push_back(sfeats(s_qcd, "QCD", kYellow, 1, cutandweight("1",to_string(norm[0][1])+"/eff_trig"))); // 0 leps. All MJ, 6-7 jets
-    Samples.push_back(sfeats(s_qcd, "QCD", kYellow, 1, cutandweight("1",to_string(norm[0][2])+"/eff_trig"))); // 0 leps, All MJ, 8-9 jets
-    Samples.push_back(sfeats(s_qcd, "QCD", kYellow, 1, cutandweight("1",to_string(norm[0][3])+"/eff_trig"))); // 0 leps, All MJ, 10+ jets
-    Samples.push_back(sfeats(s_qcd, "QCD", kYellow, 1, cutandweight("1",to_string(norm[1][0])+"/eff_trig"))); // 0 leps, Low MJ, 4-5 jets
-    Samples.push_back(sfeats(s_qcd, "QCD", kYellow, 1, cutandweight("1",to_string(norm[1][1])+"/eff_trig"))); // 0 leps. Low MJ, 6-7 jets
-    Samples.push_back(sfeats(s_qcd, "QCD", kYellow, 1, cutandweight("1",to_string(norm[1][2])+"/eff_trig"))); // 0 leps, Low MJ, 8-9 jets
-    Samples.push_back(sfeats(s_qcd, "QCD", kYellow, 1, cutandweight("1",to_string(norm[1][3])+"/eff_trig"))); // 0 leps, Low MJ, 10+ jets
-    Samples.push_back(sfeats(s_qcd, "QCD", kYellow, 1, cutandweight("1",to_string(norm[2][0])+"/eff_trig"))); // 0 leps, High MJ, 4-5 jets
-    Samples.push_back(sfeats(s_qcd, "QCD", kYellow, 1, cutandweight("1",to_string(norm[2][1])+"/eff_trig"))); // 0 leps. High MJ, 6-7 jets
-    Samples.push_back(sfeats(s_qcd, "QCD", kYellow, 1, cutandweight("1",to_string(norm[2][2])+"/eff_trig"))); // 0 leps, High MJ, 8-9 jets
-    Samples.push_back(sfeats(s_qcd, "QCD", kYellow, 1, cutandweight("1",to_string(norm[2][3])+"/eff_trig"))); // 0 leps, High MJ, 10+ jets
+    Samples.push_back(sfeats(s_qcd, "QCD", kYellow, 1, cutandweight("1",to_string(norm[0][0])+"/w_pu_rpv/eff_trig"))); // 0 leps, All MJ, 4-5 jets
+    Samples.push_back(sfeats(s_qcd, "QCD", kYellow, 1, cutandweight("1",to_string(norm[0][1])+"/w_pu_rpv/eff_trig"))); // 0 leps. All MJ, 6-7 jets
+    Samples.push_back(sfeats(s_qcd, "QCD", kYellow, 1, cutandweight("1",to_string(norm[0][2])+"/w_pu_rpv/eff_trig"))); // 0 leps, All MJ, 8-9 jets
+    Samples.push_back(sfeats(s_qcd, "QCD", kYellow, 1, cutandweight("1",to_string(norm[0][3])+"/w_pu_rpv/eff_trig"))); // 0 leps, All MJ, 10+ jets
+    Samples.push_back(sfeats(s_qcd, "QCD", kYellow, 1, cutandweight("1",to_string(norm[1][0])+"/w_pu_rpv/eff_trig"))); // 0 leps, Low MJ, 4-5 jets
+    Samples.push_back(sfeats(s_qcd, "QCD", kYellow, 1, cutandweight("1",to_string(norm[1][1])+"/w_pu_rpv/eff_trig"))); // 0 leps. Low MJ, 6-7 jets
+    Samples.push_back(sfeats(s_qcd, "QCD", kYellow, 1, cutandweight("1",to_string(norm[1][2])+"/w_pu_rpv/eff_trig"))); // 0 leps, Low MJ, 8-9 jets
+    Samples.push_back(sfeats(s_qcd, "QCD", kYellow, 1, cutandweight("1",to_string(norm[1][3])+"/w_pu_rpv/eff_trig"))); // 0 leps, Low MJ, 10+ jets
+    Samples.push_back(sfeats(s_qcd, "QCD", kYellow, 1, cutandweight("1",to_string(norm[2][0])+"/w_pu_rpv/eff_trig"))); // 0 leps, High MJ, 4-5 jets
+    Samples.push_back(sfeats(s_qcd, "QCD", kYellow, 1, cutandweight("1",to_string(norm[2][1])+"/w_pu_rpv/eff_trig"))); // 0 leps. High MJ, 6-7 jets
+    Samples.push_back(sfeats(s_qcd, "QCD", kYellow, 1, cutandweight("1",to_string(norm[2][2])+"/w_pu_rpv/eff_trig"))); // 0 leps, High MJ, 8-9 jets
+    Samples.push_back(sfeats(s_qcd, "QCD", kYellow, 1, cutandweight("1",to_string(norm[2][3])+"/w_pu_rpv/eff_trig"))); // 0 leps, High MJ, 10+ jets
 
     Samples.push_back(sfeats(s_w_had, "W+jets, 0 l", ra4::c_wjets, 1, cutandweight("1",extraWeight)));
     Samples.push_back(sfeats(s_z_had, "Z+jets, 0 l", kBlack, 1, cutandweight("1",extraWeight)));

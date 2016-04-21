@@ -27,7 +27,7 @@ using std::endl;
 
 int main(int argc, char *argv[]){
   // don't want to include RA4 trigger efficiency
-  std::string extraWeight("1/eff_trig");
+  std::string extraWeight("w_pu_rpv/eff_trig");
 
   bool showData=true;
   bool nminus1=false;

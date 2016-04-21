@@ -38,7 +38,7 @@ std::string cutandweightForVariations(std::string cut, std::string weight)
   // the default weight includes the RA4 trigger efficiency; need to exclude this
   newcut+="*";
   newcut+=rpv::luminosity.Data();
-  newcut+="*weight/eff_trig)*(";
+  newcut+="*weight*w_pu_rpv/eff_trig)*(";
   newcut+=cut;
   newcut+="";
 
@@ -53,7 +53,7 @@ std::string cutandweightForVariationsQCD(std::string cut, std::string weight, st
   newcut+=weight;
   newcut+="*";
   newcut+=rpv::luminosity.Data();
-  newcut+="*weight/eff_trig*";
+  newcut+="*weight*w_pu_rpv/eff_trig*";
   newcut+=flavorWeight;
   newcut+=")*(";
   newcut+=cut;
