@@ -28,7 +28,6 @@ using std::endl;
 int main(int argc, char *argv[]){
   // don't want to include RA4 trigger efficiency
   std::string extraWeight("w_pu_rpv/eff_trig");
-
   bool showData=true;
   bool nminus1=false;
   TString outDir("rpv_base");
@@ -150,8 +149,8 @@ int main(int argc, char *argv[]){
 	  // vars.back().normalize = true;
 	  // vars.push_back(hfeats("dr_bb",15, 0, 6, rpv_sam, "#DeltaR_{b#bar{b}}", cuts));
 	  // vars.back().normalize = true;
-	  vars.push_back(hfeats("nbm", 4, 1, 5, rpv_sam, "N_{b}", cuts));
-	  vars.back().normalize = true;
+	  // vars.push_back(hfeats("nbm", 4, 1, 5, rpv_sam, "N_{b}", cuts));
+	  //vars.back().normalize = true;
 	  // vars.push_back(hfeats("njets",20, 0, 20, rpv_sam, "N_{jets}", cuts));
 	  // vars.back().normalize = true;
 	  // vars.push_back(hfeats("jets_pt[0]",30, 0, 1500, rpv_sam, "p_{T,1} (GeV)", cuts));
@@ -163,7 +162,50 @@ int main(int argc, char *argv[]){
 	}
       }
     }
+
+    //Njets plots
+    htcut="ht>1500";
+    for(auto ibasecut : basecut) {
+      for(auto imjcut : mjcuts) {
+	TString ijetcut = "njets<=7"; //Blind safe
+	if(!showData) ijetcut = "njets>=0";
+	if(ibasecut=="(nmus+nels)==1") {
+	  ijetcut.ReplaceAll("njets<=7","njets<=5");
+	  htcut="ht>1200";
+	}
+	cuts = ibasecut + "&&" + htcut + "&&" + ijetcut + "&&" + imjcut;
+
+	vars.push_back(hfeats("njets",20, 0, 20, rpv_sam, "N_{jets}", cuts));
+	vars.back().normalize = true; vars.back().whichPlots = "1";
+      }
+      
+    }
+    //mj plots
+    htcut="ht>1500";
+    for(auto ibasecut : basecut) {     
+      for(auto ijetcut : njetcuts) {
+	// skip blinded regions
+	bool isBlind = (ibasecut.EqualTo("(nmus+nels)==0") && !ijetcut.EqualTo("njets>=4&&njets<=5") && !ijetcut.EqualTo("njets>=6&&njets<=7" )) ||
+	  (ibasecut.EqualTo("(nmus+nels)==1") && !ijetcut.EqualTo("njets>=4&&njets<=5"));
+	if(isBlind && showData) continue;
+	if(ibasecut=="(nmus+nels)==1") {
+	  ijetcut.ReplaceAll("njets>=10","njets>=8");
+	  htcut="ht>1200";
+	}
+	cuts = ibasecut + "&&" + htcut + "&&" + ijetcut;
+
+	vars.push_back(hfeats("mj",25, 0, 2500, rpv_sam, "M_{J} (GeV)", cuts));
+	vars.back().normalize = true; vars.back().whichPlots = "1";
+
+
+      }    
+    }
+
+    
+
+
   } // end if(!minus1)
+  
   // make N-1 plots for signal regions
   else {
     std::vector<std::string> basecutsNm1 = {"(nmus+nels)==0", "(nmus+nels)==1"};
