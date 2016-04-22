@@ -158,19 +158,16 @@ vector<vector<double> >  getYields(small_tree_rpv &tree, vector<vector<double> >
 	for(unsigned int iDrbb=0; iDrbb<tree.dr_bb().size(); iDrbb++){
 	  // High-dr_bb
 	  if(tree.dr_bb()[iDrbb]>=2.4){
-	    //yields_hdrbb[0][0] += 1;
 	    yields_hdrbb[0][0] += lumi*(tree.weight()*tree.w_pu_rpv()/tree.eff_trig());
 	    yields_hdrbb_err[0][0] = addError(yields_hdrbb_err[0][0], lumi*(tree.weight()*tree.w_pu_rpv()/tree.eff_trig()));
 
 	    // Low-MJ
 	    if(tree.mj()>500 && tree.mj()<=800){
-	      //yields_hdrbb[1][0] += 1;
 	      yields_hdrbb[1][0] += lumi*(tree.weight()*tree.w_pu_rpv()/tree.eff_trig());
 	      yields_hdrbb_err[1][0] = addError(yields_hdrbb_err[1][0], lumi*(tree.weight()*tree.w_pu_rpv()/tree.eff_trig()));
 	    }
 	    // High-MJ 
 	    else if(tree.mj()>800){
-	      //yields_hdrbb[2][0] += 1;
 	      yields_hdrbb[2][0] += lumi*(tree.weight()*tree.w_pu_rpv()/tree.eff_trig());
 	      yields_hdrbb_err[2][0] = addError(yields_hdrbb_err[2][0], lumi*(tree.weight()*tree.w_pu_rpv()/tree.eff_trig()));
 	    }
@@ -178,19 +175,16 @@ vector<vector<double> >  getYields(small_tree_rpv &tree, vector<vector<double> >
 	  // Low-dr_bb
 	  else if(tree.dr_bb()[iDrbb]<=1.6){
 	    yields_ldrbb[0][0] += lumi*(tree.weight()*tree.w_pu_rpv()/tree.eff_trig());
-	    //yields_ldrbb[0][0] += 1;
 	    yields_ldrbb_err[0][0] = addError(yields_ldrbb_err[0][0], lumi*(tree.weight()*tree.w_pu_rpv()/tree.eff_trig()));
 	    
 	    // Low-MJ
 	    if(tree.mj()>500 && tree.mj()<=800){
-	      //yields_ldrbb[1][0] += 1;
 	      yields_ldrbb[1][0] += lumi*(tree.weight()*tree.w_pu_rpv()/tree.eff_trig());
 	      yields_ldrbb_err[1][0] = addError(yields_ldrbb_err[1][0], lumi*(tree.weight()*tree.w_pu_rpv()/tree.eff_trig()));
 	    }
 	    // High-MJ
 	    else if(tree.mj()>800){
 	      yields_ldrbb[2][0] += lumi*(tree.weight()*tree.w_pu_rpv()/tree.eff_trig());
-	      //yields_ldrbb[2][0] += 1;
 	      yields_ldrbb_err[2][0] = addError(yields_ldrbb_err[2][0], lumi*(tree.weight()*tree.w_pu_rpv()/tree.eff_trig()));
 	    }
 	  }
@@ -409,18 +403,18 @@ void print1D(vector<vector<double> > norm){
     Samples.back().doStack = false;
     Samples.back().isSig = true;
 
-    Samples.push_back(sfeats(s_qcd, "QCD", kYellow, 1, cutandweight("1",to_string(norm[0][0])+"/w_pu_rpv/eff_trig"))); // 0 leps, All MJ, 4-5 jets
-    Samples.push_back(sfeats(s_qcd, "QCD", kYellow, 1, cutandweight("1",to_string(norm[0][1])+"/w_pu_rpv/eff_trig"))); // 0 leps. All MJ, 6-7 jets
-    Samples.push_back(sfeats(s_qcd, "QCD", kYellow, 1, cutandweight("1",to_string(norm[0][2])+"/w_pu_rpv/eff_trig"))); // 0 leps, All MJ, 8-9 jets
-    Samples.push_back(sfeats(s_qcd, "QCD", kYellow, 1, cutandweight("1",to_string(norm[0][3])+"/w_pu_rpv/eff_trig"))); // 0 leps, All MJ, 10+ jets
-    Samples.push_back(sfeats(s_qcd, "QCD", kYellow, 1, cutandweight("1",to_string(norm[1][0])+"/w_pu_rpv/eff_trig"))); // 0 leps, Low MJ, 4-5 jets
-    Samples.push_back(sfeats(s_qcd, "QCD", kYellow, 1, cutandweight("1",to_string(norm[1][1])+"/w_pu_rpv/eff_trig"))); // 0 leps. Low MJ, 6-7 jets
-    Samples.push_back(sfeats(s_qcd, "QCD", kYellow, 1, cutandweight("1",to_string(norm[1][2])+"/w_pu_rpv/eff_trig"))); // 0 leps, Low MJ, 8-9 jets
-    Samples.push_back(sfeats(s_qcd, "QCD", kYellow, 1, cutandweight("1",to_string(norm[1][3])+"/w_pu_rpv/eff_trig"))); // 0 leps, Low MJ, 10+ jets
-    Samples.push_back(sfeats(s_qcd, "QCD", kYellow, 1, cutandweight("1",to_string(norm[2][0])+"/w_pu_rpv/eff_trig"))); // 0 leps, High MJ, 4-5 jets
-    Samples.push_back(sfeats(s_qcd, "QCD", kYellow, 1, cutandweight("1",to_string(norm[2][1])+"/w_pu_rpv/eff_trig"))); // 0 leps. High MJ, 6-7 jets
-    Samples.push_back(sfeats(s_qcd, "QCD", kYellow, 1, cutandweight("1",to_string(norm[2][2])+"/w_pu_rpv/eff_trig"))); // 0 leps, High MJ, 8-9 jets
-    Samples.push_back(sfeats(s_qcd, "QCD", kYellow, 1, cutandweight("1",to_string(norm[2][3])+"/w_pu_rpv/eff_trig"))); // 0 leps, High MJ, 10+ jets
+    Samples.push_back(sfeats(s_qcd, "QCD", kYellow, 1, cutandweight("1",to_string(norm[0][0])+"*w_pu_rpv/eff_trig"))); // 0 leps, All MJ, 4-5 jets
+    Samples.push_back(sfeats(s_qcd, "QCD", kYellow, 1, cutandweight("1",to_string(norm[0][1])+"*w_pu_rpv/eff_trig"))); // 0 leps. All MJ, 6-7 jets
+    Samples.push_back(sfeats(s_qcd, "QCD", kYellow, 1, cutandweight("1",to_string(norm[0][2])+"*w_pu_rpv/eff_trig"))); // 0 leps, All MJ, 8-9 jets
+    Samples.push_back(sfeats(s_qcd, "QCD", kYellow, 1, cutandweight("1",to_string(norm[0][3])+"*w_pu_rpv/eff_trig"))); // 0 leps, All MJ, 10+ jets
+    Samples.push_back(sfeats(s_qcd, "QCD", kYellow, 1, cutandweight("1",to_string(norm[1][0])+"*w_pu_rpv/eff_trig"))); // 0 leps, Low MJ, 4-5 jets
+    Samples.push_back(sfeats(s_qcd, "QCD", kYellow, 1, cutandweight("1",to_string(norm[1][1])+"*w_pu_rpv/eff_trig"))); // 0 leps. Low MJ, 6-7 jets
+    Samples.push_back(sfeats(s_qcd, "QCD", kYellow, 1, cutandweight("1",to_string(norm[1][2])+"*w_pu_rpv/eff_trig"))); // 0 leps, Low MJ, 8-9 jets
+    Samples.push_back(sfeats(s_qcd, "QCD", kYellow, 1, cutandweight("1",to_string(norm[1][3])+"*w_pu_rpv/eff_trig"))); // 0 leps, Low MJ, 10+ jets
+    Samples.push_back(sfeats(s_qcd, "QCD", kYellow, 1, cutandweight("1",to_string(norm[2][0])+"*w_pu_rpv/eff_trig"))); // 0 leps, High MJ, 4-5 jets
+    Samples.push_back(sfeats(s_qcd, "QCD", kYellow, 1, cutandweight("1",to_string(norm[2][1])+"*w_pu_rpv/eff_trig"))); // 0 leps. High MJ, 6-7 jets
+    Samples.push_back(sfeats(s_qcd, "QCD", kYellow, 1, cutandweight("1",to_string(norm[2][2])+"*w_pu_rpv/eff_trig"))); // 0 leps, High MJ, 8-9 jets
+    Samples.push_back(sfeats(s_qcd, "QCD", kYellow, 1, cutandweight("1",to_string(norm[2][3])+"*w_pu_rpv/eff_trig"))); // 0 leps, High MJ, 10+ jets
 
     Samples.push_back(sfeats(s_w_had, "W+jets, 0 l", ra4::c_wjets, 1, cutandweight("1",extraWeight)));
     Samples.push_back(sfeats(s_z_had, "Z+jets, 0 l", kBlack, 1, cutandweight("1",extraWeight)));
@@ -472,8 +466,8 @@ void print1D(vector<vector<double> > norm){
     for(int iBins=0; iBins<nBins; iBins++){
       vars.push_back(hfeats("dr_bb",15, 0, 6, rpv_sam[iBins], "#DeltaR_{b#bar{b}}", cuts[iBins]));
     }
-
-    plot_distributions(Samples, vars, rpv::luminosity, plot_type, plot_style, outDir, true); // last argument determines whether or not a ratio is drawn
+    
+    plot_distributions(Samples, vars, rpv::luminosity, plot_type, plot_style, outDir, true);
 }
 
 double addError(double error, double added_error){
