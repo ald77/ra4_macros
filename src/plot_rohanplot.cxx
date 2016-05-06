@@ -44,18 +44,14 @@ int main(){
 
   vars_paper.push_back(hfeats("mj",30,0,1500, mt140,    "M_{J} [GeV]",baseline,400,"eventselection")); 
   vars_paper.back().whichPlots = "14"; vars_paper.back().maxRatio = 0.29;
-  // vars_paper.push_back(hfeats("mj",30,0,1500, mt140_2l, "M_{J} [GeV]",baseline,400,"dilep")); 
-  //vars_paper.back().maxRatio = 0.99;
   vars_aux.push_back(hfeats("mj",30,0,1500, mt140_1l, "M_{J} [GeV]",baseline,400,"syst")); 
   vars_aux.back().whichPlots = "14"; vars_aux.back().maxRatio = 0.29;
 
   baseline = "mj>250&&ht>500&&met>200&&nbm>=1&&nleps==1&&stitch&&pass";
-  // vars_paper.push_back(hfeats("njets",12,0.5,12.5, mt140, "N_{jets}",baseline, 5.5, "allj_12")); vars_paper.back().maxRatio = 0.29;
-  // vars_paper.back().whichPlots = "13"; 
   vars_paper.push_back(hfeats("njets",7,5.5,12.5, mt140, "N_{jets}",baseline, -1, "eventselection")); 
   vars_paper.back().whichPlots = "13"; vars_paper.back().maxRatio = 0.29;
 
   //NOTE: Make sure RohanHack is turned off
   plot_distributions(Samples, vars_paper, "2.3", ".pdf", "CMSPaper","rohan",true);
-  plot_distributions(Samples, vars_aux, "2.3", ".pdf", "CMSPaper","aux",true);
+  plot_distributions(Samples, vars_aux, "2.3", ".pdf", "CMSPaper_Supplementary","aux",true);
 }

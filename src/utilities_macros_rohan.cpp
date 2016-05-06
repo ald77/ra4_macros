@@ -28,6 +28,7 @@
 #include "TStyle.h"
 #include "TSystem.h"
 #include "TDirectory.h"
+#include "TROOT.h"
 
 #include "styles.hpp"
 #include "utilities.hpp"
@@ -40,6 +41,16 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
   TString outfolder("plots/"+dir);
   gSystem->mkdir(outfolder, kTRUE);
 
+  TString CMStype("");
+  if(namestyle.Contains("_Supplementary")) {
+    CMStype = "Supplementary";
+    namestyle.ReplaceAll("_Supplementary","");
+  }
+  if(namestyle.Contains("_Preliminary")) {
+    CMStype = "Preliminary";
+    namestyle.ReplaceAll("_Preliminary","");
+  }
+
   bool showcuts(!namestyle.Contains("CMSPaper"));
   //if (doRatio) namestyle = "CMSPaper";
   styles style(namestyle);
@@ -49,6 +60,7 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
     style.LegendSize *=1;
     style.TitleSize *=1.2;
     style.yTitleOffset /=1.3;
+    style.xTitleOffset /= 1.08;
   }
   style.setDefaultStyle();
   TCanvas can;
@@ -119,6 +131,7 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
       varhisto.resize(0);
       for(unsigned sam(0); sam < Nsam; sam++){
         hname = "histo"; hname += var; hname += his; hname += sam;
+	delete gROOT->FindObject(hname); // For some reason, the deletion at the end is not enough
         varhisto.push_back(new TH1D(hname, title, vars[var].nbins, vars[var].minx, vars[var].maxx));
       }
       histo[his].push_back(varhisto);
@@ -153,7 +166,8 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
         cmslabel = "";
       } else {
         lumilabel = TString::Format("L = %1.f",luminosity.Atof())+" fb^{-1} (13 TeV)";
-        cmslabel = "#font[62]{CMS} #scale[0.8]{#font[52]{Supplementary (Simulation)}}";
+        cmslabel = "#font[62]{CMS} #scale[0.8]{#font[52]{Simulation}}";
+        if(CMStype=="Supplementary")cmslabel = "#scale[0.8]{#font[62]{CMS}} #scale[0.6]{#font[52]{Supplementary (Simulation)}}";
       }
       if(vars[var].unit!="") {
         int digits(0);
