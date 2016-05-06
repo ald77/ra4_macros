@@ -43,7 +43,14 @@ systList=[]
 systList.append(["btag_bc","b,c jet b-tag SF",2,1])
 systList.append(["btag_udsg","Light flavor jet b-tag SF",3,1])
 systList.append(["jes","Jet energy scale",4,1])
-systList.append(["lep_eff","Lepton efficiency",6,1])
+systList.append(["jer","Jet energy resolution",5,1])
+systList.append(["pileup","Pileup",6,1])
+systList.append(["isr","Initial state radiation",7,1])
+systList.append(["lep_eff","Lepton efficiency",8,1])
+systList.append(["signal_mur","Renormalization scale",9,1])
+systList.append(["signal_muf","Factorization scale",10,1])
+systList.append(["signal_murf","Renorm.+fact. scale",11,1])
+#systList.append(["pdf","PDF",12,1])
 systList.append(["mc_stat","MC statistics",1,2]) #must be done last!
 
 nSyst = len(systList)

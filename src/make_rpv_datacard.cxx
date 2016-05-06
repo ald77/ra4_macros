@@ -79,6 +79,7 @@ int main(int argc, char *argv[])
   std::ofstream file;
   std::string filename("datacard_M");
   filename+=gluinoMass;
+  if(!includeSignalRegion) filename+="_control";
 
   if(includePDFUncert) {
     for(unsigned int i=0; i<100; i++) {

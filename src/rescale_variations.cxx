@@ -72,8 +72,6 @@ int main()
       TString histnameNominal(Form("%s/%s", binNames.at(ibin).c_str(), isample.c_str()));
       TH1F *nominal = static_cast<TH1F*>(f->Get(histnameNominal));
       for(unsigned int ib=1; ib<=nbins; ib++) {
-	// only add uncertainties for bins with non-zero entries
-	if(nominal->GetBinContent(ib)==0) continue;
 	TH1F *up = static_cast<TH1F*>(nominal->Clone());
 	TH1F *down = static_cast<TH1F*>(nominal->Clone());
 	up->SetBinContent(ib, nominal->GetBinContent(ib)+nominal->GetBinError(ib));

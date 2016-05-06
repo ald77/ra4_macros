@@ -28,6 +28,8 @@ using std::endl;
 int main(int argc, char *argv[]){
   // don't want to include RA4 trigger efficiency
   std::string extraWeight("w_pu_rpv/eff_trig");
+  //  std::string extraWeight("(w_btag_loose*sys_bctag_loose[0]/w_btag)*w_pu_rpv/eff_trig");
+  //  std::string extraWeight("(w_btag_loose*sys_udsgtag_loose[1]/w_btag)*w_pu_rpv/eff_trig");
   bool showData=true;
   bool nminus1=false;
   TString outDir("rpv_base");
@@ -53,9 +55,17 @@ int main(int argc, char *argv[]){
   vector<TString> s_rpv_NLO;
   s_rpv_NLO.push_back("/homes/cawest/CMSSW_7_4_14/src/babymaker/RPV_M1000_NLO.root");
 
+  vector<TString> s_tt_had;
+  // this dataset is skimmed to remove the leptonic component
+  s_tt_had.push_back(filestring("TTJets_TuneCUETP8M1_13TeV-madgraphMLM", true));
   vector<TString> s_tt;
-  //  s_tt.push_back(filestring("TTJets_TuneCUETP8M1_13TeV-madgraphMLM"));
-  s_tt.push_back(filestring("TT_TuneCUETP8M1_13TeV-powheg-pythia8"));
+  //  s_tt.push_back(filestring("TT_TuneCUETP8M1_13TeV-powheg-pythia8"));
+  s_tt.push_back(filestring("TTJets_DiLept_TuneCUETP8M1_13TeV-madgraphMLM-pythia8"));
+  s_tt.push_back(filestring("TTJets_DiLept_TuneCUETP8M1_13TeV-madgraphMLM-pythia8_ext1"));
+  s_tt.push_back(filestring("TTJets_SingleLeptFromT_TuneCUETP8M1_13TeV-madgraphMLM-pythia8"));
+  s_tt.push_back(filestring("TTJets_SingleLeptFromT_TuneCUETP8M1_13TeV-madgraphMLM-pythia8_ext1"));
+  s_tt.push_back(filestring("TTJets_SingleLeptFromTbar_TuneCUETP8M1_13TeV-madgraphMLM-pythia8"));
+  s_tt.push_back(filestring("TTJets_SingleLeptFromTbar_TuneCUETP8M1_13TeV-madgraphMLM-pythia8_ext1"));
   vector<TString> s_wjets;
   s_wjets.push_back(filestring("WJetsToLNu_HT-600ToInf_TuneCUETP8M1_13TeV-madgraphMLM-pythia8"));
   vector<TString> s_singlet;
@@ -66,8 +76,11 @@ int main(int argc, char *argv[]){
   s_singlet.push_back(filestring("ST_tW_top_5f_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M1"));
   vector<TString> s_qcd;
   s_qcd.push_back(filestring("QCD_HT1000to1500_TuneCUETP8M1_13TeV-madgraphMLM-pythia8"));
+  s_qcd.push_back(filestring("QCD_HT1000to1500_TuneCUETP8M1_13TeV-madgraphMLM-pythia8_ext1"));
   s_qcd.push_back(filestring("QCD_HT1500to2000_TuneCUETP8M1_13TeV-madgraphMLM-pythia8"));
+  s_qcd.push_back(filestring("QCD_HT1500to2000_TuneCUETP8M1_13TeV-madgraphMLM-pythia8_ext1"));
   s_qcd.push_back(filestring("QCD_HT2000toInf_TuneCUETP8M1_13TeV-madgraphMLM-pythia8"));
+  s_qcd.push_back(filestring("QCD_HT2000toInf_TuneCUETP8M1_13TeV-madgraphMLM-pythia8_ext1"));
   vector<TString> s_other;
   s_other.push_back(filestring("DYJetsToLL_M-50_HT-600toInf_TuneCUETP8M1_13TeV-madgraphMLM-pythia8"));
   s_other.push_back(filestring("TTWJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-madspin-pythia8"));
@@ -103,7 +116,7 @@ int main(int argc, char *argv[]){
   Samples.push_back(sfeats(s_z_had, "Z+jets, 0 l", kBlack, 1, cutandweight("1",extraWeight)));
   Samples.push_back(sfeats(s_tt, "t#bar{t}, 1 l", ra4::c_tt_1l, 1, cutandweight("ntruleps==1", extraWeight)));
   Samples.push_back(sfeats(s_tt, "t#bar{t}, 2 l", ra4::c_tt_2l, 1, cutandweight("ntruleps>=2", extraWeight)));
-  Samples.push_back(sfeats(s_tt, "t#bar{t}, 0 l", kTeal, 1, cutandweight("ntruleps==0", extraWeight)));
+  Samples.push_back(sfeats(s_tt_had, "t#bar{t}, 0 l", kTeal, 1, cutandweight("ntruleps==0", extraWeight)));
   Samples.push_back(sfeats(s_wjets, "W+jets, 1 l", ra4::c_wjets, 1, cutandweight("1",extraWeight)));
   Samples.push_back(sfeats(s_singlet, "Single t", ra4::c_singlet, 1, cutandweight("1",extraWeight)));
   Samples.push_back(sfeats(s_other, "Other", ra4::c_other, 1, cutandweight("1",extraWeight))); 
@@ -149,8 +162,10 @@ int main(int argc, char *argv[]){
 	  // vars.back().normalize = true;
 	  // vars.push_back(hfeats("dr_bb",15, 0, 6, rpv_sam, "#DeltaR_{b#bar{b}}", cuts));
 	  // vars.back().normalize = true;
-	  // vars.push_back(hfeats("nbm", 4, 1, 5, rpv_sam, "N_{b}", cuts));
-	  //vars.back().normalize = true;
+	  vars.push_back(hfeats("nbm", 4, 1, 5, rpv_sam, "N_{b}", cuts));
+	  vars.back().normalize = true;
+	  // vars.push_back(hfeats("Sum$(jets_csv>0.605)", 4, 1, 5, rpv_sam, "N_{b,loose}", cuts));
+	  // vars.back().normalize = true;
 	  // vars.push_back(hfeats("njets",20, 0, 20, rpv_sam, "N_{jets}", cuts));
 	  // vars.back().normalize = true;
 	  // vars.push_back(hfeats("jets_pt[0]",30, 0, 1500, rpv_sam, "p_{T,1} (GeV)", cuts));

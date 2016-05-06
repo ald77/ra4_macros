@@ -15,7 +15,7 @@ int main(int argc, char *argv[])
   bool fitCharmWithLight=false;
   bool excludeHighCSV=false;
   
-  int maxbin=20;
+  int maxbin=22;
 
   // by default, want to look at low njet region
   TString fitType="low_njet";

@@ -18,10 +18,10 @@
 #include "utilities_macros_rpv.hpp"
 
 namespace {
-  const int nBins=20;
-  const float xMin=0;
+  const int nBins=22;
+  const float xMin=0.89;
   const float xMax=1.0;
-  const TString csvVar("(jets_csv-0.89)/0.11");
+  const TString csvVar("jets_csv");
 }
 
 void makeCSVHist(TFile *file, const std::vector<TString>& samples, const TString& name, const TString& extracut);
@@ -30,14 +30,22 @@ int main(){
 
   std::vector<TString> s_qcd;
   s_qcd.push_back(filestring("QCD_HT1000to1500_TuneCUETP8M1_13TeV-madgraphMLM-pythia8"));
+  s_qcd.push_back(filestring("QCD_HT1000to1500_TuneCUETP8M1_13TeV-madgraphMLM-pythia8_ext1"));
   s_qcd.push_back(filestring("QCD_HT1500to2000_TuneCUETP8M1_13TeV-madgraphMLM-pythia8"));
+  s_qcd.push_back(filestring("QCD_HT1500to2000_TuneCUETP8M1_13TeV-madgraphMLM-pythia8_ext1"));
   s_qcd.push_back(filestring("QCD_HT2000toInf_TuneCUETP8M1_13TeV-madgraphMLM-pythia8"));
+  s_qcd.push_back(filestring("QCD_HT2000toInf_TuneCUETP8M1_13TeV-madgraphMLM-pythia8_ext1"));
   // The CSV reweighting only affects QCD; the flavor composition of other samples
   // well defined and does not need correction
   std::vector<TString> s_other;
-  // ttbar
-  //  s_other.push_back(filestring("TTJets_TuneCUETP8M1_13TeV-madgraphMLM"));
-  s_other.push_back(filestring("TT_TuneCUETP8M1_13TeV-powheg-pythia8"));
+  s_other.push_back(filestring("TTJets_DiLept_TuneCUETP8M1_13TeV-madgraphMLM-pythia8"));
+  s_other.push_back(filestring("TTJets_DiLept_TuneCUETP8M1_13TeV-madgraphMLM-pythia8_ext1"));
+  s_other.push_back(filestring("TTJets_SingleLeptFromT_TuneCUETP8M1_13TeV-madgraphMLM-pythia8"));
+  s_other.push_back(filestring("TTJets_SingleLeptFromT_TuneCUETP8M1_13TeV-madgraphMLM-pythia8_ext1"));
+  s_other.push_back(filestring("TTJets_SingleLeptFromTbar_TuneCUETP8M1_13TeV-madgraphMLM-pythia8"));
+  s_other.push_back(filestring("TTJets_SingleLeptFromTbar_TuneCUETP8M1_13TeV-madgraphMLM-pythia8_ext1"));
+  // this dataset is skimmed to remove the non-hadronic component
+  s_other.push_back(filestring("TTJets_TuneCUETP8M1_13TeV-madgraphMLM", true));
   // W/Z
   s_other.push_back(filestring("WJetsToQQ_HT-600ToInf_TuneCUETP8M1_13TeV-madgraphMLM-pythia8"));
   s_other.push_back(filestring("WJetsToLNu_HT-600ToInf_TuneCUETP8M1_13TeV-madgraphMLM-pythia8"));

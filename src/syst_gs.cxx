@@ -39,7 +39,7 @@ int main(){
   small_tree_rpv qcd(folder+"*QCD_HT1000to1500_TuneCUETP8M1_13TeV-madgraphMLM-pythia8*");
   qcd.Add(folder+"*QCD_HT1500to2000_TuneCUETP8M1_13TeV-madgraphMLM-pythia8*");
   qcd.Add(folder+"*QCD_HT2000toInf_TuneCUETP8M1_13TeV-madgraphMLM-pythia8*");
-  small_tree_rpv other(folder+"*TT_TuneCUETP8M1_13TeV-powheg-pythia8*");
+  small_tree_rpv other(folder+"*TT_TuneCUETP8M1_13TeV-madgraphMLM-pythia8*");
   other.Add(folder+"*WJetsToLNu_HT-600ToInf_TuneCUETP8M1_13TeV-madgraphMLM-pythia8*");
   other.Add(folder+"*ST_s-channel_4f_leptonDecays_13TeV-amcatnlo-pythia8_TuneCUETP8M1*");
   other.Add(folder+"*ST_t-channel_antitop_4f_leptonDecays_13TeV-powheg-pythia8_TuneCUETP8M1*");
