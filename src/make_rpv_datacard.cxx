@@ -40,8 +40,8 @@ int main(int argc, char *argv[])
 
   std::string gluinoMass;
   std::string signalBinName;
-  if(argc<2) {
-    std::cout << "Syntax: make_rpv_datacard.exe [gluino mass, in GeV]" << std::endl;
+  if(argc<3) {
+    std::cout << "Syntax: make_rpv_datacard.exe [gluino mass, in GeV] [default/control]" << std::endl;
     return 1;
   }
   else {
@@ -51,6 +51,16 @@ int main(int argc, char *argv[])
     signalBinName = ss.str();
     // this is supposed to be the first entry in the process list
     processes.insert(processes.begin(), signalBinName);
+
+    std::string cardType(argv[2]);
+    if(cardType!="control" && cardType!="default") {
+      std::cout << "Syntax: make_rpv_datacard.exe [gluino mass, in GeV] [default/control]" << std::endl;
+      return 1;
+    }
+    else {
+      if(cardType=="control") includeSignalRegion=false;
+      if(cardType=="default") includeSignalRegion=true;
+    }
   }
 
   nprocesses=processes.size();

@@ -47,14 +47,14 @@ int main(){
 
   // Reading ntuples
   vector<sfeats> Samples; 
-  Samples.push_back(sfeats(s_tt_powheg, "t#bar{t}, GS up", ra4::c_t1tttt, 2, cutandweight("1", extraWeightGsUp)));
+  Samples.push_back(sfeats(s_tt_powheg, "t#bar{t}, GS up 20%", ra4::c_t1tttt, 2, cutandweight("1", extraWeightGsUp)));
   Samples.back().doStack = false;
   Samples.push_back(sfeats(s_tt_powheg, "t#bar{t}, nominal", ra4::c_t1tttt, 1, cutandweight("1", extraWeight)));
   Samples.back().doStack = false;
-  Samples.push_back(sfeats(s_tt_powheg, "t#bar{t}, GS down", kBlack, 2, cutandweight("1", extraWeightGsDown)));
+  Samples.push_back(sfeats(s_tt_powheg, "t#bar{t}, GS down %20", kBlack, 2, cutandweight("1", extraWeightGsDown)));
   Samples.back().doStack = false;
-  Samples.push_back(sfeats(s_tt_powheg, "t#bar{t}, GS only", kBlue, 1, cutandweight("1", extraWeightGs)));
-  Samples.back().doStack = false;
+  //  Samples.push_back(sfeats(s_tt_powheg, "t#bar{t}, GS only", kBlue, 1, cutandweight("1", extraWeightGs)));
+  //  Samples.back().doStack = false;
 
 
   

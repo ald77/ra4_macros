@@ -242,7 +242,7 @@ int main(int argc, char *argv[]){
     }
   }
   
-  plot_distributions(Samples, vars, rpv::luminosity, plot_type, plot_style, outDir, showData); // last argument determines whether or not a ratio is drawn
+  plot_distributions(Samples, vars, rpv::luminosity, plot_type, plot_style, outDir, showData, true); // last argument determines whether or not a ratio is drawn, and whether or not to show cuts
 
 }
 

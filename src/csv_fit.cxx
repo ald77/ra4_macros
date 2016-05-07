@@ -139,7 +139,7 @@ int main(int argc, char *argv[])
     data->SetMarkerSize(1);
     data->SetLineColor(kBlack);
     data->SetMarkerStyle(kFullCircle);
-    data->SetTitle(";Rescaled CSV;Events / 0.05");
+    data->SetTitle(";CSV;Events / 0.005");
     TCanvas *c = new TCanvas;
     data->Draw("e");
 
@@ -213,15 +213,15 @@ int main(int argc, char *argv[])
     sum->Draw("same,hist");
     data->Draw("e,same");
 
-    TLegend *leg1 = new TLegend(0.3, 0.54, 0.6, 0.82);
+    TLegend *leg1 = new TLegend(0.3, 0.45, 0.7, 0.82);
     leg1->SetFillStyle(0);
     leg1->SetBorderSize(0);
-    leg1->AddEntry(data, "Data", "P");
+    leg1->AddEntry(data, "Data", "ELP");
     leg1->AddEntry(sum, "Total fit", "L");
-    leg1->AddEntry(result_b, "b jets", "PL");
-    leg1->AddEntry(result_c, "c jets", "PL");
-    leg1->AddEntry(result_l, "Light jets", "PL");
-    leg1->AddEntry(result_other, "Non-QCD", "PL");
+    leg1->AddEntry(result_b, "b events", "PL");
+    leg1->AddEntry(result_c, "c events", "PL");
+    leg1->AddEntry(result_l, "Light-parton events", "PL");
+    leg1->AddEntry(result_other, "Non-QCD events", "PL");
     leg1->Draw();
 
     double qcd_b_fracafter, qcd_b_fracafter_err;    
