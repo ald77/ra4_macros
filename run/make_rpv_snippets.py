@@ -46,7 +46,7 @@ def writescript():
 
 #default path should be changed
 PATH = '/homes/cawest/rpv_2016/ra4_macros'
-VARLIST = ['btag_bc', 'btag_udsg',
+VARLIST = ['nominal','btag_bc', 'btag_udsg',
            'gs45', 'gs67', 'gs89', 'gs10Inf',
            'jes', 'jer',
            'lep_eff', 'ttbar_pt', 'pileup',

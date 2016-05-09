@@ -106,7 +106,7 @@ int main(int argc, char *argv[])
     mc->Add(qcd_l_raw);
   }
   
-  TFractionFitter *fit = new TFractionFitter(data, mc);
+  TFractionFitter *fit = new TFractionFitter(data, mc,"V");
   fit->Constrain(0, 1e-4, 1.0);
   fit->Constrain(1, 1e-4, 1.0);
   fit->Constrain(2, 1e-4, 1.0);
@@ -134,6 +134,7 @@ int main(int argc, char *argv[])
 
   Int_t status = fit->Fit();
   if(status==0) {
+    std::cout << "chi^2/ndof from TFractionFitter: " << fit->GetChisquare() << "/" << fit->GetNDF() << ", prob = " << fit->GetProb() << std::endl;
     data->SetMinimum(0);
     data->GetXaxis()->SetNdivisions(505);
     data->SetMarkerSize(1);
@@ -196,7 +197,10 @@ int main(int argc, char *argv[])
     result_other->SetMarkerSize(0);
     result_other->Draw("same");
     result_other->Draw("same,hist");
-    TH1F *sum = static_cast<TH1F*>(result_b->Clone());
+    TH1F* sum = static_cast<TH1F*>( fit->GetPlot());
+    
+    //Original calculation: not actually correct; see documentation for TFractionFitter::GetMCPrediction()
+    /*TH1F *sum = static_cast<TH1F*>(result_b->Clone());
     if(fitCharmWithLight) {
       sum->Add(result_cl);
     }
@@ -204,7 +208,7 @@ int main(int argc, char *argv[])
       sum->Add(result_c);
       sum->Add(result_l);
     }
-    sum->Add(result_other);
+    sum->Add(result_other);*/
     sum->SetLineColor(kBlue);
     sum->SetLineStyle(kSolid);
     sum->SetLineWidth(3);
@@ -275,7 +279,40 @@ int main(int argc, char *argv[])
     c->Print(Form("plots/csvfit_%s.pdf", fitType.Data()));
 
     std::cout << "chi^2/ndof from TFractionFitter: " << fit->GetChisquare() << "/" << fit->GetNDF() << ", prob = " << fit->GetProb() << std::endl;
+    float chi2 =0.;
+    for(int ib =1; ib<=sum->GetNbinsX();ib++){
+      /*std::cout<<"Data yield: "<<data->GetBinContent(ib)<<std::endl;
+      std::cout<<"Sum yield: "<<sum->GetBinContent(ib)<<std::endl;
+      std::cout<<"Uncertainty on difference : "<<sqrt(pow(data->GetBinError(ib),2)+pow(sum->GetBinError(ib),2))<<std::endl;
+      std::cout<<"Sigma "<<(data->GetBinContent(ib) - sum->GetBinContent(ib))/sqrt(pow(sum->GetBinError(ib),2)+pow(data->GetBinError(ib),2))<<std::endl;*/
+      chi2+=pow((data->GetBinContent(ib) - sum->GetBinContent(ib))/sqrt(pow(sum->GetBinError(ib),2)+pow(data->GetBinError(ib),2)),2);
+    }
+    std::cout<<"Total chi2, by hand, is "<<chi2<<std::endl;
 
+    //  qcd_b->Scale(qcd_b_ratio);
+    // qcd_c->Scale(qcd_c_ratio);
+
+    float chi2_b =0.;
+    for(int ib =1; ib<=sum->GetNbinsX();ib++){
+      /*  std::cout<<"b result yield: "<<result_b->GetBinContent(ib)<<std::endl;
+      std::cout<<" b scaled prefit yield: "<<qcd_b->GetBinContent(ib)<<std::endl;
+      std::cout<<"Uncertainty on difference : "<<sqrt(pow(result_b->GetBinError(ib),2)+pow(qcd_b->GetBinError(ib),2))<<std::endl;
+      std::cout<<"Sigma "<<(result_b->GetBinContent(ib) - qcd_b->GetBinContent(ib))/sqrt(pow(qcd_b->GetBinError(ib),2)+pow(result_b->GetBinError(ib),2))<<std::endl;*/
+      chi2_b+=pow((result_b->GetBinContent(ib) - qcd_b->GetBinContent(ib))/sqrt(pow(qcd_b->GetBinError(ib),2)+pow(result_b->GetBinError(ib),2)),2);
+    }
+    std::cout<<"Total chi2 for b hist is "<<chi2_b<<std::endl;
+
+      float chi2_c =0.;
+    for(int ib =1; ib<=sum->GetNbinsX();ib++){
+      /* std::cout<<"charm Result yield: "<<result_c->GetBinContent(ib)<<std::endl;
+      std::cout<<"charm Scaled prefit yield: "<<qcd_c->GetBinContent(ib)<<std::endl;
+      std::cout<<"Uncertainty on difference : "<<sqrt(pow(result_c->GetBinError(ib),2)+pow(qcd_c->GetBinError(ib),2))<<std::endl;
+      std::cout<<"Sigma "<<(result_c->GetBinContent(ib) - qcd_c->GetBinContent(ib))/sqrt(pow(qcd_c->GetBinError(ib),2)+pow(result_c->GetBinError(ib),2))<<std::endl;*/
+      chi2_c+=pow((result_c->GetBinContent(ib) - qcd_c->GetBinContent(ib))/sqrt(pow(qcd_c->GetBinError(ib),2)+pow(result_c->GetBinError(ib),2)),2);
+    }
+    std::cout<<"Total chi2 for c hist is "<<chi2_c<<std::endl;
+
+    std::cout<<"Total chi2 for b,c, and sum"<<chi2_c+chi2_b+chi2<<std::endl;
     // don't want to recreate files for variations
     TFile *out;
     if(fitType=="low_njet" && !excludeHighCSV) {

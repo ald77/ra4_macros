@@ -210,7 +210,9 @@ int main(int argc, char* argv[])
     std::cout << "Performing nominal variation" << std::endl;
   }
   else if(argc==2){
-    variations.push_back(argv[1]);
+    std::string nom="nominal";
+    if(argv[1]==nom)  variations.push_back("");
+    else variations.push_back(argv[1]);
     std::cout << "Performing variation " << argv[1] << std::endl;
   }
   else if(argc==3){
