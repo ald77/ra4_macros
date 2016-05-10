@@ -112,7 +112,7 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
     leg[ileg].SetFillStyle(0); leg[ileg].SetBorderSize(0);
     leg[ileg].SetTextFont(style.nFont); 
   }
-  TLine line; line.SetLineColor(28); line.SetLineWidth(5); line.SetLineStyle(3);
+  TLine line; line.SetLineColor(1); line.SetLineWidth(5); line.SetLineStyle(2);
   TLine line2; line2.SetLineColor(kBlack); line2.SetLineWidth(5); line2.SetLineStyle(1);
   vector< vector<TH1D*> > histo[2];
   vector<TH1D*> varhisto;
@@ -121,7 +121,7 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
   for(unsigned var(0); var<vars.size(); var++){
     unsigned Nsam(vars[var].samples.size());
     legH = (Nsam<=3?legSingle*Nsam:legSingle*(Nsam+1)/2);
-    fracLeg = legH/(1-style.PadTopMargin-style.PadBottomMargin)*1.2;
+    fracLeg = legH/(1-style.PadTopMargin-style.PadBottomMargin)*1.4;
     for(int ileg(0); ileg<nLegs; ileg++) leg[ileg].SetY1NDC(legY-legH); 
     cout<<endl;
     // Generating vector of histograms
@@ -327,6 +327,7 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
           hratio_mcscale->SetTitle("");
           hratio_data->Divide(hratio_mcscale);
 	  hratio_data->GetYaxis()->SetRangeUser(0.0000001,maxRatio);
+          hratio_data->GetXaxis()->SetLabelOffset(0.02);
           hratio_data->GetXaxis()->SetLabelSize(style.LabelSize*2.2);
           hratio_data->GetYaxis()->SetLabelSize(style.LabelSize*1.8);
           hratio_data->GetYaxis()->SetTitle("Data / MC ");

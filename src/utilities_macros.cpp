@@ -111,7 +111,7 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
     leg[ileg].SetFillStyle(0); leg[ileg].SetBorderSize(0);
     leg[ileg].SetTextFont(style.nFont); 
   }
-  TLine line; line.SetLineColor(28); line.SetLineWidth(5); line.SetLineStyle(3);
+  TLine line; line.SetLineColor(1); line.SetLineWidth(5); line.SetLineStyle(2);
   vector< vector<TH1D*> > histo[2];
   vector<TH1D*> varhisto;
   vector<float> nentries;
@@ -337,7 +337,7 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
       histo[0][var][firstplotted]->SetMaximum(maxpadLog);
       if (!doRatio) style.moveYAxisLabel(histo[0][var][firstplotted], maxpadLog, true);
       histo[0][var][firstplotted]->Draw("axis same");
-      if(vars[var].cut>0) line.DrawLine(vars[var].cut, 0, vars[var].cut, maxhisto);
+      if(vars[var].cut>0) line.DrawLine(vars[var].cut, 0, vars[var].cut, maxhisto*1.05);
 
       //ratio
       TH1D* hratio_data(NULL);
@@ -361,6 +361,7 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
           hratio_data->SetTitle("");
           hratio_data->Divide(histo[0][var][firstplotted]);
           hratio_data->GetYaxis()->SetRangeUser(0.1,maxRatio);
+          hratio_data->GetXaxis()->SetLabelOffset(0.025);
           hratio_data->GetXaxis()->SetLabelSize(style.LabelSize*2.2);
           hratio_data->GetYaxis()->SetLabelSize(style.LabelSize*2.1);
           hratio_data->GetYaxis()->SetTitle("Data / MC ");
@@ -484,7 +485,7 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
       legcount++;
     } // Loop over samples
     for(int ileg(0); ileg<nLegs; ileg++) leg[ileg].Draw(); 
-    if(vars[var].cut>0) line.DrawLine(vars[var].cut, 0, vars[var].cut, maxhisto);
+    if(vars[var].cut>0) line.DrawLine(vars[var].cut, 0, vars[var].cut, maxhisto*1.05);
 
     // Setting Y-axis for shapes plot (non-log)
     float minhisto(0), maxpad(minhisto + (maxhisto-minhisto)/(1-fracLeg));
