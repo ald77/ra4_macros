@@ -99,8 +99,8 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
   float minLog = 0.04, fracLeg = 0.36; // Fraction of the histo pad devoted to the legend
 
   double legLeft(style.PadLeftMargin+0.03), legRight(1-style.PadRightMargin-0.02);
-  double legY(1-style.PadTopMargin-0.023), legSingle = 0.052;
-  if (doRatio) {legY=1-style.PadTopMargin-0.033; legSingle = 0.06;}
+  double legY(1-style.PadTopMargin-0.027), legSingle = 0.052;
+  if (doRatio) {legY=1-style.PadTopMargin-0.041; legSingle = 0.06;}
   double legW = 0.13, legH = legSingle*(vars[0].samples.size()+1)/2;
   double legX1[] = {legLeft, legLeft+(legRight-legLeft)/2.*1.15};
   TLegend leg[2]; int nLegs(2);
@@ -121,8 +121,8 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
     if (vars[var].minx == -1) vars[var].minx = vars[var].binning[0];
     const unsigned Nsam(vars[var].samples.size());
     legH = (Nsam<=3?legSingle*Nsam:legSingle*(Nsam+1)/2);
-    // Calculating fraction of internal pad taken by the legend, and adding a 3% buffer
-    fracLeg = (legH+1-style.PadTopMargin-legY)/(1-style.PadTopMargin-style.PadBottomMargin) + 0.03;
+    // Calculating fraction of internal pad taken by the legend, and adding a 4% buffer
+    fracLeg = (legH+1-style.PadTopMargin-legY)/(1-style.PadTopMargin-style.PadBottomMargin) + 0.04;
     for(int ileg(0); ileg<nLegs; ileg++) leg[ileg].SetY1NDC(legY-legH); 
     leg[1].SetX1NDC(legX1[1]+vars[var].moveRLegend); leg[1].SetX2NDC(legX1[1]+legW+vars[var].moveRLegend); 
 
@@ -751,7 +751,8 @@ hfeats::hfeats(TString ivarname, int inbins, float iminx, float imaxx, vector<in
   normalize=false;
   PU_reweight=false;
   moveRLegend = 0;
-  
+  addOverflow = true;
+
   string ctitle(title.Data()); // Needed because effing TString can't handle square brackets
   if(!(ctitle.find("GeV")==std::string::npos)) unit = "GeV";
   if(!(ctitle.find("Number")==std::string::npos)) unit = "";

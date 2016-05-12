@@ -26,16 +26,16 @@ int main(){
   Samples.push_back(sfeats(s_tt, "t#bar{t}, 1 true lepton: m_{T} #leq 140 GeV", 31,1,"mt<=140&&ntruleps==1&&stitch"));
 
   vector<int> mt140;
-  mt140.push_back(0);
   mt140.push_back(3);
+  mt140.push_back(0);
 
   vector<int> mt140_2l;
-  mt140_2l.push_back(0);
   mt140_2l.push_back(2);
+  mt140_2l.push_back(0);
 
   vector<int> mt140_1l;
-  mt140_1l.push_back(1);
   mt140_1l.push_back(3);
+  mt140_1l.push_back(1);
 
   TString noCuts = "1";
   TString baseline = "ht>500&&met>200&&njets>=6&&nbm>=1&&nleps==1&&stitch&&pass";

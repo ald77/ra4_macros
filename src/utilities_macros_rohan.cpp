@@ -100,8 +100,8 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
   float minLog = 0.002, fracLeg = 0.36; // Fraction of the histo pad devoted to the legend
 
   double legLeft(style.PadLeftMargin+0.08), legRight(1-style.PadRightMargin-0.02);
-  double legY(1-style.PadTopMargin-0.023), legSingle = 0.052;
-  if (doRatio) {legY=1-style.PadTopMargin-0.033; legSingle = 0.06;}
+  double legY(1-style.PadTopMargin-0.03), legSingle = 0.052;
+  if (doRatio) {legY=1-style.PadTopMargin-0.042; legSingle = 0.06;}
   double legW = 0.13, legH = legSingle*(vars[0].samples.size()+1)/2;
   double legX1[] = {legLeft, legLeft+(legRight-legLeft)/2.*1.15};
   TLegend leg[2]; int nLegs(2);
@@ -423,10 +423,11 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
 	}	
 
         histo[1][var][sam]->SetYTitle(ytitle);
-	histo[1][var][sam]->Draw("e1 x0");
+	if(Samples[isam].isData) histo[1][var][sam]->Draw("e1 x0");
+	else histo[1][var][sam]->Draw("hist");
 	
       } else {
-        if(Samples[isam].style>0) histo[1][var][sam]->Draw("hist same");
+        if(Samples[isam].style>0 && !Samples[isam].isData) histo[1][var][sam]->Draw("hist same");
         else histo[1][var][sam]->Draw("e1 x0 same");
       }
       leghisto = Samples[isam].label;
