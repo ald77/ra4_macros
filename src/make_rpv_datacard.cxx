@@ -2,6 +2,7 @@
 #include "TH1.h"
 #include "TString.h"
 #include "TFile.h"
+#include "TSystem.h"
 
 #include <fstream>
 #include <string>
@@ -84,7 +85,9 @@ int main(int argc, char *argv[])
   }
   nbins = bins.size();
 
-  std::string dataCardPath("/homes/cawest/rpv_2016/ra4_macros/variations/sum_rescaled.root");
+  std::string dataCardPath = gSystem->pwd();
+  dataCardPath += "/variations/sum_rescaled.root";
+  //std::string dataCardPath("/homes/cawest/rpv_2016/ra4_macros/variations/sum_rescaled.root");
   TFile *variations = TFile::Open(dataCardPath.c_str());
   std::ofstream file;
   std::string filename("datacard_M");
