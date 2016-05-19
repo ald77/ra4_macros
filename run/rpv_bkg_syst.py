@@ -34,7 +34,7 @@ def get_hist_with_overflow(file,histname):
 #This function calculates symmetrized relative errors for a single variation in a single kinematic bin
 #First, find new floating normalization, both for the variation up and down
 #Then, using all processes, find the difference from nominal for up and down
-#Return a histogram binned in Nb with the mean of the absolute errors up and down
+#Return a histogram binned in Nb with the mean of the absolute value of relative errors up and down
 def get_symmetrized_relative_errors(sysName,tot_data,total_nominal,procList,floating_process,sysFile,directory):
 
 

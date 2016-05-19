@@ -16,8 +16,65 @@ else:
 if (args.mass):
   GLUINOMASS = args.mass
 
+one_pdf = True #put all plots in one pdf file
+verbose = True  
 
-verbose = False  
+
+# function to get pointers to histogram in root file
+def get_hist_with_overflow(file,histname):
+    if verbose:
+        print" getting "+histname
+    hist = file.Get(histname)
+    nbinsX = hist.GetNbinsX()
+    content = hist.GetBinContent(nbinsX) + hist.GetBinContent(nbinsX+1)
+    error  = math.sqrt(math.pow(hist.GetBinError(nbinsX),2) + math.pow(hist.GetBinError(nbinsX+1),2))
+    hist.SetBinContent(nbinsX,content)
+    hist.SetBinContent(nbinsX+1,0) #avoid adding overflow N times for N calls to function
+    hist.SetBinError(nbinsX+1,0)
+    hist.SetBinError(nbinsX,error)
+    return hist
+    
+#This function calculates symmetrized relative errors for a single variation in a single kinematic bin
+#Return a histogram binned in Nb with the mean of the absolute value of relative errors up and down
+def get_symmetrized_relative_errors(sysName,nominal,proc,sysFile,directory):
+
+
+    # total hists for each variation, to include all processes
+    systHistUp = ROOT.TH1F(directory+"_"+sysName+"_u","",5,0,5)
+    systHistDown = ROOT.TH1F(directory+"_"+sysName+"_d","",5,0,5)
+
+  
+    #load hists and calculate SFs for floating component for each variation
+
+    up = get_hist_with_overflow(sysFile,directory + "/" + proc + "_" + sysName + "Up")
+    down =  get_hist_with_overflow(sysFile,directory + "/" + proc + "_" + sysName + "Down")
+
+
+    #Put yields in new histogram to avoid modifying originals
+    systHistUp.Add(up)
+    systHistDown.Add(down)
+
+    #Subtract nominal histogram from varied histograms
+    systHistUp.Add(nominal,-1)     
+    systHistDown.Add(nominal,-1)
+
+    for i in range(1,systHistUp.GetNbinsX()+1):
+        #Find absolute value of deviation
+        systHistUp.SetBinContent(i,abs(systHistUp.GetBinContent(i)))
+        systHistDown.SetBinContent(i,abs(systHistDown.GetBinContent(i)))
+
+
+    #Fill histUp with symmetrized error by adding histDown and dividing by 2, then divide by nominal to get relative symmetrized error    
+    systHistUp.Add(systHistDown)
+    systHistUp.Scale(0.5)
+    systHistUp.Divide(nominal) # now systHistUp contains our relative errors
+    return systHistUp
+
+
+
+  
+
+
 
 ROOT.gROOT.SetBatch(ROOT.kTRUE) #prevent th1->Draw() from trying to open X11 window
 ROOT.gStyle.SetCanvasDefW(600)
@@ -50,7 +107,7 @@ systList.append(["lep_eff","Lepton efficiency",8,1])
 systList.append(["signal_mur","Renormalization scale",9,1])
 systList.append(["signal_muf","Factorization scale",10,1])
 systList.append(["signal_murf","Renorm.+fact. scale",11,1])
-#systList.append(["pdf","PDF",12,1])
+systList.append(["pdf","PDF",12,1])
 systList.append(["mc_stat","MC statistics",1,2]) #must be done last!
 
 nSyst = len(systList)
@@ -78,19 +135,16 @@ binList.append(["bin15","n_{jets} #geq 8","M_{J} #geq 800 GeV","n_{lep} = 1"])
 
 
 sysFile = ROOT.TFile(infile,"read")
+proc = "signal_M" + str(GLUINOMASS)
+
 for ibin in binList:
     directory = ibin[0]
     if verbose:
         print "directory is "+directory
-    nominal = sysFile.Get(directory + "/signal_M" + str(GLUINOMASS))
-    #add overflow to last bin
+    
+    nominal = get_hist_with_overflow(sysFile,(directory + "/" + proc))
     nbinsX = nominal.GetNbinsX()
-    if verbose:
-        print "nbins x is"+ str(nbinsX)
-    content = nominal.GetBinContent(nbinsX) + nominal.GetBinContent(nbinsX+1)
-    error  = math.sqrt(math.pow(nominal.GetBinError(nbinsX),2) + math.pow(nominal.GetBinError(nbinsX+1),2))
-    nominal.SetBinContent(nbinsX,content)
-    nominal.SetBinError(nbinsX,error)
+    
 
     ROOT.gStyle.SetPadRightMargin()
     ROOT.gStyle.SetPadLeftMargin(0.12) #so it's not messed by larger table margin each iteration of the loop
@@ -98,78 +152,75 @@ for ibin in binList:
     leg = ROOT.TLegend(0.12,0.7,0.54,0.92)
 
     table = ROOT.TH2F("table_"+directory,"",nbinsX,-0.5,nbinsX-0.5,nSyst,0,nSyst)
+    systHists_sym = []
+
     
     for isys, syst in enumerate(systList,start=1):
         sysName = syst[0]
+        systHist = ROOT.TH1F(directory+"_"+sysName+"_sym","",5,0,5) # will eventually contain errors; define now to remain in scope
         if verbose:
             print "starting "+sysName
+
         if "mc_stat" not in sysName:
-            histUp = sysFile.Get(directory + "/signal_M" + str(GLUINOMASS) + "_" + sysName + "Up")
-            histDown = sysFile.Get(directory + "/signal_M" + str(GLUINOMASS) + "_" + sysName + "Down")
-
-            #add overflow to last bin
-            contentUp = histUp.GetBinContent(nbinsX) + histUp.GetBinContent(nbinsX+1)
-            contentDown = histDown.GetBinContent(nbinsX) + histDown.GetBinContent(nbinsX+1)
-            histUp.SetBinContent(nbinsX,contentUp)
-            histDown.SetBinContent(nbinsX,contentDown)
-
-            #dump counts
-            if verbose:
-                for i in range(1,histUp.GetNbinsX()+1):
-                    print "histUp bin "+str(i)+" "+str(histUp.GetBinContent(i))
-                    print "nominal bin "+str(i)+" "+str(nominal.GetBinContent(i))
-                    print "histDown bin "+str(i)+" "+str(histDown.GetBinContent(i))
-
-            #find deviation    
-            histUp.Add(nominal,-1)
-            histDown.Add(nominal,-1)
-
-
-
-            for i in range(1,histUp.GetNbinsX()+1):
-                #Find absolute value of deviation
-                histUp.SetBinContent(i,abs(histUp.GetBinContent(i)))
-                histDown.SetBinContent(i,abs(histDown.GetBinContent(i)))
-                if verbose:
-                    print "histUp Abs Error bin "+str(i)+" "+str(histUp.GetBinContent(i))
-                    print "histDown Abs Error bin "+str(i)+" "+str(histDown.GetBinContent(i))
-
-            #Fill histUp with symmetrized error by adding histDown and dividing by 2, then divide by nominal to get relative symmetrized error    
-            histUp.Add(histDown)
-            histUp.Scale(0.5)
-            histUp.Divide(nominal) # now histUp contains our relative errors
-
+            #pdf treated separately
+            if "pdf" not in sysName:
+                #this function does everything
+                systHist = get_symmetrized_relative_errors(sysName,nominal,proc,sysFile,directory)
             
-            
-        elif "mc_stat" in sysName: #this will affect nominal
-            histUp = nominal 
-            for i in range(1,histUp.GetNbinsX()+1):
-                #in this case, we want our relative errors to just be the MC errors
-                if histUp.GetBinContent(i)>0:
-                    histUp.SetBinContent(i,(histUp.GetBinError(i)/histUp.GetBinContent(i)))
+                    
+            elif "pdf" in sysName:
+                #This systematic is calculated from 100 variations that all represent a single source of uncertainty.
+                #We want to use information from all variations without artifically inflating the total uncertainty just by sampling the same effect many times.
+                #Therefore, we find symmetrized uncertainties for each pdf variation up/down, add them in quadrature and divide by sqrt(100) to normalize
+                for i in range(0,100):
+                    #if i == 26 or i == 46: continue (skip corrupted)
+                    #Get errors for this pdf variation
+                    thisvar = get_symmetrized_relative_errors("w_pdf"+str(i),nominal,proc,sysFile,directory)
+                    #Add in quadrature to running total
+                    for i in range(1,systHist.GetNbinsX()+1):
+                        thisvar.SetBinContent(i,math.pow(thisvar.GetBinContent(i),2))
+                    systHist.Add(thisvar)
                 
+                #take square root and normalize by sqrt(100)
+                for i in range(1,systHist.GetNbinsX()+1):
+                        systHist.SetBinContent(i,math.pow(systHist.GetBinContent(i),0.5)/10)
+                           
+            
+        elif "mc_stat" in sysName:
+            systHist.Add(nominal)
+            for i in range(1,systHist.GetNbinsX()+1):
+                #in this case, we want our relative errors to just be the MC errors
+                if systHist.GetBinContent(i)>0:
+                    systHist.SetBinContent(i,(systHist.GetBinError(i)/systHist.GetBinContent(i))) 
 
-       
-        for i in range(1,histUp.GetNbinsX()+1):
-            table.SetBinContent(i,isys,round(100*histUp.GetBinContent(i),1))
+        #normalize to percentage for humans            
+        for i in range(1,systHist.GetNbinsX()+1):
+            table.SetBinContent(i,isys,round(100*systHist.GetBinContent(i),1))
             if verbose:
-                print "symmetrized rel error bin "+str(i)+" "+str(histUp.GetBinContent(i))        
+                print "symmetrized rel error bin "+str(i)+" "+str(systHist.GetBinContent(i))         
+
+
+
+        systHists_sym.append(systHist)
+
 
         table.GetYaxis().SetBinLabel(isys,syst[1])
-        histUp.SetTitle(";N_{b};Relative Error")
-        histUp.SetLineColor(syst[2])
-        histUp.SetLineStyle(syst[3])
-        histUp.SetLineWidth(2)
-        histUp.SetMaximum(1.)
-        histUp.SetMinimum(0.)
-        histUp.SetAxisRange(1,4,"X")
-        histUp.SetStats(0)
-        histUp.GetYaxis().SetTitleOffset(1.4)
-        histUp.GetYaxis().SetTitleSize(0.04)
-        histUp.GetXaxis().SetTitleSize(0.04)
-        histUp.GetXaxis().SetNdivisions(505)
-        leg.AddEntry(histUp,syst[1],"l")
-        histUp.Draw("hist same")    
+        systHists_sym[isys-1].SetTitle(";N_{b};Relative Error")
+        systHists_sym[isys-1].SetLineColor(syst[2])
+        systHists_sym[isys-1].SetLineStyle(syst[3])
+        systHists_sym[isys-1].SetLineWidth(2)
+        systHists_sym[isys-1].SetMaximum(1.)
+        systHists_sym[isys-1].SetMinimum(0.)
+        systHists_sym[isys-1].SetAxisRange(1,4,"X")
+        systHists_sym[isys-1].SetStats(0)
+        systHists_sym[isys-1].GetYaxis().SetTitleOffset(1.4)
+        systHists_sym[isys-1].GetYaxis().SetTitleSize(0.04)
+        systHists_sym[isys-1].GetXaxis().SetTitleSize(0.04)
+        systHists_sym[isys-1].GetXaxis().SetNdivisions(505)
+        leg.AddEntry(systHists_sym[isys-1],syst[1],"l")
+        systHists_sym[isys-1].Draw("hist same")  
+
+
 
     leg.Draw()
     tla = ROOT.TLatex()
@@ -181,7 +232,17 @@ for ibin in binList:
     tla.DrawLatexNDC(0.17, 0.65, ibin[3])
     tla.DrawLatexNDC(0.17, 0.6, ibin[1])
     tla.DrawLatexNDC(0.17, 0.55, ibin[2])
-    outname = "plots/sig_systs_" + directory + "_M" + str(GLUINOMASS) + ".pdf"
+    if one_pdf:
+        if directory == binList[0][0]:
+            outname = "plots/sig_systs_all.pdf("
+        elif directory == binList[len(binList)-1][0]:
+            outname = "plots/sig_systs_all.pdf)"
+        else:
+            outname = "plots/sig_systs_all.pdf"
+
+    else:
+         outname = "plots/sig_systs_" + directory +".pdf"
+    print "outname is " +outname
     c.Print(outname)
 
 
@@ -206,6 +267,22 @@ for ibin in binList:
     tla.DrawLatexNDC(0.25,0.93,"#font[62]{CMS} #scale[0.8]{#font[52]{Simulation}}")
     tla.SetTextFont(42)
     tla.DrawLatexNDC(0.66,0.93,"#sqrt{s} = 13 TeV")
-    outname = "plots/table_sig_systs_" + directory + "_M" + str(GLUINOMASS) + ".pdf"
+    if one_pdf:
+        if directory == binList[0][0]:
+            outname = "plots/table_sig_systs_all.pdf("
+        elif directory == binList[len(binList)-1][0]:
+            outname = "plots/table_sig_systs_all.pdf)"
+        else:
+            outname = "plots/table_sig_systs_all.pdf"
+
+    else:
+         outname = "plots/table_sig_systs_" + directory +".pdf"
+
+         
     c2.Print(outname)
-    
+
+
+
+
+
+            
