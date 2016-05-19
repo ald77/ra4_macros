@@ -86,8 +86,8 @@ int main(int argc, char *argv[])
   nbins = bins.size();
 
   std::string dataCardPath = gSystem->pwd();
-  dataCardPath += "/variations/sum_rescaled.root";
-  //std::string dataCardPath("/homes/cawest/rpv_2016/ra4_macros/variations/sum_rescaled.root");
+  if(includeSignalRegion) dataCardPath += "/variations/sum_rescaled_mconly.root";
+  else dataCardPath += "/variations/sum_rescaled.root";
   TFile *variations = TFile::Open(dataCardPath.c_str());
   std::ofstream file;
   std::string filename("datacard_M");

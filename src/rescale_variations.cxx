@@ -8,7 +8,13 @@ bool isBlinded(const std::string &binName, const std::vector<std::string>& blind
 
 int main()
 {
-  TFile *f = TFile::Open("variations/sum_rescaled.root", "update");
+  // for signal injection studies, only want to use MC as nuisance parameters
+  // are different for data in sideband regions and MC
+  bool mcOnly=true;
+
+  std::string rootfile("variations/sum_rescaled.root");
+  if(mcOnly) rootfile = "variations/sum_rescaled_mconly.root";
+  TFile *f = TFile::Open(rootfile.c_str(), "update");
 
   // samples for which MC statistics should be considered
   std::vector<std::string> mcStatisticsList = {"signal_M1000", "signal_M1100", "signal_M1200", "signal_M1300", "signal_M1400", "qcd", "ttbar"};
@@ -16,6 +22,9 @@ int main()
   std::vector<std::string> rescaleList = {"qcd_flavor", "qcd_mur", "qcd_muf", "qcd_murf",
 					  "ttbar_pt", "jes", "lep_eff",
   					  "ttbar_mur", "ttbar_muf", "ttbar_murf"};
+  // signal list
+  std::vector<std::string> signalList = {"signal_M1000", "signal_M1100", "signal_M1200", "signal_M1300", "signal_M1400"};
+  std::vector<std::string> signalRescaleList = {"signal_mur", "signal_murf", "signal_murf"};
   std::vector<std::string> upAndDown = {"Up", "Down"};
   std::vector<std::string> binNames = {"bin0", "bin1", "bin2", // bins for control region fit
 				       "bin3", "bin4", "bin5", // bins for control region fit
@@ -24,6 +33,7 @@ int main()
 				       "bin13", "bin14", "bin15"}; // signal bins
   std::vector<std::string> blindedBins = {"bin10", "bin11", "bin12",
 					  "bin13", "bin14", "bin15"};
+  if(mcOnly) blindedBins = binNames;
 
   unsigned int nbins=binNames.size();
   
@@ -64,6 +74,24 @@ int main()
 	rescale->Write();
       }
     }
+    // rescale signal systematics
+    for(auto isignal : signalList) {
+      for(unsigned int isyst=0; isyst<signalRescaleList.size(); isyst++) {
+	for(unsigned int idir=0; idir<upAndDown.size(); idir++) {
+	  TString histnameNominal(Form("%s/%s", binNames.at(ibin).c_str(), isignal.c_str()));
+	  std::cout << "Getting histogram " << histnameNominal << std::endl;
+	  TString histnameRescale(Form("%s/%s_%s%s", binNames.at(ibin).c_str(), isignal.c_str(), signalRescaleList.at(isyst).c_str(), upAndDown.at(idir).c_str()));
+	  //	  histnameRescale = Form("%s/%s%s", binNames.at(ibin).c_str(), signalRescaleList.at(isyst).c_str(), upAndDown.at(idir).c_str());
+	  std::cout << "Getting signal histogram " << histnameRescale << std::endl;
+	  TH1F *nominal = static_cast<TH1F*>(f->Get(histnameNominal));
+	  TH1F *rescale = static_cast<TH1F*>(f->Get(histnameRescale));
+	  if(rescale->Integral()!=0) {
+	    rescale->Scale(nominal->Integral()/rescale->Integral());
+	  }
+	  rescale->Write();
+	}
+      }
+    } // end rescaling of signal systematics
 
     // add histograms for MC statistics so that Barlow-Beeston method can be implemented
     // ignore variations for samples with very small contributions

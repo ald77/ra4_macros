@@ -28,6 +28,7 @@ def writetemplate():
     outfile.write('Output = PATH/logs/VARTYPE.out\n')
     outfile.write('Log = PATH/logs/VARTYPE.log\n')
     outfile.write('arguments = "VARTYPE"\n')
+    outfile.write('request_memory = 3 GB\n')
     outfile.write('Queue\n')
     outfile.close()
 
