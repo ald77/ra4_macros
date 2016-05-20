@@ -158,7 +158,7 @@ systList.append(["jer","Jet energy resolution",5,1])
 systList.append(["w_pdf","PDF",46,1])
 systList.append(["mur","Renormalization scale",6,1])
 systList.append(["muf","Factorization scale",7,1])
-systList.append(["murf","Renormalization and factorization scale",8,1])
+systList.append(["murf","Renorm. and factorization scale",8,1])
 systList.append(["gs","Gluon splitting",9,1])
 
 systList.append(["pileup","Pileup",11,1])
@@ -252,7 +252,7 @@ for ibin in binList:
     ROOT.gStyle.SetPadRightMargin()
     ROOT.gStyle.SetPadLeftMargin(0.12) #so it's not messed by larger table margin each iteration of the loop
     c = ROOT.TCanvas()
-    leg = ROOT.TLegend(0.12,0.7,0.54,0.92)
+    leg = ROOT.TLegend(0.12,0.5,0.64,0.92)
     table = ROOT.TH2F("table_"+directory,"",nbinsX,-0.5,nbinsX-0.5,nSyst,0,nSyst)
     systHists_sym = []
 
@@ -346,9 +346,9 @@ for ibin in binList:
     tla.SetTextFont(42)
     tla.DrawLatexNDC(0.71,0.93,"#sqrt{s} = 13 TeV")
 #    tla.SetTextSize(0.045)
-    tla.DrawLatexNDC(0.17, 0.65, ibin[3])
-    tla.DrawLatexNDC(0.17, 0.6, ibin[1])
-    tla.DrawLatexNDC(0.17, 0.55, ibin[2])
+    tla.DrawLatexNDC(0.17, 0.45, ibin[3])
+    tla.DrawLatexNDC(0.17, 0.4, ibin[1])
+    tla.DrawLatexNDC(0.17, 0.35, ibin[2])
     if one_pdf:
         if directory == binList[0][0]:
             outname = "plots/bkg_systs_all.pdf("
