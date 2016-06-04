@@ -100,50 +100,50 @@ int main(){
   TFile *out = new TFile(outFile.c_str(), "recreate");
 
   if(useOldMethod) {
-    makeCSVHist(out, s_jetht, "data_low_njet", "njets<10");
+    makeCSVHist(out, s_jetht, "data_low_njet", "(trig[11] || trig[12])&&njets<10");
     makeCSVHist(out, s_qcd, "QCD_b_low_njet", "jets_hflavor==5 && njets<10");
     makeCSVHist(out, s_qcd, "QCD_c_low_njet", "jets_hflavor==4 && njets<10");
     makeCSVHist(out, s_qcd, "QCD_l_low_njet", "jets_hflavor==0 && njets<10");
     makeCSVHist(out, s_other, "other_low_njet", "njets<10");
     
-    makeCSVHist(out, s_jetht, "data_high_njet", "njets>=10"); 
+    makeCSVHist(out, s_jetht, "data_high_njet", "(trig[11] || trig[12])&&njets>=10"); 
     makeCSVHist(out, s_qcd, "QCD_b_high_njet", "jets_hflavor==5 && njets>=10");
     makeCSVHist(out, s_qcd, "QCD_c_high_njet", "jets_hflavor==4 && njets>=10");
     makeCSVHist(out, s_qcd, "QCD_l_high_njet", "jets_hflavor==0 && njets>=10");
     makeCSVHist(out, s_other, "other_high_njet", "njets>=10");
     
-    makeCSVHist(out, s_jetht, "data_low_njet_low_mj", "njets<10 && mj>500 && mj<800");
+    makeCSVHist(out, s_jetht, "data_low_njet_low_mj", "(trig[11] || trig[12])&&njets<10 && mj>500 && mj<800");
     makeCSVHist(out, s_qcd, "QCD_b_low_njet_low_mj", "jets_hflavor==5 && njets<10 && mj>500 && mj<800");
     makeCSVHist(out, s_qcd, "QCD_c_low_njet_low_mj", "jets_hflavor==4 && njets<10 && mj>500 && mj<800");
     makeCSVHist(out, s_qcd, "QCD_l_low_njet_low_mj", "jets_hflavor==0 && njets<10 && mj>500 && mj<800");
     makeCSVHist(out, s_other, "other_low_njet_low_mj", "njets<10 && mj>500 && mj<800");
     
-    makeCSVHist(out, s_jetht, "data_low_njet_high_mj", "njets<10 && mj>500 && mj>=800");
+    makeCSVHist(out, s_jetht, "data_low_njet_high_mj", "(trig[11] || trig[12])&&njets<10 && mj>500 && mj>=800");
     makeCSVHist(out, s_qcd, "QCD_b_low_njet_high_mj", "jets_hflavor==5 && njets<10 && mj>=800");
     makeCSVHist(out, s_qcd, "QCD_c_low_njet_high_mj", "jets_hflavor==4 && njets<10 && mj>=800");
     makeCSVHist(out, s_qcd, "QCD_l_low_njet_high_mj", "jets_hflavor==0 && njets<10 && mj>=800");
     makeCSVHist(out, s_other, "other_low_njet_high_mj", "njets<10 && mj>=800");
   }
   else {
-    makeCSVHist(out, s_jetht, "data_low_njet", "njets<8");
+    makeCSVHist(out, s_jetht, "data_low_njet", "(trig[11] || trig[12])&&njets<8");
     makeCSVHist(out, s_qcd, "QCD_b_low_njet", "Sum$(abs(jets_hflavor)==5)>0 && njets<8");
     makeCSVHist(out, s_qcd, "QCD_c_low_njet", "Sum$(abs(jets_hflavor)==5)==0 && Sum$(abs(jets_hflavor)==4)>0  && njets<8");
     makeCSVHist(out, s_qcd, "QCD_l_low_njet", "Sum$(abs(jets_hflavor)==5)==0 && Sum$(abs(jets_hflavor)==4)==0 && njets<8");
     makeCSVHist(out, s_other, "other_low_njet", "njets<8");
     
-    makeCSVHist(out, s_jetht, "data_high_njet", "njets>=8"); 
+    makeCSVHist(out, s_jetht, "data_high_njet", "(trig[11] || trig[12])&&njets>=8"); 
     makeCSVHist(out, s_qcd, "QCD_b_high_njet", "Sum$(abs(jets_hflavor)==5)>0 && njets>=8");
     makeCSVHist(out, s_qcd, "QCD_c_high_njet", "Sum$(abs(jets_hflavor)==5)==0 && Sum$(abs(jets_hflavor)==4)>0 && njets>=8");
     makeCSVHist(out, s_qcd, "QCD_l_high_njet", "Sum$(abs(jets_hflavor)==5)==0 && Sum$(abs(jets_hflavor)==4)==0 && njets>=8");
     makeCSVHist(out, s_other, "other_high_njet", "njets>=8");
     
-    makeCSVHist(out, s_jetht, "data_low_njet_low_mj", "njets<8 && mj>500 && mj<800");
+    makeCSVHist(out, s_jetht, "data_low_njet_low_mj", "(trig[11] || trig[12])&&njets<8 && mj>500 && mj<800");
     makeCSVHist(out, s_qcd, "QCD_b_low_njet_low_mj", "Sum$(abs(jets_hflavor)==5)>0 && njets<8 && mj>500 && mj<800");
     makeCSVHist(out, s_qcd, "QCD_c_low_njet_low_mj", "Sum$(abs(jets_hflavor)==5)==0 && Sum$(abs(jets_hflavor)==4)>0 && njets<8 && mj>500 && mj<800");
     makeCSVHist(out, s_qcd, "QCD_l_low_njet_low_mj", "Sum$(abs(jets_hflavor)==5)==0 && Sum$(abs(jets_hflavor)==4)==0 && njets<8 && mj>500 && mj<800");
     makeCSVHist(out, s_other, "other_low_njet_low_mj", "njets<8 && mj>500 && mj<800");
     
-    makeCSVHist(out, s_jetht, "data_low_njet_high_mj", "njets<8 && mj>500 && mj>=800");
+    makeCSVHist(out, s_jetht, "data_low_njet_high_mj", "(trig[11] || trig[12])&&njets<8 && mj>500 && mj>=800");
     makeCSVHist(out, s_qcd, "QCD_b_low_njet_high_mj", "Sum$(abs(jets_hflavor)==5)>0 && njets<8 && mj>=800");
     makeCSVHist(out, s_qcd, "QCD_c_low_njet_high_mj", "Sum$(abs(jets_hflavor)==5)==0 && Sum$(abs(jets_hflavor)==4)>0 && njets<8 && mj>=800");
     makeCSVHist(out, s_qcd, "QCD_l_low_njet_high_mj", "Sum$(abs(jets_hflavor)==5)==0 && Sum$(abs(jets_hflavor)==4)==0 && njets<8 && mj>=800");
