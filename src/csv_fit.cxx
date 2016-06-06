@@ -134,7 +134,14 @@ int main(int argc, char *argv[])
 
   Int_t status = fit->Fit();
   if(status==0) {
-    std::cout << "chi^2/ndof from TFractionFitter: " << fit->GetChisquare() << "/" << fit->GetNDF() << ", prob = " << fit->GetProb() << std::endl;
+    // get degrees of freedom (the fitter does not calculate the number of degrees of freedom correctly
+    // when there are fixed parameters
+    const std::vector<ROOT::Fit::ParameterSettings>& settings = fitter->Config().ParamsSettings();
+    int ndof = maxbin;
+    for (auto isetting : settings) {
+      if(!isetting.IsFixed()) ndof--;
+    }
+    std::cout << "chi^2/ndof: " << fit->GetChisquare() << "/" << ndof << ", prob = " << fit->GetProb() << std::endl;
     data->SetMinimum(0);
     data->GetXaxis()->SetNdivisions(505);
     data->SetMarkerSize(1);
@@ -278,7 +285,7 @@ int main(int argc, char *argv[])
     	      << "other: " << other_ratio << std::endl;
     c->Print(Form("plots/csvfit_%s.pdf", fitType.Data()));
 
-    std::cout << "chi^2/ndof from TFractionFitter: " << fit->GetChisquare() << "/" << fit->GetNDF() << ", prob = " << fit->GetProb() << std::endl;
+    std::cout << "chi^2/ndof from TFractionFitter: " << fit->GetChisquare() << "/" << ndof << ", prob = " << fit->GetProb() << std::endl;
     float chi2 =0.;
     for(int ib =1; ib<=sum->GetNbinsX();ib++){
       /*std::cout<<"Data yield: "<<data->GetBinContent(ib)<<std::endl;

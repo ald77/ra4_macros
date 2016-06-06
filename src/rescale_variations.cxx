@@ -24,7 +24,7 @@ int main()
   					  "ttbar_mur", "ttbar_muf", "ttbar_murf"};
   // signal list
   std::vector<std::string> signalList = {"signal_M1000", "signal_M1100", "signal_M1200", "signal_M1300", "signal_M1400"};
-  std::vector<std::string> signalRescaleList = {"signal_mur", "signal_murf", "signal_murf"};
+  std::vector<std::string> signalRescaleList = {"signal_mur", "signal_muf", "signal_murf"};
   std::vector<std::string> upAndDown = {"Up", "Down"};
   std::vector<std::string> binNames = {"bin0", "bin1", "bin2", // bins for control region fit
 				       "bin3", "bin4", "bin5", // bins for control region fit
@@ -47,6 +47,11 @@ int main()
     std::string ttbar_pdf("ttbar_w_pdf");
     ttbar_pdf+=std::to_string(i);    
     rescaleList.push_back(ttbar_pdf);
+    for(auto isignal : signalList) {
+      std::string signal_pdf("w_pdf");
+      signal_pdf+=std::to_string(i);
+      signalRescaleList.push_back(signal_pdf);
+    }
   }
 
   for(unsigned int ibin=0; ibin<nbins; ibin++) {
