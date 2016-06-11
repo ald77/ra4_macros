@@ -105,9 +105,9 @@ systList.append(["pileup","Pileup",6,1])
 systList.append(["isr","Initial state radiation",7,1])
 systList.append(["lep_eff","Lepton efficiency",8,1])
 systList.append(["signal_mur","Renormalization scale",9,1])
-systList.append(["signal_muf","Factorization scale",10,1])
-systList.append(["signal_murf","Renorm.+fact. scale",11,1])
-systList.append(["pdf","PDF",12,1])
+systList.append(["signal_muf","Factorization scale",11,1])
+systList.append(["signal_murf","Renorm.+fact. scale",12,1])
+systList.append(["pdf","PDF",13,1])
 systList.append(["mc_stat","MC statistics",1,2]) #must be done last!
 
 nSyst = len(systList)
@@ -209,7 +209,7 @@ for ibin in binList:
         systHists_sym[isys-1].SetLineColor(syst[2])
         systHists_sym[isys-1].SetLineStyle(syst[3])
         systHists_sym[isys-1].SetLineWidth(2)
-        systHists_sym[isys-1].SetMaximum(1.)
+        systHists_sym[isys-1].SetMaximum(0.4)
         systHists_sym[isys-1].SetMinimum(0.)
         systHists_sym[isys-1].SetAxisRange(1,4,"X")
         systHists_sym[isys-1].SetStats(0)
@@ -234,14 +234,14 @@ for ibin in binList:
     tla.DrawLatexNDC(0.17, 0.55, ibin[2])
     if one_pdf:
         if directory == binList[0][0]:
-            outname = "plots/sig_systs_all.pdf("
+            outname = "plots/sig_systs_all_m" + str(GLUINOMASS) + ".pdf"
         elif directory == binList[len(binList)-1][0]:
-            outname = "plots/sig_systs_all.pdf)"
+            outname = "plots/sig_systs_all_m" + str(GLUINOMASS) + ".pdf"
         else:
-            outname = "plots/sig_systs_all.pdf"
+            outname = "plots/sig_systs_all_m" + str(GLUINOMASS) + ".pdf"
 
     else:
-         outname = "plots/sig_systs_" + directory +".pdf"
+         outname = "plots/sig_systs_" + directory + "_m" + str(GLUINOMASS) + ".pdf"
     print "outname is " +outname
     c.Print(outname)
 
@@ -250,7 +250,7 @@ for ibin in binList:
     ROOT.gStyle.SetPadRightMargin(0.2)
     c2 = ROOT.TCanvas()
     table.GetXaxis().SetNdivisions(505)
-    table.SetMaximum(50)
+    table.SetMaximum(20)
     table.SetMinimum(0)
     table.SetStats(0)
     table.SetAxisRange(0.5,4.499,"X")
@@ -269,14 +269,14 @@ for ibin in binList:
     tla.DrawLatexNDC(0.66,0.93,"#sqrt{s} = 13 TeV")
     if one_pdf:
         if directory == binList[0][0]:
-            outname = "plots/table_sig_systs_all.pdf("
+            outname = "plots/table_sig_systs_all_m" + str(GLUINOMASS) + ".pdf"
         elif directory == binList[len(binList)-1][0]:
-            outname = "plots/table_sig_systs_all.pdf)"
+            outname = "plots/table_sig_systs_all_m" + str(GLUINOMASS) + ".pdf"
         else:
-            outname = "plots/table_sig_systs_all.pdf"
+            outname = "plots/table_sig_systs_all_m" + str(GLUINOMASS) + ".pdf"
 
     else:
-         outname = "plots/table_sig_systs_" + directory +".pdf"
+         outname = "plots/table_sig_systs_" + directory + "_m" + str(GLUINOMASS) + ".pdf"
 
          
     c2.Print(outname)
