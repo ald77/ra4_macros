@@ -234,9 +234,9 @@ for ibin in binList:
     tla.DrawLatexNDC(0.17, 0.55, ibin[2])
     if one_pdf:
         if directory == binList[0][0]:
-            outname = "plots/sig_systs_all_m" + str(GLUINOMASS) + ".pdf"
+            outname = "plots/sig_systs_all_m" + str(GLUINOMASS) + ".pdf("
         elif directory == binList[len(binList)-1][0]:
-            outname = "plots/sig_systs_all_m" + str(GLUINOMASS) + ".pdf"
+            outname = "plots/sig_systs_all_m" + str(GLUINOMASS) + ".pdf)"
         else:
             outname = "plots/sig_systs_all_m" + str(GLUINOMASS) + ".pdf"
 
@@ -269,9 +269,9 @@ for ibin in binList:
     tla.DrawLatexNDC(0.66,0.93,"#sqrt{s} = 13 TeV")
     if one_pdf:
         if directory == binList[0][0]:
-            outname = "plots/table_sig_systs_all_m" + str(GLUINOMASS) + ".pdf"
+            outname = "plots/table_sig_systs_all_m" + str(GLUINOMASS) + ".pdf("
         elif directory == binList[len(binList)-1][0]:
-            outname = "plots/table_sig_systs_all_m" + str(GLUINOMASS) + ".pdf"
+            outname = "plots/table_sig_systs_all_m" + str(GLUINOMASS) + ".pdf)"
         else:
             outname = "plots/table_sig_systs_all_m" + str(GLUINOMASS) + ".pdf"
 
