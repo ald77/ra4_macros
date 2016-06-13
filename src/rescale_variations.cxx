@@ -10,7 +10,7 @@ int main()
 {
   // for signal injection studies, only want to use MC as nuisance parameters
   // are different for data in sideband regions and MC
-  bool mcOnly=true;
+  bool mcOnly=false;
 
   std::string rootfile("variations/sum_rescaled.root");
   if(mcOnly) rootfile = "variations/sum_rescaled_mconly.root";
@@ -30,9 +30,9 @@ int main()
 				       "bin3", "bin4", "bin5", // bins for control region fit
 				       "bin6", "bin7", "bin8", "bin9", // lower mj bins
 				       "bin10", "bin11", "bin12", // signal bins
-				       "bin13", "bin14", "bin15"}; // signal bins
+				       "bin13", "bin14", "bin15","bin16","bin17"}; // signal bins
   std::vector<std::string> blindedBins = {"bin10", "bin11", "bin12",
-					  "bin13", "bin14", "bin15"};
+					  "bin13", "bin14", "bin15","bin16","bin17"};
   if(mcOnly) blindedBins = binNames;
 
   unsigned int nbins=binNames.size();

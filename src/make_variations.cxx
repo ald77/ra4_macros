@@ -149,6 +149,11 @@ void outputHistograms(std::vector<sfeats>& Samples, std::string variation)
 				   "nbm>0&&ht>1500&&njets>=10&&(nmus+nels)==0&&mj>=800",
 				   "nbm>0&&ht>1200&&njets>=6&&njets<=7&&(nmus+nels)==1&&mj>=800",
 				   "nbm>0&&ht>1200&&njets>=8&&(nmus+nels)==1&&mj>=800",
+
+				   //Missing regions
+				   "nbm>0&&ht>1500&&njets>=8&&njets<=9&&(nmus+nels)==0&&mj>=500&&mj<800",
+				   "nbm>0&&ht>1500&&njets>=8&&njets<=9&&(nmus+nels)==0&&mj>=800",
+
   };
 
   // maximum number of b-tagged jets
