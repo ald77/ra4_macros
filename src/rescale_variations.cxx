@@ -10,7 +10,7 @@ int main()
 {
   // for signal injection studies, only want to use MC as nuisance parameters
   // are different for data in sideband regions and MC
-  bool mcOnly=false;
+  bool mcOnly=true;
 
   std::string rootfile("variations/sum_rescaled.root");
   if(mcOnly) rootfile = "variations/sum_rescaled_mconly.root";
@@ -76,6 +76,7 @@ int main()
 	if(rescale->Integral()!=0) {
 	  rescale->Scale(nominal->Integral()/rescale->Integral());
 	}
+	//rescale->Write("",TObject::kOverwrite);
 	rescale->Write();
       }
     }
@@ -93,6 +94,7 @@ int main()
 	  if(rescale->Integral()!=0) {
 	    rescale->Scale(nominal->Integral()/rescale->Integral());
 	  }
+	  //rescale->Write("",TObject::kOverwrite);
 	  rescale->Write();
 	}
       }
@@ -117,6 +119,8 @@ int main()
 	TString downname(Form("%s_mcstat_%s_%s_nb%dDown", nominal->GetName(), isample.c_str(), binname.Data(), ib-1));
 	up->SetName(upname);
 	down->SetName(downname);
+	//up->Write("",TObject::kOverwrite);
+	//down->Write("",TObject::kOverwrite);
 	up->Write();
 	down->Write();
       }
@@ -135,6 +139,7 @@ int main()
 						    + wjets->GetBinContent(i)
 						    + other->GetBinContent(i)));
       }
+      //data_obs->Write("",TObject::kOverwrite);
       data_obs->Write();
     }
 
@@ -142,7 +147,8 @@ int main()
     f->cd("/");
   }
 
-
+  f->Write();
+  f->Close();
 
   return 0;
 }
