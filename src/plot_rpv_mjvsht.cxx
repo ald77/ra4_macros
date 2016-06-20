@@ -14,6 +14,7 @@
 namespace{
   TString plot_type=".pdf";
   TString outdir="rpv_mjvsht";
+
 }
 
 using namespace std;
@@ -109,28 +110,28 @@ int main(){
 
   // S/sqrt(B), Signal, Backround and 0-lepton,1-lepton
   TH2D* h_sig1000[3][2];
-  h_sig1000[0][0] = new TH2D("srb_sig1000_nlep0","S/sqrt(B);HT [GeV];MJ [GeV]",5,1200,2200,5,400,1400);
-  h_sig1000[0][1] = new TH2D("srb_sig1000_nlep1","S/sqrt(B);HT [GeV];MJ [GeV]",5,1200,2200,5,400,1400);
-  h_sig1000[1][0] = new TH2D("s_sig1000_nlep0","S;HT [GeV];MJ [GeV]",5,1200,2200,5,400,1400);
-  h_sig1000[1][1] = new TH2D("s_sig1000_nlep1","S;HT [GeV];MJ [GeV]",5,1200,2200,5,400,1400);
-  h_sig1000[2][0] = new TH2D("b_sig1000_nlep0","B;HT [GeV];MJ [GeV]",5,1200,2200,5,400,1400);
-  h_sig1000[2][1] = new TH2D("b_sig1000_nlep1","B;HT [GeV];MJ [GeV]",5,1200,2200,5,400,1400);
+  h_sig1000[0][0] = new TH2D("srb_sig1000_nlep0","S/sqrt(B);HT>X [GeV];MJ>Y [GeV]",5,1200,2200,5,400,1400);
+  h_sig1000[0][1] = new TH2D("srb_sig1000_nlep1","S/sqrt(B);HT>X [GeV];MJ>Y [GeV]",5,1200,2200,5,400,1400);
+  h_sig1000[1][0] = new TH2D("s_sig1000_nlep0","S;HT>X [GeV];MJ>Y [GeV]",5,1200,2200,5,400,1400);
+  h_sig1000[1][1] = new TH2D("s_sig1000_nlep1","S;HT>X [GeV];MJ>Y [GeV]",5,1200,2200,5,400,1400);
+  h_sig1000[2][0] = new TH2D("b_sig1000_nlep0","B;HT>X [GeV];MJ>Y [GeV]",5,1200,2200,5,400,1400);
+  h_sig1000[2][1] = new TH2D("b_sig1000_nlep1","B;HT>X [GeV];MJ>Y [GeV]",5,1200,2200,5,400,1400);
 
   TH2D* h_sig1200[3][2];
-  h_sig1200[0][0] = new TH2D("srb_sig1200_nlep0","S/sqrt(B);HT [GeV];MJ [GeV]",5,1200,2200,5,400,1400);
-  h_sig1200[0][1] = new TH2D("srb_sig1200_nlep1","S/sqrt(B);HT [GeV];MJ [GeV]",5,1200,2200,5,400,1400);
-  h_sig1200[1][0] = new TH2D("s_sig1200_nlep0","S;HT [GeV];MJ [GeV]",5,1200,2200,5,400,1400);
-  h_sig1200[1][1] = new TH2D("s_sig1200_nlep1","S;HT [GeV];MJ [GeV]",5,1200,2200,5,400,1400);
-  h_sig1200[2][0] = new TH2D("b_sig1200_nlep0","B;HT [GeV];MJ [GeV]",5,1200,2200,5,400,1400);
-  h_sig1200[2][1] = new TH2D("b_sig1200_nlep1","B;HT [GeV];MJ [GeV]",5,1200,2200,5,400,1400);
+  h_sig1200[0][0] = new TH2D("srb_sig1200_nlep0","S/sqrt(B);HT>X [GeV];MJ>Y [GeV]",5,1200,2200,5,400,1400);
+  h_sig1200[0][1] = new TH2D("srb_sig1200_nlep1","S/sqrt(B);HT>X [GeV];MJ>Y [GeV]",5,1200,2200,5,400,1400);
+  h_sig1200[1][0] = new TH2D("s_sig1200_nlep0","S;HT>X [GeV];MJ>Y [GeV]",5,1200,2200,5,400,1400);
+  h_sig1200[1][1] = new TH2D("s_sig1200_nlep1","S;HT>X [GeV];MJ>Y [GeV]",5,1200,2200,5,400,1400);
+  h_sig1200[2][0] = new TH2D("b_sig1200_nlep0","B;HT>X [GeV];MJ>Y [GeV]",5,1200,2200,5,400,1400);
+  h_sig1200[2][1] = new TH2D("b_sig1200_nlep1","B;HT>X [GeV];MJ>Y [GeV]",5,1200,2200,5,400,1400);
 
   TH2D* h_sig1400[3][2];
-  h_sig1400[0][0] = new TH2D("srb_sig1400_nlep0","S/sqrt(B);HT [GeV];MJ [GeV]",5,1200,2200,5,400,1400);
-  h_sig1400[0][1] = new TH2D("srb_sig1400_nlep1","S/sqrt(B);HT [GeV];MJ [GeV]",5,1200,2200,5,400,1400);
-  h_sig1400[1][0] = new TH2D("s_sig1400_nlep0","S;HT [GeV];MJ [GeV]",5,1200,2200,5,400,1400);
-  h_sig1400[1][1] = new TH2D("s_sig1400_nlep1","S;HT [GeV];MJ [GeV]",5,1200,2200,5,400,1400);
-  h_sig1400[2][0] = new TH2D("b_sig1400_nlep0","B;HT [GeV];MJ [GeV]",5,1200,2200,5,400,1400);
-  h_sig1400[2][1] = new TH2D("b_sig1400_nlep1","B;HT [GeV];MJ [GeV]",5,1200,2200,5,400,1400);
+  h_sig1400[0][0] = new TH2D("srb_sig1400_nlep0","S/sqrt(B);HT>X [GeV];MJ>Y [GeV]",5,1200,2200,5,400,1400);
+  h_sig1400[0][1] = new TH2D("srb_sig1400_nlep1","S/sqrt(B);HT>X [GeV];MJ>Y [GeV]",5,1200,2200,5,400,1400);
+  h_sig1400[1][0] = new TH2D("s_sig1400_nlep0","S;HT>X [GeV];MJ>Y [GeV]",5,1200,2200,5,400,1400);
+  h_sig1400[1][1] = new TH2D("s_sig1400_nlep1","S;HT>X [GeV];MJ>Y [GeV]",5,1200,2200,5,400,1400);
+  h_sig1400[2][0] = new TH2D("b_sig1400_nlep0","B;HT>X [GeV];MJ>Y [GeV]",5,1200,2200,5,400,1400);
+  h_sig1400[2][1] = new TH2D("b_sig1400_nlep1","B;HT>X [GeV];MJ>Y [GeV]",5,1200,2200,5,400,1400);
 
   for(unsigned int ilep=0; ilep<lepcuts.size(); ilep++){
     for(unsigned int iht=0; iht<htcuts.size(); iht++){
@@ -151,13 +152,32 @@ int main(){
 	h_sig1400[2][ilep]->Fill(htcuts[iht].Atoi(),mjcuts[imj].Atoi(),bkg_yields[ilep][iht][imj]);
       }
     }
+    TCanvas c1;
+    gStyle->SetOptStat(0);
+    gStyle->SetPaintTextFormat("8.2f");
     for(int iplot=0; iplot<3; iplot++){
-      TCanvas c1;
-      gStyle->SetOptStat(0);
+      //Sig1000
+      h_sig1000[iplot][ilep]->SetMarkerSize(2);
+      h_sig1000[iplot][ilep]->GetXaxis()->CenterLabels(true);
+      h_sig1000[iplot][ilep]->GetXaxis()->SetNdivisions(205);
+      h_sig1000[iplot][ilep]->GetYaxis()->CenterLabels(true);
+      h_sig1000[iplot][ilep]->GetYaxis()->SetNdivisions(205);
       h_sig1000[iplot][ilep]->Draw("colz text");
       c1.SaveAs("./plots/"+outdir+"/"+h_sig1000[iplot][ilep]->GetName()+plot_type);
+      //Sig1200
+      h_sig1200[iplot][ilep]->SetMarkerSize(2);
+      h_sig1200[iplot][ilep]->GetXaxis()->CenterTitle(true);
+      h_sig1200[iplot][ilep]->GetXaxis()->SetNdivisions(205);
+      h_sig1200[iplot][ilep]->GetYaxis()->CenterTitle(true);
+      h_sig1200[iplot][ilep]->GetYaxis()->SetNdivisions(205);
       h_sig1200[iplot][ilep]->Draw("colz text");
       c1.SaveAs("./plots/"+outdir+"/"+h_sig1200[iplot][ilep]->GetName()+plot_type);
+      //Sig1400
+      h_sig1400[iplot][ilep]->SetMarkerSize(2);
+      h_sig1400[iplot][ilep]->GetXaxis()->CenterTitle(true);
+      h_sig1400[iplot][ilep]->GetXaxis()->SetNdivisions(205);
+      h_sig1400[iplot][ilep]->GetYaxis()->CenterTitle(true);
+      h_sig1400[iplot][ilep]->GetYaxis()->SetNdivisions(205);
       h_sig1400[iplot][ilep]->Draw("colz text");
       c1.SaveAs("./plots/"+outdir+"/"+h_sig1400[iplot][ilep]->GetName()+plot_type);
     }
