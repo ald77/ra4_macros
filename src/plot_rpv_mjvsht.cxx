@@ -166,17 +166,17 @@ int main(){
       c1.SaveAs("./plots/"+outdir+"/"+h_sig1000[iplot][ilep]->GetName()+plot_type);
       //Sig1200
       h_sig1200[iplot][ilep]->SetMarkerSize(2);
-      h_sig1200[iplot][ilep]->GetXaxis()->CenterTitle(true);
+      h_sig1200[iplot][ilep]->GetXaxis()->CenterLabels(true);
       h_sig1200[iplot][ilep]->GetXaxis()->SetNdivisions(205);
-      h_sig1200[iplot][ilep]->GetYaxis()->CenterTitle(true);
+      h_sig1200[iplot][ilep]->GetYaxis()->CenterLabels(true);
       h_sig1200[iplot][ilep]->GetYaxis()->SetNdivisions(205);
       h_sig1200[iplot][ilep]->Draw("colz text");
       c1.SaveAs("./plots/"+outdir+"/"+h_sig1200[iplot][ilep]->GetName()+plot_type);
       //Sig1400
       h_sig1400[iplot][ilep]->SetMarkerSize(2);
-      h_sig1400[iplot][ilep]->GetXaxis()->CenterTitle(true);
+      h_sig1400[iplot][ilep]->GetXaxis()->CenterLabels(true);
       h_sig1400[iplot][ilep]->GetXaxis()->SetNdivisions(205);
-      h_sig1400[iplot][ilep]->GetYaxis()->CenterTitle(true);
+      h_sig1400[iplot][ilep]->GetYaxis()->CenterLabels(true);
       h_sig1400[iplot][ilep]->GetYaxis()->SetNdivisions(205);
       h_sig1400[iplot][ilep]->Draw("colz text");
       c1.SaveAs("./plots/"+outdir+"/"+h_sig1400[iplot][ilep]->GetName()+plot_type);
