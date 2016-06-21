@@ -120,6 +120,8 @@ std::vector<float> fjets_poscsv
 std::vector<int> fjets_btags
 std::vector<int> fjets_nconst
 
+std::vector<float> jets_pt_res
+
 int nfjets08
 float mj08
 std::vector<float> fjets08_pt

@@ -17,7 +17,7 @@
 #include "utilities_macros.hpp"
 
 namespace {
-  TString ntuple_date("2016_05_31");
+  TString ntuple_date("2016_06_14");
   TString lumi = "5";
   TString plot_type=".pdf";
   TString plot_style="RA4";
@@ -29,13 +29,13 @@ int main(){
   styles style(plot_style);
   style.setDefaultStyle();
 
-  TString folder="/cms2r0/babymaker/babies/"+ntuple_date+"/mc/skim_1lht500met200/";
+  TString folder="/cms2r0/babymaker/babies/"+ntuple_date+"/mc/skim_baseline/";
 
   vector<TString> s_tt;
   s_tt.push_back(folder+"*_TTJets*Lept*");
   s_tt.push_back(folder+"*_TTJets*HT*");
   vector<TString> s_wjets;
-  s_wjets.push_back(folder+"*WJetsToLNu*");
+  s_wjets.push_back(folder+"*_WJetsToLNu*");
   vector<TString> s_single;
   s_single.push_back(folder+"*_ST_*");
   vector<TString> s_ttv;
@@ -88,34 +88,66 @@ int main(){
   vector<pfeats> pies;
   TString baseline = "ht>500&&met>200&&nleps==1&&nveto==0&&njets>=6&&nbm>=1&&mj14>250&&pass&&stitch";
 
+  /*  ///////////////////////////////////////////////////////////////
+  //LOW MET
+  //Low nj
+  pies.push_back(pfeats(bkgs,baseline+"&&met<=350&&((nbm>=1&&mj14<=400)||(mj14>400&&njets<=8&&nbm==1))","lowmet_lownj_lownb"));
+  pies.push_back(pfeats(bkgs,baseline+"&&met<=350&&((nbm>=1&&mj14<=400)||(mj14>400&&njets<=8&&nbm==2))","lowmet_lownj_mednb"));
+  pies.push_back(pfeats(bkgs,baseline+"&&met<=350&&((nbm>=1&&mj14<=400)||(mj14>400&&njets<=8&&nbm>=3))","lowmet_lownj_highnb"));
+  //High nj
+  pies.push_back(pfeats(bkgs,baseline+"&&met<=350&&((nbm>=1&&mj14<=400)||(mj14>400&&njets>=9&&nbm==1))","lowmet_highnj_lownb"));
+  pies.push_back(pfeats(bkgs,baseline+"&&met<=350&&((nbm>=1&&mj14<=400)||(mj14>400&&njets>=9&&nbm==2))","lowmet_highnj_mednb"));
+  pies.push_back(pfeats(bkgs,baseline+"&&met<=350&&((nbm>=1&&mj14<=400)||(mj14>400&&njets>=9&&nbm>=3))","lowmet_highnj_highnb"));
+  //MED MET
+  //Low nj
+  pies.push_back(pfeats(bkgs,baseline+"&&met>350&&met<=500&&((nbm>=1&&mj14<=400)||(mj14>400&&njets<=8&&nbm==1))","medmet_lownj_lownb"));
+  pies.push_back(pfeats(bkgs,baseline+"&&met>350&&met<=500&&((nbm>=1&&mj14<=400)||(mj14>400&&njets<=8&&nbm==2))","medmet_lownj_mednb"));
+  pies.push_back(pfeats(bkgs,baseline+"&&met>350&&met<=500&&((nbm>=1&&mj14<=400)||(mj14>400&&njets<=8&&nbm>=3))","medmet_lownj_highnb"));
+  //High nj
+  pies.push_back(pfeats(bkgs,baseline+"&&met>350&&met<=500&&((nbm>=1&&mj14<=400)||(mj14>400&&njets>=9&&nbm==1))","medmet_highnj_lownb"));
+  pies.push_back(pfeats(bkgs,baseline+"&&met>350&&met<=500&&((nbm>=1&&mj14<=400)||(mj14>400&&njets>=9&&nbm==2))","medmet_highnj_mednb"));
+  pies.push_back(pfeats(bkgs,baseline+"&&met>350&&met<=500&&((nbm>=1&&mj14<=400)||(mj14>400&&njets>=9&&nbm>=3))","medmet_highnj_highnb"));
+  //HIGH MET
+  //Low nj
+  pies.push_back(pfeats(bkgs,baseline+"&&met>500&&((nbm>=1&&mj14<=400)||(mj14>400&&njets<=8&&nbm==1))","highmet_lownj_lownb"));
+  pies.push_back(pfeats(bkgs,baseline+"&&met>500&&((nbm>=1&&mj14<=400)||(mj14>400&&njets<=8&&nbm==2))","highmet_lownj_mednb"));
+  pies.push_back(pfeats(bkgs,baseline+"&&met>500&&((nbm>=1&&mj14<=400)||(mj14>400&&njets<=8&&nbm>=3))","highmet_lownj_highnb"));
+  //High nj
+  pies.push_back(pfeats(bkgs,baseline+"&&met>500&&((nbm>=1&&mj14<=400)||(mj14>400&&njets>=9&&nbm==1))","highmet_highnj_lownb"));
+  pies.push_back(pfeats(bkgs,baseline+"&&met>500&&((nbm>=1&&mj14<=400)||(mj14>400&&njets>=9&&nbm==2))","highmet_highnj_mednb"));
+  pies.push_back(pfeats(bkgs,baseline+"&&met>500&&((nbm>=1&&mj14<=400)||(mj14>400&&njets>=9&&nbm>=3))","highmet_highnj_highnb"));
+  /////////////////////////////////////////////////////////////// */
+
+
+  // NO NB=1 INTEGRATION
   ///////////////////////////////////////////////////////////////
   //LOW MET
   //Low nj
-  pies.push_back(pfeats(bkgs,baseline+"&&met<=350&&(mj14<=400||(mj14>400&&njets<=8&&nbm==1))","lowmet_lownj_lownb"));
-  pies.push_back(pfeats(bkgs,baseline+"&&met<=350&&(mj14<=400||(mj14>400&&njets<=8&&nbm==2))","lowmet_lownj_mednb"));
-  pies.push_back(pfeats(bkgs,baseline+"&&met<=350&&(mj14<=400||(mj14>400&&njets<=8&&nbm>=3))","lowmet_lownj_highnb"));
+  pies.push_back(pfeats(bkgs,baseline+"&&met<=350&&((nbm==1&&mj14<=400)||(mj14>400&&njets<=8&&nbm==1))","no_nb1int_lowmet_lownj_lownb"));
+  pies.push_back(pfeats(bkgs,baseline+"&&met<=350&&((nbm>=2&&mj14<=400)||(mj14>400&&njets<=8&&nbm==2))","no_nb1int_lowmet_lownj_mednb"));
+  pies.push_back(pfeats(bkgs,baseline+"&&met<=350&&((nbm>=2&&mj14<=400)||(mj14>400&&njets<=8&&nbm>=3))","no_nb1int_lowmet_lownj_highnb"));
   //High nj
-  pies.push_back(pfeats(bkgs,baseline+"&&met<=350&&(mj14<=400||(mj14>400&&njets>=9&&nbm==1))","lowmet_highnj_lownb"));
-  pies.push_back(pfeats(bkgs,baseline+"&&met<=350&&(mj14<=400||(mj14>400&&njets>=9&&nbm==2))","lowmet_highnj_mednb"));
-  pies.push_back(pfeats(bkgs,baseline+"&&met<=350&&(mj14<=400||(mj14>400&&njets>=9&&nbm>=3))","lowmet_highnj_highnb"));
+  pies.push_back(pfeats(bkgs,baseline+"&&met<=350&&((nbm==1&&mj14<=400)||(mj14>400&&njets>=9&&nbm==1))","no_nb1int_lowmet_highnj_lownb"));
+  pies.push_back(pfeats(bkgs,baseline+"&&met<=350&&((nbm>=2&&mj14<=400)||(mj14>400&&njets>=9&&nbm==2))","no_nb1int_lowmet_highnj_mednb"));
+  pies.push_back(pfeats(bkgs,baseline+"&&met<=350&&((nbm>=2&&mj14<=400)||(mj14>400&&njets>=9&&nbm>=3))","no_nb1int_lowmet_highnj_highnb"));
   //MED MET
   //Low nj
-  pies.push_back(pfeats(bkgs,baseline+"&&met>350&&met<=500&&(mj14<=400||(mj14>400&&njets<=8&&nbm==1))","medmet_lownj_lownb"));
-  pies.push_back(pfeats(bkgs,baseline+"&&met>350&&met<=500&&(mj14<=400||(mj14>400&&njets<=8&&nbm==2))","medmet_lownj_mednb"));
-  pies.push_back(pfeats(bkgs,baseline+"&&met>350&&met<=500&&(mj14<=400||(mj14>400&&njets<=8&&nbm>=3))","medmet_lownj_highnb"));
+  pies.push_back(pfeats(bkgs,baseline+"&&met>350&&met<=500&&((nbm==1&&mj14<=400)||(mj14>400&&njets<=8&&nbm==1))","no_nb1int_medmet_lownj_lownb"));
+  pies.push_back(pfeats(bkgs,baseline+"&&met>350&&met<=500&&((nbm>=2&&mj14<=400)||(mj14>400&&njets<=8&&nbm==2))","no_nb1int_medmet_lownj_mednb"));
+  pies.push_back(pfeats(bkgs,baseline+"&&met>350&&met<=500&&((nbm>=2&&mj14<=400)||(mj14>400&&njets<=8&&nbm>=3))","no_nb1int_medmet_lownj_highnb"));
   //High nj
-  pies.push_back(pfeats(bkgs,baseline+"&&met>350&&met<=500&&(mj14<=400||(mj14>400&&njets>=9&&nbm==1))","medmet_highnj_lownb"));
-  pies.push_back(pfeats(bkgs,baseline+"&&met>350&&met<=500&&(mj14<=400||(mj14>400&&njets>=9&&nbm==2))","medmet_highnj_mednb"));
-  pies.push_back(pfeats(bkgs,baseline+"&&met>350&&met<=500&&(mj14<=400||(mj14>400&&njets>=9&&nbm>=3))","medmet_highnj_highnb"));
+  pies.push_back(pfeats(bkgs,baseline+"&&met>350&&met<=500&&((nbm==1&&mj14<=400)||(mj14>400&&njets>=9&&nbm==1))","no_nb1int_medmet_highnj_lownb"));
+  pies.push_back(pfeats(bkgs,baseline+"&&met>350&&met<=500&&((nbm>=2&&mj14<=400)||(mj14>400&&njets>=9&&nbm==2))","no_nb1int_medmet_highnj_mednb"));
+  pies.push_back(pfeats(bkgs,baseline+"&&met>350&&met<=500&&((nbm>=2&&mj14<=400)||(mj14>400&&njets>=9&&nbm>=3))","no_nb1int_medmet_highnj_highnb"));
   //HIGH MET
   //Low nj
-  pies.push_back(pfeats(bkgs,baseline+"&&met>500&&(mj14<=400||(mj14>400&&njets<=8&&nbm==1))","highmet_lownj_lownb"));
-  pies.push_back(pfeats(bkgs,baseline+"&&met>500&&(mj14<=400||(mj14>400&&njets<=8&&nbm==2))","highmet_lownj_mednb"));
-  pies.push_back(pfeats(bkgs,baseline+"&&met>500&&(mj14<=400||(mj14>400&&njets<=8&&nbm>=3))","highmet_lownj_highnb"));
+  pies.push_back(pfeats(bkgs,baseline+"&&met>500&&((nbm==1&&mj14<=400)||(mj14>400&&njets<=8&&nbm==1))","no_nb1int_highmet_lownj_lownb"));
+  pies.push_back(pfeats(bkgs,baseline+"&&met>500&&((nbm>=2&&mj14<=400)||(mj14>400&&njets<=8&&nbm==2))","no_nb1int_highmet_lownj_mednb"));
+  pies.push_back(pfeats(bkgs,baseline+"&&met>500&&((nbm>=2&&mj14<=400)||(mj14>400&&njets<=8&&nbm>=3))","no_nb1int_highmet_lownj_highnb"));
   //High nj
-  pies.push_back(pfeats(bkgs,baseline+"&&met>500&&(mj14<=400||(mj14>400&&njets>=9&&nbm==1))","highmet_highnj_lownb"));
-  pies.push_back(pfeats(bkgs,baseline+"&&met>500&&(mj14<=400||(mj14>400&&njets>=9&&nbm==2))","highmet_highnj_mednb"));
-  pies.push_back(pfeats(bkgs,baseline+"&&met>500&&(mj14<=400||(mj14>400&&njets>=9&&nbm>=3))","highmet_highnj_highnb"));
+  pies.push_back(pfeats(bkgs,baseline+"&&met>500&&((nbm==1&&mj14<=400)||(mj14>400&&njets>=9&&nbm==1))","no_nb1int_highmet_highnj_lownb"));
+  pies.push_back(pfeats(bkgs,baseline+"&&met>500&&((nbm>=2&&mj14<=400)||(mj14>400&&njets>=9&&nbm==2))","no_nb1int_highmet_highnj_mednb"));
+  pies.push_back(pfeats(bkgs,baseline+"&&met>500&&((nbm>=2&&mj14<=400)||(mj14>400&&njets>=9&&nbm>=3))","no_nb1int_highmet_highnj_highnb"));
   ///////////////////////////////////////////////////////////////
 
   for(size_t pie = 0; pie < pies.size(); ++pie){

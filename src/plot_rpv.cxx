@@ -30,7 +30,7 @@ int main(int argc, char *argv[]){
   std::string extraWeight("w_pu_rpv/eff_trig");
   //  std::string extraWeight("(w_btag_loose*sys_bctag_loose[0]/w_btag)*w_pu_rpv/eff_trig");
   //  std::string extraWeight("(w_btag_loose*sys_udsgtag_loose[1]/w_btag)*w_pu_rpv/eff_trig");
-  bool showData=true;
+  bool showData=false;
   bool nminus1=false;
   TString outDir("rpv_base");
   if(argc==2) {
@@ -137,8 +137,10 @@ int main(int argc, char *argv[]){
   TString cuts("(nmus+nels)==1");
  
   std::vector<TString> basecut = {"(nmus+nels)==0", "(nmus+nels)==1"};
-  std::vector<TString> mjcuts = {"mj<=300", "mj>300&&mj<=500", "mj>500&&mj<=800", "mj>800"};
-  std::vector<TString> njetcuts = {"njets>=4&&njets<=5", "njets>=6&&njets<=7", "njets>=8&&njets<=9", "njets>=10"};
+  std::vector<TString> mjcuts = {"mj>500"};
+  std::vector<TString> njetcuts = {"njets>=4"};
+  //  std::vector<TString> mjcuts = {"mj<=300", "mj>300&&mj<=500", "mj>500&&mj<=800", "mj>800"};
+  //  std::vector<TString> njetcuts = {"njets>=4&&njets<=5", "njets>=6&&njets<=7", "njets>=8&&njets<=9", "njets>=10"};
   TString htcut("ht>1500");
   if(!nminus1) {
     for(auto ibasecut : basecut) {
@@ -162,8 +164,14 @@ int main(int argc, char *argv[]){
 	  // vars.back().normalize = true;
 	  // vars.push_back(hfeats("dr_bb",15, 0, 6, rpv_sam, "#DeltaR_{b#bar{b}}", cuts));
 	  // vars.back().normalize = true;
-	  vars.push_back(hfeats("nbm", 4, 1, 5, rpv_sam, "N_{b}", cuts));
-	  vars.back().normalize = true;
+	  //vars.push_back(hfeats("nbm", 4, 1, 5, rpv_sam, "N_{b}", cuts));
+	  //vars.back().normalize = true;
+	  vars.push_back(hfeats("jets_pt", 20, 0, 1000, rpv_sam, "b_{jet}^{Reco} p_{T}", cuts+"&&jets_csv>0.890"));
+	  vars.push_back(hfeats("jets_pt", 20, 0, 1000, rpv_sam, "b_{jet}^{Reco} p_{T}", cuts+"&&jets_csv>0.605"));
+	  vars.push_back(hfeats("jets_pt", 20, 0, 1000, rpv_sam, "b_{jet}^{Reco} p_{T}", cuts+"&&jets_csv>0.605&&jets_csv<=0.890",500));
+	  //	  vars.back().normalize = true;
+	  vars.push_back(hfeats("jets_pt", 20, 0, 1000, rpv_sam, "b_{jet}^{True} p_{T}", cuts+"&&abs(jets_hflavor)==5"));
+	  //	  vars.back().normalize = true;
 	  // vars.push_back(hfeats("Sum$(jets_csv>0.605)", 4, 1, 5, rpv_sam, "N_{b,loose}", cuts));
 	  // vars.back().normalize = true;
 	  // vars.push_back(hfeats("njets",20, 0, 20, rpv_sam, "N_{jets}", cuts));
@@ -190,8 +198,8 @@ int main(int argc, char *argv[]){
 	}
 	cuts = ibasecut + "&&" + htcut + "&&" + ijetcut + "&&" + imjcut;
 
-	vars.push_back(hfeats("njets",20, 0, 20, rpv_sam, "N_{jets}", cuts));
-	vars.back().normalize = true; vars.back().whichPlots = "1";
+	//vars.push_back(hfeats("njets",20, 0, 20, rpv_sam, "N_{jets}", cuts));
+	//vars.back().normalize = true; vars.back().whichPlots = "1";
       }
       
     }
@@ -209,8 +217,8 @@ int main(int argc, char *argv[]){
 	}
 	cuts = ibasecut + "&&" + htcut + "&&" + ijetcut;
 
-	vars.push_back(hfeats("mj",25, 0, 2500, rpv_sam, "M_{J} (GeV)", cuts));
-	vars.back().normalize = true; vars.back().whichPlots = "1";
+	//vars.push_back(hfeats("mj",25, 0, 2500, rpv_sam, "M_{J} (GeV)", cuts));
+	//vars.back().normalize = true; vars.back().whichPlots = "1";
 
 
       }    

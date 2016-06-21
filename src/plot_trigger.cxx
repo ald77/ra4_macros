@@ -27,9 +27,9 @@
 #include "utilities_macros.hpp"
 
 namespace  {
-  bool do_rund = true;
+  bool do_rund = false;
   bool do_dps = false;
-  bool do_rpv = false;
+  bool do_rpv = true;
   TString plot_type = ".pdf";
 }
 

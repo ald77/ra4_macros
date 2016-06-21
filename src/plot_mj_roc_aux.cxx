@@ -24,17 +24,28 @@ int main(){
   if(Contains(hostname, "cms") || Contains(hostname, "compute-"))  
     bfolder = "/net/cms2"; // In laptops, you can't create a /net folder
   
-  TString folder=bfolder+"/cms2r0/babymaker/babies/2015_01_30/small_tree/skim_ht500met200/";
+  TString folder=bfolder+"/cms2r0/babymaker/babies/2016_04_29/mc/merged_baseline/";
+  TString scan_folder=bfolder+"/cms2r0/babymaker/babies/2016_04_29/mc/T1tttt/skim_baseline/";
 
   // NTUPLES
   vector<TString> v_t1t;
-  v_t1t.push_back(folder+"*T1tttt*1500_*PU20*");
+  v_t1t.push_back(folder+"*T1tttt*1500_*-100_*");
 
   vector<TString> v_t1tc;
-  v_t1tc.push_back(folder+"*T1tttt*1200_*PU20*");
+  v_t1tc.push_back(folder+"*T1tttt*1200_*-800_*");
+
+  vector<TString> v_t1t_1800_200;
+  v_t1t_1800_200.push_back(scan_folder+"*T1tttt*1800_*-200_*");
+
+  vector<TString> v_t1t_1600_1000;
+  v_t1t_1600_1000.push_back(scan_folder+"*T1tttt*1600_*-1000_*");
+
+  vector<TString> v_t1t_1400_1000;
+  v_t1t_1400_1000.push_back(scan_folder+"*T1tttt*1400_*-1000_*");  
 
   vector<TString> v_tt;
-  v_tt.push_back(folder+"*TTJet*");
+  v_tt.push_back(folder+"*TTJets*HT*");
+  v_tt.push_back(folder+"*TTJets*Lept*");
 
   ////////////////////////// SAMPLES for the axes /////////////////////////
   TString lsp = "{#lower[-0.1]{#tilde{#chi}}#lower[0.2]{#scale[0.85]{^{0}}}#kern[-1.3]{#scale[0.85]{_{1}}}}";
@@ -47,17 +58,29 @@ int main(){
   tt_t1tc.push_back(sample_class(t1t_label+" (1200,800)", v_t1tc));
   tt_t1tc.push_back(sample_class("t#bar{t}", v_tt));
 
+  vector<sample_class> tt_t1t_1800_200; 
+  tt_t1t_1800_200.push_back(sample_class(t1t_label+" (1800,200)", v_t1t_1800_200));
+  tt_t1t_1800_200.push_back(sample_class("t#bar{t}", v_tt));
+
+  vector<sample_class> tt_t1t_1600_1000; 
+  tt_t1t_1600_1000.push_back(sample_class(t1t_label+" (1600,1000)", v_t1t_1600_1000));
+  tt_t1t_1600_1000.push_back(sample_class("t#bar{t}", v_tt));
+
+  vector<sample_class> tt_t1t_1400_1000; 
+  tt_t1t_1400_1000.push_back(sample_class(t1t_label+" (1400,1000)", v_t1t_1400_1000));
+  tt_t1t_1400_1000.push_back(sample_class("t#bar{t}", v_tt));
 
 
   ///////////////////// VARIABLES for each ROC /////////////////////
   int ht_col(1), mj_col(kAzure+2), col2(kGreen+1), col3(kRed+1), col4(kOrange+7);
   int mj_style(8); float mj_size(2.);
-  vector<marker_class> mj_points, ht_points, met_points, nj_points;
-  mj_points.push_back(marker_class(200,  mj_size, mj_col, mj_style));
+  vector<marker_class> mj_points, mj08_points, mj14_points, mj16_points, ht_points, met_points, nj_points;
+
   mj_points.push_back(marker_class(400,  4, mj_col, 29));
-  mj_points.push_back(marker_class(600,  mj_size, mj_col, mj_style));
-  //mj_points.push_back(marker_class(800,  mj_size, mj_col, mj_style));
-  //mj_points.push_back(marker_class(1000,  mj_size, mj_col, mj_style));
+  mj08_points.push_back(marker_class(400,  4, col2, 29));
+  mj14_points.push_back(marker_class(400,  4, col3, 29));
+  mj16_points.push_back(marker_class(400,  4, col4, 29));
+
 
   ht_points.push_back(marker_class(1000,  4, ht_col, 29));
   ht_points.push_back(marker_class(1500,  mj_size, ht_col, mj_style));
@@ -87,24 +110,27 @@ int main(){
 
   vector<var_class> mj_sizes;
   //mj_sizes.push_back(var_class("ht",4000,0,"H_{T}",ht_col,2,ht_points));
-  mj_sizes.push_back(var_class("mj_r08",2200,0,"M_{J} R=0.8",col2,1));
-  mj_sizes.push_back(var_class("mj_r10",2200,0,"M_{J} R=1.0",col3,1));
-  mj_sizes.push_back(var_class("mj_30", 2200,0,"M_{J} R=1.2",mj_col,1,mj_points));
-  mj_sizes.push_back(var_class("mj_r14",2200,0,"M_{J} R=1.4",col4,1));
+  mj_sizes.push_back(var_class("mj08",2200,0,"M_{J} R=0.8",col2,1));
+  mj_sizes.push_back(var_class("mj",2200,0,"M_{J} R=1.2",mj_col,1,mj_points));
+  mj_sizes.push_back(var_class("mj14", 2200,0,"M_{J} R=1.4",col3,1,mj14_points));
+  mj_sizes.push_back(var_class("mj16",2200,0,"M_{J} R=1.6",col4,1,mj16_points));
 
   ///////////////////// ROCs to plot /////////////////////
   vector<TString> vs_sam, vs_vars;
   vector<vector<sample_class>*> v_sam; 
   v_sam.push_back(&tt_t1t); vs_sam.push_back("tt_t1t");
   v_sam.push_back(&tt_t1tc); vs_sam.push_back("tt_t1tc");
+  v_sam.push_back(&tt_t1t_1800_200); vs_sam.push_back("tt_t1t_1800_200");
+  v_sam.push_back(&tt_t1t_1600_1000); vs_sam.push_back("tt_t1t_1600_1000");
+  v_sam.push_back(&tt_t1t_1400_1000); vs_sam.push_back("tt_t1t_1400_1000");
 
   vector<vector<var_class>*> v_vars;
   //v_vars.push_back(&mj_general); vs_vars.push_back("general");
-  v_vars.push_back(&mj_cands); vs_vars.push_back("cands");
+  //  v_vars.push_back(&mj_cands); vs_vars.push_back("cands");
   v_vars.push_back(&mj_sizes); vs_vars.push_back("size");
 
   vector<TString> v_cuts;
-  v_cuts.push_back("ht>500&&met>200");
+  v_cuts.push_back("ht>500&&met>200&&njets>=6&&nbm>=1&&nleps==1&&stitch");
  
   for(unsigned ivar(0); ivar<v_vars.size(); ivar++){
     for(unsigned icut(0); icut<v_cuts.size(); icut++){
@@ -183,8 +209,8 @@ void DrawROC(vector<sample_class> samples, vector<var_class> vars, TString cuts,
   cuts.ReplaceAll(">=","ge"); cuts.ReplaceAll("<=","se"); 
   cuts.ReplaceAll(">","g"); cuts.ReplaceAll("<","s"); cuts.ReplaceAll("=","");
   cuts.ReplaceAll("+",""); 
-  TString pname("plots/roc_"+tag+"_"+cuts+".pdf");  
-  //can.Print(pname);
+  TString pname("plots/roc/roc_"+tag+"_"+cuts+".pdf");  
+  can.Print(pname);
   can.SetLogx(1);
   can.SetLogy(1);
   pname.ReplaceAll("roc_","log_roc_");

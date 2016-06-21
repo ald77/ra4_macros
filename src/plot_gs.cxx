@@ -38,21 +38,23 @@ int main(){
 
   vector<TString> s_tt_MLM;
   s_tt_MLM.push_back(filestring("TTJets_TuneCUETP8M1_13TeV-madgraphMLM", false));
-
   vector<TString> s_tt_amcatnlo;
   s_tt_amcatnlo.push_back(filestring("TTJets_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8", false));
-
   vector<TString> s_tt_powheg;
   s_tt_powheg.push_back(filestring("TT_TuneCUETP8M1_13TeV-powheg-pythia8", false));
+  vector<TString> s_qcd;
+  s_qcd.push_back(filestring("QCD*HT", false));
 
   // Reading ntuples
   vector<sfeats> Samples; 
-  Samples.push_back(sfeats(s_tt_powheg, "t#bar{t}, GS up 20%", ra4::c_t1tttt, 2, cutandweight("1", extraWeightGsUp)));
+  //  Samples.push_back(sfeats(s_tt_powheg, "t#bar{t}, GS up 20%", ra4::c_t1tttt, 2, cutandweight("1", extraWeightGsUp)));
+  //  Samples.back().doStack = false;
+  Samples.push_back(sfeats(s_tt_MLM, "t#bar{t}", ra4::c_t1tttt, 1, cutandweight("1", extraWeight)));
   Samples.back().doStack = false;
-  Samples.push_back(sfeats(s_tt_powheg, "t#bar{t}, nominal", ra4::c_t1tttt, 1, cutandweight("1", extraWeight)));
+  Samples.push_back(sfeats(s_qcd, "QCD", ra4::c_t1tttt, 1, cutandweight("1", extraWeight)));
   Samples.back().doStack = false;
-  Samples.push_back(sfeats(s_tt_powheg, "t#bar{t}, GS down %20", kBlack, 2, cutandweight("1", extraWeightGsDown)));
-  Samples.back().doStack = false;
+  //  Samples.push_back(sfeats(s_tt_powheg, "t#bar{t}, GS down %20", kBlack, 2, cutandweight("1", extraWeightGsDown)));
+  //  Samples.back().doStack = false;
   //  Samples.push_back(sfeats(s_tt_powheg, "t#bar{t}, GS only", kBlue, 1, cutandweight("1", extraWeightGs)));
   //  Samples.back().doStack = false;
 
@@ -74,10 +76,13 @@ int main(){
 
       std::vector<TString> cutlist = {"(nmus+nels)==0", 
 				      "(nmus+nels)==1",
-				      "(nmus+nels)==0&&nbm>=1&&mj>500&&njets>=6&&ht>1500",
-				      "(nmus+nels)==1&&nbm>=1&&mj>500&&njets>=6&&ht>1200"};
+				      "(nmus+nels)==0&&nbm>=1&&mj>500&&njets>=4&&ht>1500",
+				      "(nmus+nels)==1&&nbm>=1&&mj>500&&njets>=4&&ht>1200"};
       for(auto icut : cutlist) {
 	vars.push_back(hfeats("nbm",6, 0, 6, ra4_sam, "N_{b}", icut));
+	vars.push_back(hfeats("dr_bb",8, 0, 6.4, ra4_sam, "dr_bb", icut));
+	vars.push_back(hfeats("dr_bb",8, 0, 6.4, ra4_sam, "dr_bb", icut+"&&fromGS"));
+	vars.push_back(hfeats("dr_bb",8, 0, 6.4, ra4_sam, "dr_bb", icut+"&&!fromGS"));
 	vars.back().normalize = true;
       }
 

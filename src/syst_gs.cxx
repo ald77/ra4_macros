@@ -51,19 +51,19 @@ int main(){
   other.Add(folder+"*TTJets_SingleLeptFromT_TuneCUETP8M1_13TeV-madgraphMLM-pythia8_ext1*");
   other.Add(folder+"*TTJets_SingleLeptFromTbar_TuneCUETP8M1_13TeV-madgraphMLM-pythia8*");
   other.Add(folder+"*TTJets_SingleLeptFromTbar_TuneCUETP8M1_13TeV-madgraphMLM-pythia8_ext1*");
-  other.Add(folder+"*WJetsToLNu_HT-600ToInf_TuneCUETP8M1_13TeV-madgraphMLM-pythia8*");
   other.Add(folder+"*ST_s-channel_4f_leptonDecays_13TeV-amcatnlo-pythia8_TuneCUETP8M1*");
   other.Add(folder+"*ST_t-channel_antitop_4f_leptonDecays_13TeV-powheg-pythia8_TuneCUETP8M1*");
   other.Add(folder+"*ST_t-channel_top_4f_leptonDecays_13TeV-powheg-pythia8_TuneCUETP8M1*");
   other.Add(folder+"*ST_tW_antitop_5f_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M1*");
   other.Add(folder+"*ST_tW_top_5f_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M1*");
   other.Add(folder+"*DYJetsToLL_M-50_HT-600toInf_TuneCUETP8M1_13TeV-madgraphMLM-pythia8*");
-  other.Add(folder+"*TTWJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-madspin-pythia8*");
-  other.Add(folder+"*TTWJetsToQQ_TuneCUETP8M1_13TeV-amcatnloFXFX-madspin-pythia8*");
-  other.Add(folder+"*TTZToQQ_TuneCUETP8M1_13TeV-amcatnlo-pythia8*");
-  other.Add(folder+"*TTZToLLNuNu_M-10_TuneCUETP8M1_13TeV-amcatnlo-pythia8*");
   other.Add(folder+"*ttHJetTobb_M125_13TeV_amcatnloFXFX_madspin_pythia8*");
   other.Add(folder+"*TTTT_TuneCUETP8M1_13TeV-amcatnlo-pythia8*");
+  other.Add(folder+"*TTWJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-madspin-pythia8*");
+  other.Add(folder+"*TTWJetsToQQ_TuneCUETP8M1_13TeV-amcatnloFXFX-madspin-pythia8*");
+  other.Add(folder+"*TTZToLLNuNu_M-10_TuneCUETP8M1_13TeV-amcatnlo-pythia8*");
+  other.Add(folder+"*TTZToQQ_TuneCUETP8M1_13TeV-amcatnlo-pythia8*");
+  other.Add(folder+"*WJetsToLNu_HT-600ToInf_TuneCUETP8M1_13TeV-madgraphMLM-pythia8*");
   other.Add(folder+"*WJetsToQQ_HT-600ToInf_TuneCUETP8M1_13TeV-madgraphMLM-pythia8*");
   other.Add(folder+"*ZJetsToQQ_HT600toInf_13TeV-madgraph*");
 
@@ -130,9 +130,9 @@ int main(){
   out->Close();
 
   // Format Plots
-  printPlots(dmc_ldrbb_allmj, "M_{J}>500", "dmc_ldrbb_allmj.pdf");
-  printPlots(dmc_ldrbb_lowmj, "500 #leq M_{J} #leq 800", "dmc_ldrbb_lowmj.pdf");
-  printPlots(dmc_ldrbb_highmj, "M_{J}>800", "dmc_ldrbb_highmj.pdf");
+  printPlots(dmc_ldrbb_allmj, "M_{J}>500", "syst_gs/dmc_ldrbb_allmj.pdf");
+  printPlots(dmc_ldrbb_lowmj, "500 #leq M_{J} #leq 800", "syst_gs/dmc_ldrbb_lowmj.pdf");
+  printPlots(dmc_ldrbb_highmj, "M_{J}>800", "syst_gs/dmc_ldrbb_highmj.pdf");
 
   // print 1D Dists after the normalization in the high dr_bb region
   if(make1D){
