@@ -114,6 +114,7 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
   }
   TLine line; line.SetLineColor(1); line.SetLineWidth(5); line.SetLineStyle(2);
   TLine line2; line2.SetLineColor(kBlack); line2.SetLineWidth(5); line2.SetLineStyle(1);
+  TLine line3; line3.SetLineColor(kBlack); line3.SetLineWidth(2); line3.SetLineStyle(3);
   vector< vector<TH1D*> > histo[2];
   vector<TH1D*> varhisto;
   vector<float> nentries;
@@ -344,6 +345,7 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
 	  hratio_data->SetLineColor(kBlack);
 	  hratio_data->SetMarkerStyle(20);
 	  hratio_data->Draw("e0");
+	  if(vars[var].hline>0) line3.DrawLine(vars[var].minx, vars[var].hline, vars[var].maxx, vars[var].hline);
 	  
 	  if(vars[var].varname=="mj"){
 	    int xshade[] = {0,250,250,0,0};
@@ -667,6 +669,7 @@ hfeats::hfeats(TString ivarname, int inbins, float iminx, float imaxx, vector<in
   if(nevents.size() != samples.size() ) cout<<"hfeats samples/nevents size mismatch: "<<ititle<<endl;
   whichPlots = "0"; // Make all 4 [log_]lumi and [log_]shapes plots; For 2D: 1=linear, 2=log
   normalize=false;
+  hline = -1.;
   
   string ctitle(title.Data()); // Needed because effing TString can't handle square brackets
   if(!(ctitle.find("GeV")==std::string::npos)) unit = "GeV";
@@ -692,6 +695,7 @@ hfeats::hfeats(TString ivarnamex, TString ivarnamey, int inbinsx, float iminx, f
   format_tag();
   unit = "";
   maxYaxis = -1.;
+  hline = -1.;
 
   string ctitle(title.Data()); // Needed because effing TString can't handle square brackets
   if(!(ctitle.find("GeV")==std::string::npos)) unit = "GeV";
@@ -717,6 +721,7 @@ hfeats::hfeats(TString ivarname, int inbins, float *ibinning, vector<int> isampl
   else nevents = inevents;
   if(nevents.size() != samples.size() ) cout<<"hfeats samples/nevents size mismatch: "<<ititle<<endl;
   whichPlots = "0"; // Make all 4 [log_]lumi and [log_]shapes plots; For 2D: 1=linear, 2=log
+  hline = -1.;
   
   string ctitle(title.Data()); // Needed because effing TString can't handle square brackets
   if(!(ctitle.find("GeV")==std::string::npos)) unit = "GeV";

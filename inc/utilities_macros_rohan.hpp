@@ -61,7 +61,7 @@ public:
   TString title, titlex, titley, varname, varnamex, varnamey, tag, cuts, unit;
   int nbins, nbinsx, nbinsy;
   float *binning;
-  float minx, maxx, miny, maxy, cut, cutx, cuty,  maxYaxis, maxRatio;
+  float minx, maxx, miny, maxy, cut, cutx, cuty,  maxYaxis, maxRatio, hline;
   std::vector<int> samples;
   TString tagname;
   void format_tag();
