@@ -15,7 +15,7 @@ else:
   
 
 verbose = True
-one_pdf = False #put all plots in one pdf file
+one_pdf = True #put all plots in one pdf file
 
 # function to get pointers to histogram in root file
 def get_hist_with_overflow(file,histname):
@@ -160,10 +160,14 @@ systList.append(["mur","Renormalization scale",6,1])
 systList.append(["muf","Factorization scale",7,1])
 systList.append(["murf","Renorm. and fact. scale",8,1])
 #systList.append(["gs","Gluon splitting",9,1])
+systList.append(["gs45","Gluon splitting (Njets=4,5)",9,1])
+systList.append(["gs67","Gluon splitting (Njets=6,7)",10,1])
+systList.append(["gs89","Gluon splitting (Njets=8,9)",11,1])
+systList.append(["gs10Inf","Gluon splitting (Njets=10+)",12,1])
 
-systList.append(["pileup","Pileup",11,1])
-systList.append(["qcd_flavor","QCD flavor",12,1])
-systList.append(["lep_eff","Lepton efficiency",13,1])
+systList.append(["pileup","Pileup",13,1])
+systList.append(["qcd_flavor","QCD flavor",14,1])
+systList.append(["lep_eff","Lepton efficiency",15,1])
 systList.append(["mc_stat","MC statistics",1,2])
 
 nSyst = len(systList)
@@ -371,9 +375,10 @@ for ibin in binList:
     ROOT.gStyle.SetPadRightMargin(0.2)
     c2 = ROOT.TCanvas()
     table.GetXaxis().SetNdivisions(505)
-    table.SetMaximum(50)
+    table.SetMaximum(20)
     table.SetMinimum(0)
     table.SetStats(0)
+    table.SetMarkerSize(1.5)
     table.SetAxisRange(0.5,4.499,"X")
     table.SetXTitle("N_{b}")
     table.SetZTitle("Uncertainty [%]")

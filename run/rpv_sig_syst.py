@@ -8,7 +8,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("-i", "--input")
 parser.add_argument("-m", "--mass")
 args = parser.parse_args()
-GLUINOMASS = 1200
+GLUINOMASS = 1000
 if (args.input):
   infile = args.input
 else:
@@ -16,7 +16,7 @@ else:
 if (args.mass):
   GLUINOMASS = args.mass
 
-one_pdf = False #put all plots in one pdf file
+one_pdf = True #put all plots in one pdf file
 verbose = True  
 
 
@@ -196,7 +196,10 @@ for ibin in binList:
 
         #normalize to percentage for humans            
         for i in range(1,systHist.GetNbinsX()+1):
-            table.SetBinContent(i,isys,round(100*systHist.GetBinContent(i),1))
+            if systHist.GetBinContent(i) < 0.001: 
+                table.SetBinContent(i,isys,0.1)
+            else: 
+                table.SetBinContent(i,isys,round(100*systHist.GetBinContent(i),1))
             if verbose:
                 print "symmetrized rel error bin "+str(i)+" "+str(systHist.GetBinContent(i))         
 
@@ -254,6 +257,7 @@ for ibin in binList:
     table.SetMaximum(20)
     table.SetMinimum(0)
     table.SetStats(0)
+    table.SetMarkerSize(1.5)
     table.SetAxisRange(0.5,4.499,"X")
     table.SetXTitle("N_{b}")
     table.SetZTitle("Uncertainty [%]")
