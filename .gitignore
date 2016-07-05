@@ -3,6 +3,8 @@ plots/*
 run/*.exe
 archive
 txt/data_card*
+varscripts
+variations
 
 # Compiled Object files
 *.slo

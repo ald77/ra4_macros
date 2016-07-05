@@ -46,7 +46,7 @@ def writescript():
     outfile.close()
 
 #default path should be changed
-PATH = '/homes/cawest/rpv_2016/ra4_macros'
+PATH = '/homes/jaehyeokyoo/RPV/ra4_macros_heller'
 VARLIST = ['nominal','btag_bc', 'btag_udsg',
            'gs45', 'gs67', 'gs89', 'gs10Inf',
            'jes', 'jer',

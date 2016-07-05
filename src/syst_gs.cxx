@@ -25,6 +25,7 @@ using namespace std;
 
 vector<vector<double> >  getYields(small_tree_rpv &tree, vector<vector<double> >& low_drbb, vector<vector<double> >& high_drbb_err, vector<vector<double> >& low_drbb_err, bool isData=false);
 void printPlots(TGraphErrors *graph, TString title="", TString filename="syst_gs.pdf");
+void printPlotsOverlay(TGraphErrors *graph1, TGraphErrors *graph2, TString title="", TString filename="syst_gs.pdf");
 void print1D(vector<vector<double> > norm);
 double addError(double error, double added_error);
 double divideErrors(double x, double y, double dx, double dy);
@@ -44,7 +45,7 @@ int main(){
   qcd.Add(folder+"*QCD_HT2000toInf_TuneCUETP8M1_13TeV-madgraphMLM-pythia8*");
   qcd.Add(folder+"*QCD_HT2000toInf_TuneCUETP8M1_13TeV-madgraphMLM-pythia8_ext1*");
 
-  small_tree_rpv other(folder+"*TTJets_TuneCUETP8M1_13TeV-madgraphMLM*"); //Skimmed so there are no leptons in the dataset
+  small_tree_rpv other("/net/cms2/cms2r0/jaehyeokyoo/babies/skim_ht1200/*TTJets_TuneCUETP8M1_13TeV-madgraphMLM*"); //ntruleps==0&&ht>1200
   other.Add(folder+"*TTJets_DiLept_TuneCUETP8M1_13TeV-madgraphMLM-pythia8*");
   other.Add(folder+"*TTJets_DiLept_TuneCUETP8M1_13TeV-madgraphMLM-pythia8_ext1*");
   other.Add(folder+"*TTJets_SingleLeptFromT_TuneCUETP8M1_13TeV-madgraphMLM-pythia8*");
@@ -91,8 +92,9 @@ int main(){
 
       // Subtract yields of other
       data_yields_hdrbb[i][j] -= other_yields_hdrbb[i][j];
+      
       // Uncertainty on subtraction of other
-      data_yields_hdrbb_err[i][j] = AddInQuadrature(data_yields_hdrbb_err[i][j], other_yields_hdrbb[i][j]);
+      data_yields_hdrbb_err[i][j] = AddInQuadrature(data_yields_hdrbb_err[i][j], other_yields_hdrbb_err[i][j]);
       
       // Find normalization in high dr_bb region
       norm_hdrbb[i][j] = data_yields_hdrbb[i][j]/qcd_yields_hdrbb[i][j];
@@ -102,10 +104,14 @@ int main(){
       //Get data/mc in low dr_bb region
       dmc_ldrbb[i][j] = data_yields_ldrbb[i][j]/((norm_hdrbb[i][j]*qcd_yields_ldrbb[i][j]) + other_yields_ldrbb[i][j]); 
       // Uncertainty on data/mc in low dr_bb region
-      dmc_ldrbb_err[i][j] = divideErrors(data_yields_ldrbb[i][j], ((norm_hdrbb[i][j]*qcd_yields_ldrbb[i][j]) + other_yields_ldrbb[i][j]), data_yields_ldrbb_err[i][j],
-					 AddInQuadrature( 
-							 divideErrors(data_yields_hdrbb[i][j], qcd_yields_ldrbb[i][j], data_yields_hdrbb_err[i][j], qcd_yields_ldrbb_err[i][j])
-							 , other_yields_ldrbb_err[i][j]));
+      dmc_ldrbb_err[i][j] = divideErrors(data_yields_ldrbb[i][j], 
+                                         (norm_hdrbb[i][j]*qcd_yields_ldrbb[i][j]) + other_yields_ldrbb[i][j], 
+                                         data_yields_ldrbb_err[i][j],
+					                     AddInQuadrature( 
+							                divideErrors(data_yields_hdrbb[i][j], qcd_yields_hdrbb[i][j]/qcd_yields_ldrbb[i][j], data_yields_hdrbb_err[i][j], 
+                                            divideErrors(qcd_yields_hdrbb[i][j], qcd_yields_ldrbb[i][j], qcd_yields_hdrbb_err[i][j], qcd_yields_ldrbb_err[i][j])),
+							                other_yields_ldrbb_err[i][j])
+                                        );
     }
   }
 
@@ -133,6 +139,7 @@ int main(){
   printPlots(dmc_ldrbb_allmj, "M_{J}>500", "syst_gs/dmc_ldrbb_allmj.pdf");
   printPlots(dmc_ldrbb_lowmj, "500 #leq M_{J} #leq 800", "syst_gs/dmc_ldrbb_lowmj.pdf");
   printPlots(dmc_ldrbb_highmj, "M_{J}>800", "syst_gs/dmc_ldrbb_highmj.pdf");
+  printPlotsOverlay(dmc_ldrbb_highmj, dmc_ldrbb_lowmj, "", "syst_gs/dmc_ldrbb_overlaid.pdf");
 
   // print 1D Dists after the normalization in the high dr_bb region
   if(make1D){
@@ -159,8 +166,8 @@ vector<vector<double> >  getYields(small_tree_rpv &tree, vector<vector<double> >
     // Pass filters and trigger for data
     if(isData && (!tree.pass()||!tree.trig()[12])) continue;
 
-    // At least two b-jets
-    if(tree.nbm()<2) continue;
+    // Only two b-jets
+    if(tree.nbm()!=2) continue;
     
     // 0-lepton selection
     if(tree.nleps()==0 && tree.ht()>1500 && tree.mj()>500){
@@ -325,6 +332,45 @@ vector<vector<double> >  getYields(small_tree_rpv &tree, vector<vector<double> >
   return yields_hdrbb;
 } 
 
+void printPlotsOverlay(TGraphErrors *graph1, TGraphErrors *graph2, TString title, TString filename){
+
+  gStyle->SetOptStat(0);
+
+  // Format plot
+  graph1->SetMarkerStyle(20);
+  graph2->SetMarkerStyle(20);
+
+  TCanvas c1;
+  c1.SetGridy(1);
+
+  // Setup TH1F to provide axis labels
+  double x[nnjetbins];
+  for(int i=0; i<nnjetbins; i++)
+    x[i] = i;
+    
+  TH1F* h = new TH1F("h",title,nnjetbins,x[0]-0.5,x[nnjetbins-1]+0.5);
+  for(int i=0; i<nnjetbins; i++){
+    if(i==0) h->GetXaxis()->SetBinLabel(i+1,"4 #leq N_{jets} #leq5");     
+    if(i==1) h->GetXaxis()->SetBinLabel(i+1,"6 #leq N_{jets} #leq7");     
+    if(i==2) h->GetXaxis()->SetBinLabel(i+1,"8 #leq N_{jets} #leq9");     
+    if(i==3) h->GetXaxis()->SetBinLabel(i+1,"N_{jets} #geq10");     
+  }
+  h->GetYaxis()->SetTitle("Data/MC");
+  h->GetYaxis()->SetTitleSize(0.045);
+  h->SetMaximum(1.5);
+  h->SetLabelSize(0.06);
+  h->SetLabelSize(0.06,"Y");
+  h->Draw();
+
+  graph1->SetLineColor(kRed);
+  graph1->SetMarkerColor(kRed);
+  graph1->Draw("P");
+  graph2->Draw("SAME P");
+
+  c1.SaveAs("plots/"+filename);
+
+  h->Delete();
+}
 void printPlots(TGraphErrors *graph, TString title, TString filename){
 
   gStyle->SetOptStat(0);
@@ -373,10 +419,8 @@ void print1D(vector<vector<double> > norm){
     s_rpv_NLO.push_back("/homes/cawest/CMSSW_7_4_14/src/babymaker/RPV_M1000_NLO.root");
 
     vector<TString> s_tt_had;
-    // this dataset is skimmed to remove the leptonic component
-    s_tt_had.push_back(filestring("TTJets_TuneCUETP8M1_13TeV-madgraphMLM", true));
+    s_tt_had.push_back("/net/cms2/cms2r0/jaehyeokyoo/babies/skim_ht1200/*TTJets_TuneCUETP8M1_13TeV-madgraphMLM*");
     vector<TString> s_tt;
-    //  s_tt.push_back(filestring("TT_TuneCUETP8M1_13TeV-powheg-pythia8"));
     s_tt.push_back(filestring("TTJets_DiLept_TuneCUETP8M1_13TeV-madgraphMLM-pythia8"));
     s_tt.push_back(filestring("TTJets_DiLept_TuneCUETP8M1_13TeV-madgraphMLM-pythia8_ext1"));
     s_tt.push_back(filestring("TTJets_SingleLeptFromT_TuneCUETP8M1_13TeV-madgraphMLM-pythia8"));
@@ -473,20 +517,20 @@ void print1D(vector<vector<double> > norm){
     vector<hfeats> vars;
 
     vector<TString> cuts;
-    cuts.push_back("nleps==0&&ht>1500&&mj>500&&njets>=4&&njets<=5&&nbm>=2"); // 0 leps, All MJ, 4-5 jets
-    cuts.push_back("nleps==0&&ht>1500&&mj>500&&njets>=6&&njets<=7&&nbm>=2"); // 0 leps, All MJ, 6-7 jets
-    cuts.push_back("nleps==0&&ht>1500&&mj>500&&njets>=8&&njets<=9&&nbm>=2"); // 0 leps, All MJ, 8-9 jets
-    cuts.push_back("nleps==0&&ht>1500&&mj>500&&njets>=10&&nbm>=2"); // 0 leps, All MJ, 10+ jets
+    cuts.push_back("nleps==0&&ht>1500&&mj>500&&njets>=4&&njets<=5&&nbm==2"); // 0 leps, All MJ, 4-5 jets
+    cuts.push_back("nleps==0&&ht>1500&&mj>500&&njets>=6&&njets<=7&&nbm==2"); // 0 leps, All MJ, 6-7 jets
+    cuts.push_back("nleps==0&&ht>1500&&mj>500&&njets>=8&&njets<=9&&nbm==2"); // 0 leps, All MJ, 8-9 jets
+    cuts.push_back("nleps==0&&ht>1500&&mj>500&&njets>=10&&nbm==2"); // 0 leps, All MJ, 10+ jets
 
-    cuts.push_back("nleps==0&&ht>1500&&mj>500&&mj<=800&&njets>=4&&njets<=5&&nbm>=2"); // 0 leps, Low MJ, 4-5 jets
-    cuts.push_back("nleps==0&&ht>1500&&mj>500&&mj<=800&&njets>=6&&njets<=7&&nbm>=2"); // 0 leps, Low MJ, 6-7 jets
-    cuts.push_back("nleps==0&&ht>1500&&mj>500&&mj<=800&&njets>=8&&njets<=9&&nbm>=2"); // 0 leps, Low MJ, 8-9 jets
-    cuts.push_back("nleps==0&&ht>1500&&mj>500&&mj<=800&&njets>=10&&nbm>=2"); // 0 leps, Low MJ, 10+ jets
+    cuts.push_back("nleps==0&&ht>1500&&mj>500&&mj<=800&&njets>=4&&njets<=5&&nbm==2"); // 0 leps, Low MJ, 4-5 jets
+    cuts.push_back("nleps==0&&ht>1500&&mj>500&&mj<=800&&njets>=6&&njets<=7&&nbm==2"); // 0 leps, Low MJ, 6-7 jets
+    cuts.push_back("nleps==0&&ht>1500&&mj>500&&mj<=800&&njets>=8&&njets<=9&&nbm==2"); // 0 leps, Low MJ, 8-9 jets
+    cuts.push_back("nleps==0&&ht>1500&&mj>500&&mj<=800&&njets>=10&&nbm==2"); // 0 leps, Low MJ, 10+ jets
 
-    cuts.push_back("nleps==0&&ht>1500&&mj>800&&njets>=4&&njets<=5&&nbm>=2"); // 0 leps, High MJ, 4-5 jets
-    cuts.push_back("nleps==0&&ht>1500&&mj>800&&njets>=6&&njets<=7&&nbm>=2"); // 0 leps, High MJ, 6-7 jets
-    cuts.push_back("nleps==0&&ht>1500&&mj>800&&njets>=8&&njets<=9&&nbm>=2"); // 0 leps, High MJ, 8-9 jets
-    cuts.push_back("nleps==0&&ht>1500&&mj>800&&njets>=10&&nbm>=2"); // 0 leps, High MJ, 10+ jets
+    cuts.push_back("nleps==0&&ht>1500&&mj>800&&njets>=4&&njets<=5&&nbm==2"); // 0 leps, High MJ, 4-5 jets
+    cuts.push_back("nleps==0&&ht>1500&&mj>800&&njets>=6&&njets<=7&&nbm==2"); // 0 leps, High MJ, 6-7 jets
+    cuts.push_back("nleps==0&&ht>1500&&mj>800&&njets>=8&&njets<=9&&nbm==2"); // 0 leps, High MJ, 8-9 jets
+    cuts.push_back("nleps==0&&ht>1500&&mj>800&&njets>=10&&nbm==2"); // 0 leps, High MJ, 10+ jets
 
 
     for(int iBins=0; iBins<nBins; iBins++){

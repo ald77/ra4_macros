@@ -10,7 +10,7 @@ int main()
 {
   // for signal injection studies, only want to use MC as nuisance parameters
   // are different for data in sideband regions and MC
-  bool mcOnly=true;
+  bool mcOnly=false;
 
   std::string rootfile("variations/sum_rescaled.root");
   if(mcOnly) rootfile = "variations/sum_rescaled_mconly.root";
@@ -20,19 +20,23 @@ int main()
   std::vector<std::string> mcStatisticsList = {"signal_M1000", "signal_M1100", "signal_M1200", "signal_M1300", "signal_M1400", "qcd", "ttbar"};
   // systematics for which the template should be rescaled
   std::vector<std::string> rescaleList = {"qcd_flavor", "qcd_mur", "qcd_muf", "qcd_murf",
-					  "ttbar_pt", "jes", "lep_eff",
-  					  "ttbar_mur", "ttbar_muf", "ttbar_murf"};
+					                      "ttbar_pt", "jes", "lep_eff",
+  					                      "ttbar_mur", "ttbar_muf", "ttbar_murf"};
   // signal list
   std::vector<std::string> signalList = {"signal_M1000", "signal_M1100", "signal_M1200", "signal_M1300", "signal_M1400"};
   std::vector<std::string> signalRescaleList = {"signal_mur", "signal_muf", "signal_murf"};
   std::vector<std::string> upAndDown = {"Up", "Down"};
-  std::vector<std::string> binNames = {"bin0", "bin1", "bin2", // bins for control region fit
-				       "bin3", "bin4", "bin5", // bins for control region fit
-				       "bin6", "bin7", "bin8", "bin9", // lower mj bins
-				       "bin10", "bin11", "bin12", // signal bins
-				       "bin13", "bin14", "bin15","bin16","bin17"}; // signal bins
-  std::vector<std::string> blindedBins = {"bin10", "bin11", "bin12",
-					  "bin13", "bin14", "bin15","bin16","bin17"};
+  std::vector<std::string> binNames = { "bin0", "bin1", "bin2", // bins for control region fit
+				                        "bin3", "bin4", "bin5", // bins for control region fit
+				                        "bin6", "bin7", "bin8", "bin9", // lower mj bins
+				                        "bin10", "bin11", "bin12", // signal bins
+				                        "bin13", "bin14", "bin15","bin16","bin17"}; // signal bins
+  //std::vector<std::string> blindedBins = {"bin10", "bin11", "bin12",
+  //					  "bin13", "bin14", "bin15","bin16","bin17"}; // control region fit
+  //std::vector<std::string> blindedBins = {"bin10", "bin12",
+  // 					  "bin13", "bin14", "bin15", "bin17"}; // partial unblinding
+  std::vector<std::string> blindedBins = {}; 
+
   if(mcOnly) blindedBins = binNames;
 
   unsigned int nbins=binNames.size();

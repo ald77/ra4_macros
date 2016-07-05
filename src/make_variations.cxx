@@ -13,6 +13,7 @@
 #include "TString.h"
 #include "TColor.h"
 #include "TFile.h"
+#include "TMath.h"
 
 #include "styles.hpp"
 #include "utilities.hpp"
@@ -76,7 +77,7 @@ std::string cutandweightForVariationsdata(std::string cut, std::string weight)
 
 void setOverflow(TH1F *hist)
 {
-  int maxBin = hist->GetNbinsX();
+  int maxBin = hist->GetNbinsX()+1;
   float lastBinContent = hist->GetBinContent(maxBin-1);
   float overflow = hist->GetBinContent(maxBin);
   hist->SetBinContent(maxBin-1, lastBinContent+overflow);
@@ -132,27 +133,29 @@ void outputHistograms(std::vector<sfeats>& Samples, std::string variation)
   std::cout << "outputHistograms(): " << variation << std::endl;
 
   std::string plotVar("nbm");
-  std::vector<std::string> cuts = {"nbm>0&&ht>1500&&njets>=4&&njets<=5&&(nmus+nels)==0&&mj>=500&&mj<800","nbm>0&&ht>1500&&njets>=6&&njets<=7&&(nmus+nels)==0&&mj>=500&&mj<800",
-				   "nbm>0&&ht>1200&&njets>=4&&njets<=5&&(nmus+nels)==1&&mj>=500&&mj<800", 
-  				   "nbm>0&&ht>1500&&njets>=4&&njets<=5&&(nmus+nels)==0&&mj>=800","nbm>0&&ht>1500&&njets>=6&&njets<=7&&(nmus+nels)==0&&mj>=800",
-				   "nbm>0&&ht>1200&&njets>=4&&njets<=5&&(nmus+nels)==1&&mj>=800",
+  std::vector<std::string> cuts = {
+                   "nbm>0&&ht>1500&&njets>=4&&njets<=5&&(nmus+nels)==0&&mj>=500&&mj<800",   // bin0
+                   "nbm>0&&ht>1500&&njets>=6&&njets<=7&&(nmus+nels)==0&&mj>=500&&mj<800",   // bin1
+				   "nbm>0&&ht>1200&&njets>=4&&njets<=5&&(nmus+nels)==1&&mj>=500&&mj<800",   // bin2
+  				   "nbm>0&&ht>1500&&njets>=4&&njets<=5&&(nmus+nels)==0&&mj>=800",           // bin3 
+                   "nbm>0&&ht>1500&&njets>=6&&njets<=7&&(nmus+nels)==0&&mj>=800",           // bin4
+				   "nbm>0&&ht>1200&&njets>=4&&njets<=5&&(nmus+nels)==1&&mj>=800",           // bin5
 				   // low MJ control regions
-				   "nbm>0&&ht>1500&&njets>=4&&njets<=5&&(nmus+nels)==0&&mj>=300&&mj<500",
-				   "nbm>0&&ht>1500&&njets>=6&&njets<=7&&(nmus+nels)==0&&mj>=300&&mj<500",
-				   "nbm>0&&ht>1500&&njets>=8&&njets<=9&&(nmus+nels)==0&&mj>=300&&mj<500",
-				   "nbm>0&&ht>1500&&njets>=10&&(nmus+nels)==0&&mj>=300&&mj<500",
+				   "nbm>0&&ht>1500&&njets>=4&&njets<=5&&(nmus+nels)==0&&mj>=300&&mj<500",   // bin6
+				   "nbm>0&&ht>1500&&njets>=6&&njets<=7&&(nmus+nels)==0&&mj>=300&&mj<500",   // bin7
+				   "nbm>0&&ht>1500&&njets>=8&&njets<=9&&(nmus+nels)==0&&mj>=300&&mj<500",   // bin8
+				   "nbm>0&&ht>1500&&njets>=10&&(nmus+nels)==0&&mj>=300&&mj<500",            // bin9
 				   // signal regions, low mj
-				   "nbm>0&&ht>1500&&njets>=10&&(nmus+nels)==0&&mj>=500&&mj<800",
-				   "nbm>0&&ht>1200&&njets>=6&&njets<=7&&(nmus+nels)==1&&mj>=500&&mj<800",
-				   "nbm>0&&ht>1200&&njets>=8&&(nmus+nels)==1&&mj>=500&&mj<800",
+				   "nbm>0&&ht>1500&&njets>=10&&(nmus+nels)==0&&mj>=500&&mj<800",            // bin10
+				   "nbm>0&&ht>1200&&njets>=6&&njets<=7&&(nmus+nels)==1&&mj>=500&&mj<800",   // bin11
+				   "nbm>0&&ht>1200&&njets>=8&&(nmus+nels)==1&&mj>=500&&mj<800",             // bin12
 				   // signal regions, high mj
-				   "nbm>0&&ht>1500&&njets>=10&&(nmus+nels)==0&&mj>=800",
-				   "nbm>0&&ht>1200&&njets>=6&&njets<=7&&(nmus+nels)==1&&mj>=800",
-				   "nbm>0&&ht>1200&&njets>=8&&(nmus+nels)==1&&mj>=800",
-
+				   "nbm>0&&ht>1500&&njets>=10&&(nmus+nels)==0&&mj>=800",                    // bin13
+				   "nbm>0&&ht>1200&&njets>=6&&njets<=7&&(nmus+nels)==1&&mj>=800",           // bin14
+				   "nbm>0&&ht>1200&&njets>=8&&(nmus+nels)==1&&mj>=800",                     // bin15
 				   //Missing regions
-				   "nbm>0&&ht>1500&&njets>=8&&njets<=9&&(nmus+nels)==0&&mj>=500&&mj<800",
-				   "nbm>0&&ht>1500&&njets>=8&&njets<=9&&(nmus+nels)==0&&mj>=800",
+				   "nbm>0&&ht>1500&&njets>=8&&njets<=9&&(nmus+nels)==0&&mj>=500&&mj<800",   // bin16
+				   "nbm>0&&ht>1500&&njets>=8&&njets<=9&&(nmus+nels)==0&&mj>=800",           // bin17
 
   };
 
@@ -259,7 +262,9 @@ void makeVariations(std::string &syst){
   std::string signalWeight("1");
 
 
-  std::vector<double> gs_dmc(4);
+  std::vector<double> gs_dmc={1,1,1,1};
+  std::vector<double> gs_dmc_err={0,0,0,0};
+  std::vector<double> gs_dmc_syst={0,0,0,0};
   //Get values for GS syst
   if(std::string::npos != syst.find("gs")){
 
@@ -268,7 +273,12 @@ void makeVariations(std::string &syst){
     
     double temp_val;
     for(unsigned int ibin=0; ibin<4; ibin++)
+    {
       h_gs_dmc->GetPoint(ibin,temp_val,gs_dmc[ibin]);   
+      gs_dmc_err[ibin] = h_gs_dmc->GetErrorY(ibin);   
+      // add in quadrature the statistical uncertainty of SF to 1-SF
+      gs_dmc_syst[ibin] = TMath::Sqrt((1-gs_dmc[ibin])*(1-gs_dmc[ibin])+gs_dmc_err[ibin]*gs_dmc_err[ibin]); 
+    }
   }
 
   // weights directly affecting b-tagging in all samples
@@ -278,14 +288,14 @@ void makeVariations(std::string &syst){
   if(syst=="btag_udsgDown") extraWeight="sys_udsgtag[1]";
   if(syst=="gsUp") extraWeight="(1+0.2*fromGS)";
   if(syst=="gsDown") extraWeight="(1-0.2*fromGS)";
-  if(syst=="gs45Up") extraWeight="(1+(1-"+std::to_string(gs_dmc[0])+")*fromGS*(njets==4 || njets==5))";
-  if(syst=="gs45Down") extraWeight="(1-(1-"+std::to_string(gs_dmc[0])+")*fromGS*(njets==4 || njets==5))";
-  if(syst=="gs67Up") extraWeight="(1+(1-"+std::to_string(gs_dmc[1])+")*fromGS*(njets==6 || njets==7))";
-  if(syst=="gs67Down") extraWeight="(1-(1-"+std::to_string(gs_dmc[1])+")*fromGS*(njets==6 || njets==7))";
-  if(syst=="gs89Up") extraWeight="(1+(1-"+std::to_string(gs_dmc[2])+")*fromGS*(njets==8 || njets==9))";
-  if(syst=="gs89Down") extraWeight="(1-(1-"+std::to_string(gs_dmc[2])+")*fromGS*(njets==8 || njets==9))";
-  if(syst=="gs10InfUp") extraWeight="(1+(1-"+std::to_string(gs_dmc[3])+")*fromGS*(njets>=10))";
-  if(syst=="gs10InfDown") extraWeight="(1-(1-"+std::to_string(gs_dmc[3])+")*fromGS*(njets>=10))";
+  if(syst=="gs45Up") extraWeight="(1+"+std::to_string(gs_dmc_syst[0])+"*fromGS*(njets==4 || njets==5))";
+  if(syst=="gs45Down") extraWeight="(1-"+std::to_string(gs_dmc_syst[0])+"*fromGS*(njets==4 || njets==5))";
+  if(syst=="gs67Up") extraWeight="(1+"+std::to_string(gs_dmc_syst[1])+"*fromGS*(njets==6 || njets==7))";
+  if(syst=="gs67Down") extraWeight="(1-"+std::to_string(gs_dmc_syst[1])+"*fromGS*(njets==6 || njets==7))";
+  if(syst=="gs89Up") extraWeight="(1+"+std::to_string(gs_dmc_syst[2])+"*fromGS*(njets==8 || njets==9))";
+  if(syst=="gs89Down") extraWeight="(1-"+std::to_string(gs_dmc_syst[2])+"*fromGS*(njets==8 || njets==9))";
+  if(syst=="gs10InfUp") extraWeight="(1+"+std::to_string(gs_dmc_syst[3])+"*fromGS*(njets>=10))";
+  if(syst=="gs10InfDown") extraWeight="(1-"+std::to_string(gs_dmc_syst[3])+"*fromGS*(njets>=10))";
 
   // other weights affecting all samples
   if(syst=="lep_effUp") extraWeight="w_lep";
@@ -416,8 +426,7 @@ void makeVariations(std::string &syst){
   std::vector<TString> s_rpv_1400;
   s_rpv_1400.push_back("/homes/cawest/babymaker/CMSSW_7_4_14/src/babymaker/RPV_M1400.root");
   std::vector<TString> s_tt;
-  //  s_tt.push_back(filestring("TTJets_TuneCUETP8M1_13TeV-madgraphMLM"));
-  //  s_tt.push_back(filestring("TT_TuneCUETP8M1_13TeV-powheg-pythia8"));
+  s_tt.push_back("/net/cms2/cms2r0/jaehyeokyoo/babies/skim_ht1200/*TTJets_TuneCUETP8M1_13TeV-madgraphMLM*");
   s_tt.push_back(filestring("TTJets_DiLept_TuneCUETP8M1_13TeV-madgraphMLM-pythia8"));
   s_tt.push_back(filestring("TTJets_DiLept_TuneCUETP8M1_13TeV-madgraphMLM-pythia8_ext1"));
   s_tt.push_back(filestring("TTJets_SingleLeptFromT_TuneCUETP8M1_13TeV-madgraphMLM-pythia8"));
@@ -466,7 +475,8 @@ void makeVariations(std::string &syst){
   Samples.push_back(sfeats(s_qcd, "QCD", kYellow, 1,cutandweightForVariationsQCD("1",qcdWeight, qcdFlavorWeight))); 
   Samples.push_back(sfeats(s_tt, "t#bar{t}", kTeal, 1,cutandweightForVariations("1", ttbarWeight)));
   Samples.push_back(sfeats(s_other, "Other", ra4::c_other, 1, cutandweightForVariations("1", otherWeight)));
-  Samples.push_back(sfeats(s_jetht, "Data",kBlack,1,cutandweightForVariationsdata("trig[12] && pass && " + blinding, "1")));
+  //Samples.push_back(sfeats(s_jetht, "Data",kBlack,1,cutandweightForVariationsdata("trig[12] && pass && " + blinding, "1")));
+  Samples.push_back(sfeats(s_jetht, "Data",kBlack,1,cutandweightForVariationsdata("trig[12] && pass", "1")));
   Samples.back().isData = true;
   Samples.back().doStack = false;
 

@@ -15,7 +15,7 @@ else:
   
 
 verbose = True
-one_pdf = True #put all plots in one pdf file
+one_pdf = False #put all plots in one pdf file
 
 # function to get pointers to histogram in root file
 def get_hist_with_overflow(file,histname):
@@ -294,7 +294,7 @@ for ibin in binList:
                 #We want to use information from all variations without artifically inflating the total uncertainty just by sampling the same effect many times.
                 #Therefore, we find symmetrized uncertainties for each pdf variation up/down, add them in quadrature and divide by sqrt(100) to normalize
                 for i in range(0,100):
-                    if i == 26 or i == 46: continue 
+                    #if i == 26 or i == 46: continue 
                     #Get errors for this pdf variation
                     thisvar = get_symmetrized_relative_errors("w_pdf"+str(i),tot_data,total_nominal,procList,floating_process,sysFile,directory)
                     #Add in quadrature to running total
@@ -317,7 +317,10 @@ for ibin in binList:
 
        
         for i in range(1,systHist.GetNbinsX()+1):
-            table.SetBinContent(i,isys,round(100*systHist.GetBinContent(i),1))
+            if systHist.GetBinContent(i) < 0.001: 
+                table.SetBinContent(i,isys,0.1)
+            else:
+                table.SetBinContent(i,isys,round(100*systHist.GetBinContent(i),1))
             if verbose:
                 print "symmetrized rel error bin "+str(i)+" "+str(systHist.GetBinContent(i))        
 

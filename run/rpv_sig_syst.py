@@ -8,7 +8,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("-i", "--input")
 parser.add_argument("-m", "--mass")
 args = parser.parse_args()
-GLUINOMASS = 1000
+GLUINOMASS = 1200
 if (args.input):
   infile = args.input
 else:
@@ -16,7 +16,7 @@ else:
 if (args.mass):
   GLUINOMASS = args.mass
 
-one_pdf = True #put all plots in one pdf file
+one_pdf = False #put all plots in one pdf file
 verbose = True  
 
 

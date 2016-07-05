@@ -67,7 +67,9 @@ int main(int argc, char *argv[])
   nprocesses=processes.size();
 
   std::vector<std::string> bins = {"bin0", "bin1", "bin2",
-				   "bin3", "bin4", "bin5"};
+				                   "bin3", "bin4", "bin5"};
+                                   //, 
+                                   //"bin11", "bin16"};
 
   if(includeLowMJ) {
     bins.push_back("bin6");
@@ -82,12 +84,16 @@ int main(int argc, char *argv[])
     bins.push_back("bin13");
     bins.push_back("bin14");
     bins.push_back("bin15");
+    bins.push_back("bin16");
+    bins.push_back("bin17");
   }
   nbins = bins.size();
 
   std::string dataCardPath = gSystem->pwd();
-  if(includeSignalRegion) dataCardPath += "/variations/sum_rescaled_mconly.root";
-  else dataCardPath += "/variations/sum_rescaled.root";
+  //if(includeSignalRegion) dataCardPath += "/variations/sum_rescaled_mconly.root";
+  //else dataCardPath += "/variations/sum_rescaled.root";
+  dataCardPath += "/variations/sum_rescaled.root";
+  //dataCardPath += "/variations/sum_rescaled_partialunblinding.root";
   TFile *variations = TFile::Open(dataCardPath.c_str());
   std::ofstream file;
   std::string filename("datacard_M");
