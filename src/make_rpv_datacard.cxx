@@ -24,23 +24,24 @@ int main(int argc, char *argv[])
 {
   bool includePDFUncert = true;
   bool includeLowMJ = false;
-  bool includeSignalRegion = true;
+//  bool includeSignalRegion = true;
 
   // signal is added later
   std::vector<std::string> processes = { "qcd", "ttbar", "wjets", "other"};
   std::vector<std::string> shapeSysts = {"btag_bc", "btag_udsg",
-					 "gs45", "gs67", "gs89", "gs10Inf",
-					 "jes", "jer",
-					 "pileup","lep_eff", "ttbar_pt",
-					 "qcd_flavor",
-					 "qcd_muf", "qcd_mur", "qcd_murf", 
-					 "isr",
-					 "ttbar_muf", "ttbar_mur", "ttbar_murf",
-					 "wjets_muf", "wjets_mur", "wjets_murf",
-					 "other_muf", "other_mur", "other_murf"};
+					                     "gs45", "gs67", "gs89", "gs10Inf",
+					                     "jes", "jer",
+					                     "pileup","lep_eff", "ttbar_pt",
+					                     "qcd_flavor",
+					                     "qcd_muf", "qcd_mur", "qcd_murf", 
+					                     "isr",
+					                     "ttbar_muf", "ttbar_mur", "ttbar_murf",
+					                     "wjets_muf", "wjets_mur", "wjets_murf",
+					                     "other_muf", "other_mur", "other_murf"};
 
   std::string gluinoMass;
   std::string signalBinName;
+  std::string cardType;
   if(argc<3) {
     std::cout << "Syntax: make_rpv_datacard.exe [gluino mass, in GeV] [default/control]" << std::endl;
     return 1;
@@ -53,23 +54,22 @@ int main(int argc, char *argv[])
     // this is supposed to be the first entry in the process list
     processes.insert(processes.begin(), signalBinName);
 
-    std::string cardType(argv[2]);
+    cardType=argv[2];
     if(cardType!="control" && cardType!="default") {
       std::cout << "Syntax: make_rpv_datacard.exe [gluino mass, in GeV] [default/control]" << std::endl;
       return 1;
     }
-    else {
-      if(cardType=="control") includeSignalRegion=false;
-      if(cardType=="default") includeSignalRegion=true;
-    }
+//    else {
+//      if(cardType=="control") includeSignalRegion=false;
+//      if(cardType=="default") includeSignalRegion=true;
+//      if(cardType=="mconly")  includeSignalRegion=true;
+//    }
   }
 
   nprocesses=processes.size();
 
   std::vector<std::string> bins = {"bin0", "bin1", "bin2",
 				                   "bin3", "bin4", "bin5"};
-                                   //, 
-                                   //"bin11", "bin16"};
 
   if(includeLowMJ) {
     bins.push_back("bin6");
@@ -77,7 +77,7 @@ int main(int argc, char *argv[])
     bins.push_back("bin8");
     bins.push_back("bin9");
   }
-  if(includeSignalRegion) {
+  if(cardType!="control") {
     bins.push_back("bin10");
     bins.push_back("bin11");
     bins.push_back("bin12");
@@ -90,15 +90,14 @@ int main(int argc, char *argv[])
   nbins = bins.size();
 
   std::string dataCardPath = gSystem->pwd();
-  //if(includeSignalRegion) dataCardPath += "/variations/sum_rescaled_mconly.root";
-  //else dataCardPath += "/variations/sum_rescaled.root";
-  dataCardPath += "/variations/sum_rescaled.root";
-  //dataCardPath += "/variations/sum_rescaled_partialunblinding.root";
+  if(cardType=="mconly") dataCardPath += "/variations/sum_rescaled_mconly.root";
+  else dataCardPath += "/variations/sum_rescaled.root";
   TFile *variations = TFile::Open(dataCardPath.c_str());
   std::ofstream file;
   std::string filename("datacard_M");
   filename+=gluinoMass;
-  if(!includeSignalRegion) filename+="_control";
+  if(cardType=="control") filename+="_control";
+  else if(cardType=="mconly") filename+="_mconly";
 
   if(includePDFUncert) {
     for(unsigned int i=0; i<100; i++) {

@@ -411,10 +411,10 @@ void print1D(vector<vector<double> > norm){
 
     string extraWeight("w_pu_rpv/eff_trig");
 
-    vector<TString> s_rpv_LO_M1000;
-    s_rpv_LO_M1000.push_back("/homes/cawest/babymaker/CMSSW_7_4_14/src/babymaker/RPV_M1000_LO.root");
-    vector<TString> s_rpv_LO_M1100;
-    s_rpv_LO_M1100.push_back("/homes/cawest/babymaker/CMSSW_7_4_14/src/babymaker/RPV_M1100_LO.root");
+    vector<TString> s_rpv_M1000;
+    s_rpv_M1000.push_back("/homes/cawest/babymaker/CMSSW_7_4_14/src/babymaker/RPV_M1000.root");
+    vector<TString> s_rpv_M1100;
+    s_rpv_M1100.push_back("/homes/cawest/babymaker/CMSSW_7_4_14/src/babymaker/RPV_M1100.root");
     vector<TString> s_rpv_NLO;
     s_rpv_NLO.push_back("/homes/cawest/CMSSW_7_4_14/src/babymaker/RPV_M1000_NLO.root");
 
@@ -466,10 +466,10 @@ void print1D(vector<vector<double> > norm){
     Samples.back().isData = true;
     Samples.back().doStack = false;
 
-    Samples.push_back(sfeats(s_rpv_LO_M1000, "#tilde{g}(1.0 TeV)#rightarrow tbs", ra4::c_t1tttt));
+    Samples.push_back(sfeats(s_rpv_M1000, "#tilde{g}(1.0 TeV)#rightarrow tbs", ra4::c_t1tttt));
     Samples.back().doStack = false;
     Samples.back().isSig = true;
-    Samples.push_back(sfeats(s_rpv_LO_M1100, "#tilde{g}(1.1 TeV)#rightarrow tbs", ra4::c_t1tttt, 2));
+    Samples.push_back(sfeats(s_rpv_M1100, "#tilde{g}(1.1 TeV)#rightarrow tbs", ra4::c_t1tttt, 2));
     Samples.back().doStack = false;
     Samples.back().isSig = true;
 
