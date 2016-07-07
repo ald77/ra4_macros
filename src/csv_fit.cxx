@@ -6,6 +6,7 @@
 #include "TLegend.h"
 #include "TFractionFitter.h"
 #include "TCanvas.h"
+#include "TLatex.h"
 #include "Fit/Fitter.h"
 #include "TROOT.h"
 #include <iostream>
@@ -15,6 +16,7 @@ int main(int argc, char *argv[])
   bool fitCharmWithLight=false;
   bool excludeHighCSV=false;
   
+  TString luminosity = "2.7";
   int maxbin=22;
 
   // by default, want to look at low njet region
@@ -39,7 +41,11 @@ int main(int argc, char *argv[])
   }  
   setTDRStyle();
   gROOT->ForceStyle();
-  
+
+  gStyle->SetPadTopMargin(0.08);
+  gStyle->SetPadLeftMargin(0.18);
+  gStyle->SetTitleOffset(1.43,"y");
+
   TFile *f = TFile::Open("csv_newmethod.root");
 
   std::cout << "Getting weighted histograms" << std::endl;
@@ -147,6 +153,7 @@ int main(int argc, char *argv[])
     data->SetMarkerSize(1);
     data->SetLineColor(kBlack);
     data->SetMarkerStyle(kFullCircle);
+    data->GetYaxis()->SetLabelSize(0.04);
     data->SetTitle(";CSV;Events / 0.005");
     TCanvas *c = new TCanvas;
     data->Draw("e");
@@ -189,7 +196,7 @@ int main(int argc, char *argv[])
       result_c->Multiply(qcd_c_weights);
       result_c->Draw("same");
       result_c->Draw("same,hist");
-      result_l->SetLineColor(kBlue);
+      result_l->SetLineColor(kMagenta);
       result_l->SetLineWidth(3);
       result_l->SetLineStyle(kDashed);
       result_l->SetMarkerSize(0);
@@ -224,7 +231,7 @@ int main(int argc, char *argv[])
     sum->Draw("same,hist");
     data->Draw("e,same");
 
-    TLegend *leg1 = new TLegend(0.3, 0.45, 0.7, 0.82);
+    TLegend *leg1 = new TLegend(0.25, 0.5, 0.65, 0.87);
     leg1->SetFillStyle(0);
     leg1->SetBorderSize(0);
     leg1->AddEntry(data, "Data", "ELP");
@@ -234,6 +241,17 @@ int main(int argc, char *argv[])
     leg1->AddEntry(result_l, "Light-parton events", "PL");
     leg1->AddEntry(result_other, "Non-QCD events", "PL");
     leg1->Draw();
+    
+    TLatex tla;
+    tla.SetTextSize(0.038);
+    
+    
+    TString cmslabel = "#font[62]{CMS} #scale[0.8]{#font[52]{Preliminary}}";
+    TString lumilabel = TString::Format("%1.1f",luminosity.Atof())+" fb^{-1} (13 TeV)";
+
+    tla.DrawLatexNDC(0.18,0.93,cmslabel);
+    tla.SetTextFont(42);
+    tla.DrawLatexNDC(0.71,0.93,lumilabel);
 
     double qcd_b_fracafter, qcd_b_fracafter_err;    
     double qcd_c_fracafter, qcd_c_fracafter_err;    

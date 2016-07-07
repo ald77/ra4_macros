@@ -17,7 +17,7 @@
 
 namespace {
     TString plot_type=".pdf";
-    TString plot_style="CMSPaper";
+    TString plot_style="CMSPaper_Preliminary";
 }
 
 using namespace std;
