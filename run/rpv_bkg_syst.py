@@ -155,19 +155,18 @@ systList.append(["btag_bc","b,c jet b-tag SF",2,1])
 systList.append(["btag_udsg","Light flavor jet b-tag SF",3,1])
 systList.append(["jes","Jet energy scale",4,1])
 systList.append(["jer","Jet energy resolution",5,1])
-systList.append(["w_pdf","PDF",46,1])
-systList.append(["mur","Renormalization scale",6,1])
-systList.append(["muf","Factorization scale",7,1])
-systList.append(["murf","Renorm. and fact. scale",8,1])
+systList.append(["lep_eff","Lepton efficiency",6,1])
+systList.append(["pileup","Pileup",7,1])
 #systList.append(["gs","Gluon splitting",9,1])
-systList.append(["gs45","Gluon splitting (Njets=4,5)",9,1])
-systList.append(["gs67","Gluon splitting (Njets=6,7)",10,1])
-systList.append(["gs89","Gluon splitting (Njets=8,9)",11,1])
-systList.append(["gs10Inf","Gluon splitting (Njets=10+)",12,1])
-
-systList.append(["pileup","Pileup",13,1])
-systList.append(["qcd_flavor","QCD flavor",14,1])
-systList.append(["lep_eff","Lepton efficiency",15,1])
+systList.append(["qcd_flavor","QCD flavor",8,1])
+systList.append(["gs45","Gluon splitting (Njet=4,5)",9,1])
+systList.append(["gs67","Gluon splitting (Njet=6,7)",10,1])
+systList.append(["gs89","Gluon splitting (Njet=8,9)",11,1])
+systList.append(["gs10Inf","Gluon splitting (Njet#geq10)",12,1])
+systList.append(["mur","Renormalization scale",13,1])
+systList.append(["muf","Factorization scale",14,1])
+systList.append(["murf","Renorm. and fact. scale",15,1])
+systList.append(["pdf","PDF",16,1])
 systList.append(["mc_stat","MC statistics",1,2])
 
 nSyst = len(systList)
@@ -180,10 +179,11 @@ binList.append(["bin2","4 #leq n_{jets} #leq 5","500 #leq M_{J} < 800 GeV","n_{l
 binList.append(["bin3","4 #leq n_{jets} #leq 5","M_{J} #geq 800 GeV","n_{lep} = 0"])
 binList.append(["bin4","6 #leq n_{jets} #leq 7","M_{J} #geq 800 GeV","n_{lep} = 0"])
 binList.append(["bin5","4 #leq n_{jets} #leq 5","M_{J} #geq 800 GeV","n_{lep} = 1"])
-binList.append(["bin6","4 #leq n_{jets} #leq 5","300 #leq M_{J} < 500 GeV","n_{lep} = 0"])
-binList.append(["bin7","6 #leq n_{jets} #leq 7","300 #leq M_{J} < 500 GeV","n_{lep} = 0"])
-binList.append(["bin8","8 #leq n_{jets} #leq 9","300 #leq M_{J} < 500 GeV","n_{lep} = 0"])
-binList.append(["bin9","n_{jets} #geq 10","300 #leq M_{J} < 500 GeV","n_{lep} = 0"])
+#
+#binList.append(["bin6","4 #leq n_{jets} #leq 5","300 #leq M_{J} < 500 GeV","n_{lep} = 0"])
+#binList.append(["bin7","6 #leq n_{jets} #leq 7","300 #leq M_{J} < 500 GeV","n_{lep} = 0"])
+#binList.append(["bin8","8 #leq n_{jets} #leq 9","300 #leq M_{J} < 500 GeV","n_{lep} = 0"])
+#binList.append(["bin9","n_{jets} #geq 10","300 #leq M_{J} < 500 GeV","n_{lep} = 0"])
 # signal regions
 binList.append(["bin10","n_{jets} #geq 10","500 #leq M_{J} < 800 GeV","n_{lep} = 0"])
 binList.append(["bin11","6 #leq n_{jets} #leq 7","500 #leq M_{J} < 800 GeV","n_{lep} = 1"])
@@ -212,7 +212,7 @@ for ibin in binList:
 
     #Define process index to indicate whether QCD or ttbar is floating in this bin
     floating_process = 0
-    if "n_{lep} = 1" in ibin[3]  :
+    if "n_{lep} = 1" in ibin[3]  : # comment out these two lines when testing only one process 
         floating_process = 1
 
 
@@ -232,7 +232,7 @@ for ibin in binList:
     sf = tot/floating
     if tot_data == 0:
         sf = 1.
-    #Apply normalization
+    #Apply normalization 
     histsNom[floating_process].Scale(sf)
 
     #Make master histogram of all nominal histograms (with floating normalization already corrected)
@@ -371,7 +371,7 @@ for ibin in binList:
     c.Print(outname)
 
 
-    ROOT.gStyle.SetPadLeftMargin(0.25)
+    ROOT.gStyle.SetPadLeftMargin(0.3)
     ROOT.gStyle.SetPadRightMargin(0.2)
     c2 = ROOT.TCanvas()
     table.GetXaxis().SetNdivisions(505)
@@ -390,7 +390,7 @@ for ibin in binList:
     table.Draw("axis y+ same")
     tla = ROOT.TLatex()
     tla.SetTextSize(0.038)
-    tla.DrawLatexNDC(0.25,0.93,"#font[62]{CMS} #scale[0.8]{#font[52]{Simulation}}")
+    tla.DrawLatexNDC(0.3,0.93,"#font[62]{CMS} #scale[0.8]{#font[52]{Simulation}}")
     tla.SetTextFont(42)
     tla.DrawLatexNDC(0.66,0.93,"#sqrt{s} = 13 TeV")
     if one_pdf:

@@ -8,7 +8,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("-i", "--input")
 parser.add_argument("-m", "--mass")
 args = parser.parse_args()
-GLUINOMASS = 1000
+GLUINOMASS = 1200
 if (args.input):
   infile = args.input
 else:
@@ -97,17 +97,20 @@ ROOT.gStyle.SetTitleSize(0.07)
 
 #make list of systematics- name, title, plot color and line style
 systList=[]
-systList.append(["btag_bc","b,c jet b-tag SF",2,1])
-systList.append(["btag_udsg","Light flavor jet b-tag SF",3,1])
-systList.append(["jes","Jet energy scale",4,1])
-systList.append(["jer","Jet energy resolution",5,1])
-systList.append(["pileup","Pileup",6,1])
-systList.append(["isr","Initial state radiation",7,1])
-systList.append(["lep_eff","Lepton efficiency",8,1])
-systList.append(["signal_mur","Renormalization scale",9,1])
-systList.append(["signal_muf","Factorization scale",11,1])
-systList.append(["signal_murf","Renorm.+fact. scale",12,1])
-systList.append(["pdf","PDF",13,1])
+systList.append(["fs_btag_bc","FastSim b,c jet b-tag SF",2,1])
+systList.append(["fs_btag_udsg","FastSim Light flavor jet b-tag SF",3,1])
+systList.append(["fs_lep_eff","FastSim Lepton efficiency",4,1])
+systList.append(["btag_bc","b,c jet b-tag SF",5,1])
+systList.append(["btag_udsg","Light flavor jet b-tag SF",6,1])
+systList.append(["jes","Jet energy scale",7,1])
+systList.append(["jer","Jet energy resolution",8,1])
+systList.append(["lep_eff","Lepton efficiency",9,1])
+systList.append(["pileup","Pileup",10,1])
+systList.append(["isr","Initial state radiation",11,1])
+systList.append(["signal_mur","Renormalization scale",12,1])
+systList.append(["signal_muf","Factorization scale",13,1])
+systList.append(["signal_murf","Renorm. and fact. scale",14,1])
+systList.append(["pdf","PDF",15,1])
 systList.append(["mc_stat","MC statistics",1,2]) #must be done last!
 
 nSyst = len(systList)
@@ -120,10 +123,11 @@ binList.append(["bin2","4 #leq n_{jets} #leq 5","500 #leq M_{J} < 800 GeV","n_{l
 binList.append(["bin3","4 #leq n_{jets} #leq 5","M_{J} #geq 800 GeV","n_{lep} = 0"])
 binList.append(["bin4","6 #leq n_{jets} #leq 7","M_{J} #geq 800 GeV","n_{lep} = 0"])
 binList.append(["bin5","4 #leq n_{jets} #leq 5","M_{J} #geq 800 GeV","n_{lep} = 1"])
-binList.append(["bin6","4 #leq n_{jets} #leq 5","300 #leq M_{J} < 500 GeV","n_{lep} = 0"])
-binList.append(["bin7","6 #leq n_{jets} #leq 7","300 #leq M_{J} < 500 GeV","n_{lep} = 0"])
-binList.append(["bin8","8 #leq n_{jets} #leq 9","300 #leq M_{J} < 500 GeV","n_{lep} = 0"])
-binList.append(["bin9","n_{jets} #geq 10","300 #leq M_{J} < 500 GeV","n_{lep} = 0"])
+#
+#binList.append(["bin6","4 #leq n_{jets} #leq 5","300 #leq M_{J} < 500 GeV","n_{lep} = 0"])
+#binList.append(["bin7","6 #leq n_{jets} #leq 7","300 #leq M_{J} < 500 GeV","n_{lep} = 0"])
+#binList.append(["bin8","8 #leq n_{jets} #leq 9","300 #leq M_{J} < 500 GeV","n_{lep} = 0"])
+#binList.append(["bin9","n_{jets} #geq 10","300 #leq M_{J} < 500 GeV","n_{lep} = 0"])
 # signal regions
 binList.append(["bin10","n_{jets} #geq 10","500 #leq M_{J} < 800 GeV","n_{lep} = 0"])
 binList.append(["bin11","6 #leq n_{jets} #leq 7","500 #leq M_{J} < 800 GeV","n_{lep} = 1"])
@@ -138,7 +142,8 @@ binList.append(["bin17","8 #leq n_{jets} #leq 9","M_{J} #geq 800 GeV","n_{lep} =
 sysFile = ROOT.TFile(infile,"read")
 proc = "signal_M" + str(GLUINOMASS)
 
-for ibin in binList:
+for ibin in binList: 
+
     directory = ibin[0]
     if verbose:
         print "directory is "+directory
@@ -174,7 +179,7 @@ for ibin in binList:
                 #We want to use information from all variations without artifically inflating the total uncertainty just by sampling the same effect many times.
                 #Therefore, we find symmetrized uncertainties for each pdf variation up/down, add them in quadrature and divide by sqrt(100) to normalize
                 for i in range(0,100):
-                    #if i == 26 or i == 46: continue (skip corrupted)
+                    #if i == 9 : continue 
                     #Get errors for this pdf variation
                     thisvar = get_symmetrized_relative_errors("w_pdf"+str(i),nominal,proc,sysFile,directory)
                     #Add in quadrature to running total
@@ -250,7 +255,8 @@ for ibin in binList:
     c.Print(outname)
 
 
-    ROOT.gStyle.SetPadLeftMargin(0.25)
+    #ROOT.gStyle.SetPadLeftMargin(0.25)
+    ROOT.gStyle.SetPadLeftMargin(0.3)
     ROOT.gStyle.SetPadRightMargin(0.2)
     c2 = ROOT.TCanvas()
     table.GetXaxis().SetNdivisions(505)
@@ -269,7 +275,7 @@ for ibin in binList:
     table.Draw("axis y+ same")
     tla = ROOT.TLatex()
     tla.SetTextSize(0.038)
-    tla.DrawLatexNDC(0.25,0.93,"#font[62]{CMS} #scale[0.8]{#font[52]{Simulation}}")
+    tla.DrawLatexNDC(0.3,0.93,"#font[62]{CMS} #scale[0.8]{#font[52]{Simulation}}")
     tla.SetTextFont(42)
     tla.DrawLatexNDC(0.66,0.93,"#sqrt{s} = 13 TeV")
     if one_pdf:

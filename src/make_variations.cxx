@@ -133,36 +133,41 @@ void outputHistograms(std::vector<sfeats>& Samples, std::string variation)
   std::cout << "outputHistograms(): " << variation << std::endl;
 
   std::string plotVar("nbm");
-  std::vector<std::string> cuts = {
-                   "nbm>0&&ht>1500&&njets>=4&&njets<=5&&(nmus+nels)==0&&mj>=500&&mj<800",   // bin0
-                   "nbm>0&&ht>1500&&njets>=6&&njets<=7&&(nmus+nels)==0&&mj>=500&&mj<800",   // bin1
-				   "nbm>0&&ht>1200&&njets>=4&&njets<=5&&(nmus+nels)==1&&mj>=500&&mj<800",   // bin2
-  				   "nbm>0&&ht>1500&&njets>=4&&njets<=5&&(nmus+nels)==0&&mj>=800",           // bin3 
-                   "nbm>0&&ht>1500&&njets>=6&&njets<=7&&(nmus+nels)==0&&mj>=800",           // bin4
-				   "nbm>0&&ht>1200&&njets>=4&&njets<=5&&(nmus+nels)==1&&mj>=800",           // bin5
+  
+  std::vector<std::string> cuts = {"nbm>0&&ht>1500&&njets>=4&&njets<=5&&(nmus+nels)==0&&mj>=500&&mj<800","nbm>0&&ht>1500&&njets>=6&&njets<=7&&(nmus+nels)==0&&mj>=500&&mj<800",
+				   "nbm>0&&ht>1200&&njets>=4&&njets<=5&&(nmus+nels)==1&&mj>=500&&mj<800", 
+  				   "nbm>0&&ht>1500&&njets>=4&&njets<=5&&(nmus+nels)==0&&mj>=800","nbm>0&&ht>1500&&njets>=6&&njets<=7&&(nmus+nels)==0&&mj>=800",
+				   "nbm>0&&ht>1200&&njets>=4&&njets<=5&&(nmus+nels)==1&&mj>=800",
 				   // low MJ control regions
-				   "nbm>0&&ht>1500&&njets>=4&&njets<=5&&(nmus+nels)==0&&mj>=300&&mj<500",   // bin6
-				   "nbm>0&&ht>1500&&njets>=6&&njets<=7&&(nmus+nels)==0&&mj>=300&&mj<500",   // bin7
-				   "nbm>0&&ht>1500&&njets>=8&&njets<=9&&(nmus+nels)==0&&mj>=300&&mj<500",   // bin8
-				   "nbm>0&&ht>1500&&njets>=10&&(nmus+nels)==0&&mj>=300&&mj<500",            // bin9
+				   "nbm>0&&ht>1500&&njets>=4&&njets<=5&&(nmus+nels)==0&&mj>=300&&mj<500",
+				   "nbm>0&&ht>1500&&njets>=6&&njets<=7&&(nmus+nels)==0&&mj>=300&&mj<500",
+				   "nbm>0&&ht>1500&&njets>=8&&njets<=9&&(nmus+nels)==0&&mj>=300&&mj<500",
+				   "nbm>0&&ht>1500&&njets>=10&&(nmus+nels)==0&&mj>=300&&mj<500",
 				   // signal regions, low mj
-				   "nbm>0&&ht>1500&&njets>=10&&(nmus+nels)==0&&mj>=500&&mj<800",            // bin10
-				   "nbm>0&&ht>1200&&njets>=6&&njets<=7&&(nmus+nels)==1&&mj>=500&&mj<800",   // bin11
-				   "nbm>0&&ht>1200&&njets>=8&&(nmus+nels)==1&&mj>=500&&mj<800",             // bin12
+				   "nbm>0&&ht>1500&&njets>=10&&(nmus+nels)==0&&mj>=500&&mj<800",
+				   "nbm>0&&ht>1200&&njets>=6&&njets<=7&&(nmus+nels)==1&&mj>=500&&mj<800",
+				   "nbm>0&&ht>1200&&njets>=8&&(nmus+nels)==1&&mj>=500&&mj<800",
 				   // signal regions, high mj
-				   "nbm>0&&ht>1500&&njets>=10&&(nmus+nels)==0&&mj>=800",                    // bin13
-				   "nbm>0&&ht>1200&&njets>=6&&njets<=7&&(nmus+nels)==1&&mj>=800",           // bin14
-				   "nbm>0&&ht>1200&&njets>=8&&(nmus+nels)==1&&mj>=800",                     // bin15
+				   "nbm>0&&ht>1500&&njets>=10&&(nmus+nels)==0&&mj>=800",
+				   "nbm>0&&ht>1200&&njets>=6&&njets<=7&&(nmus+nels)==1&&mj>=800",
+				   "nbm>0&&ht>1200&&njets>=8&&(nmus+nels)==1&&mj>=800",
+
 				   //Missing regions
-				   "nbm>0&&ht>1500&&njets>=8&&njets<=9&&(nmus+nels)==0&&mj>=500&&mj<800",   // bin16
-				   "nbm>0&&ht>1500&&njets>=8&&njets<=9&&(nmus+nels)==0&&mj>=800",           // bin17
+				   "nbm>0&&ht>1500&&njets>=8&&njets<=9&&(nmus+nels)==0&&mj>=500&&mj<800",
+				   "nbm>0&&ht>1500&&njets>=8&&njets<=9&&(nmus+nels)==0&&mj>=800",
 
   };
+  
+  //std::vector<std::string> cuts = {"nbm>0&&ht>1200&&njets>=8&&(nmus+nels)==1&&mj>=800"};
 
   // maximum number of b-tagged jets
   int nBBins=4;
   
-  for(unsigned int icut=0; icut<cuts.size(); icut++) {
+  for(unsigned int icut=0; icut<cuts.size(); icut++) { 
+
+    // FIXME: temporarily remove lowset MJ bins
+    if(icut>=6 && icut<=9) continue;
+
     // need to make temporary variable because some systematics can change cuts or plot variables
     TString tempCut=cuts.at(icut).c_str();
     TString tempPlotVar=plotVar.c_str();
@@ -199,7 +204,8 @@ void outputHistograms(std::vector<sfeats>& Samples, std::string variation)
       setOverflow(hist);
       protectFromZero(hist);
       hist->Write();
-      hist->Delete();
+      hist->Delete(); 
+      delete ch;
     }
   }
 }
@@ -275,8 +281,7 @@ void makeVariations(std::string &syst){
     for(unsigned int ibin=0; ibin<4; ibin++)
     {
       h_gs_dmc->GetPoint(ibin,temp_val,gs_dmc[ibin]);   
-      gs_dmc_err[ibin] = h_gs_dmc->GetErrorY(ibin);   
-      // add in quadrature the statistical uncertainty of SF to 1-SF
+      gs_dmc_err[ibin] = h_gs_dmc->GetErrorY(ibin);  
       gs_dmc_syst[ibin] = TMath::Sqrt((1-gs_dmc[ibin])*(1-gs_dmc[ibin])+gs_dmc_err[ibin]*gs_dmc_err[ibin]); 
     }
   }
@@ -405,6 +410,13 @@ void makeVariations(std::string &syst){
   // only apply ISR systematic to signal
   if(syst=="isrUp") signalWeight="sys_isr[0]";
   if(syst=="isrDown") signalWeight="sys_isr[1]";
+  // fastsim related systematics 
+  if(syst=="fs_btag_bcUp") signalWeight="sys_fs_bctag[0]";
+  if(syst=="fs_btag_bcDown") signalWeight="sys_fs_bctag[1]";
+  if(syst=="fs_btag_udsgUp") signalWeight="sys_fs_udsgtag[0]";
+  if(syst=="fs_btag_udsgDown") signalWeight="sys_fs_udsgtag[1]";
+  if(syst=="fs_lep_effUp") signalWeight="sys_fs_lep[0]";
+  if(syst=="fs_lep_effDown") signalWeight="sys_fs_lep[1]";
 
   if(syst=="wjets_mufUp") wjetsWeight="sys_muf[0]";
   if(syst=="wjets_mufDown") wjetsWeight="sys_muf[1]";
@@ -415,18 +427,21 @@ void makeVariations(std::string &syst){
 
   TString folder_links="/homes/cawest/links/";
 
+  std::vector<TString> s_rpv_750;
+  s_rpv_750.push_back("/net/cms9/cms9r0/rohan/babies/2016_07_13/T1tbs/split/renorm/*mGluino-750*");
   std::vector<TString> s_rpv_1000;
-  s_rpv_1000.push_back("/homes/cawest/babymaker/CMSSW_7_4_14/src/babymaker/RPV_M1000.root");
+  s_rpv_1000.push_back("/net/cms9/cms9r0/rohan/babies/2016_07_13/T1tbs/split/renorm/*mGluino-1000*");
   std::vector<TString> s_rpv_1100;
-  s_rpv_1100.push_back("/homes/cawest/babymaker/CMSSW_7_4_14/src/babymaker/RPV_M1100.root");
+  s_rpv_1100.push_back("/net/cms9/cms9r0/rohan/babies/2016_07_13/T1tbs/split/renorm/*mGluino-1100*");
   std::vector<TString> s_rpv_1200;
-  s_rpv_1200.push_back("/homes/cawest/babymaker/CMSSW_7_4_14/src/babymaker/RPV_M1200.root");
+  s_rpv_1200.push_back("/net/cms9/cms9r0/rohan/babies/2016_07_13/T1tbs/split/renorm/*mGluino-1200*");
   std::vector<TString> s_rpv_1300;
-  s_rpv_1300.push_back("/homes/cawest/babymaker/CMSSW_7_4_14/src/babymaker/RPV_M1300.root");
+  s_rpv_1300.push_back("/net/cms9/cms9r0/rohan/babies/2016_07_13/T1tbs/split/renorm/*mGluino-1300*");
   std::vector<TString> s_rpv_1400;
-  s_rpv_1400.push_back("/homes/cawest/babymaker/CMSSW_7_4_14/src/babymaker/RPV_M1400.root");
+  s_rpv_1400.push_back("/net/cms9/cms9r0/rohan/babies/2016_07_13/T1tbs/split/renorm/*mGluino-1400*");
   std::vector<TString> s_tt;
   s_tt.push_back("/net/cms2/cms2r0/jaehyeokyoo/babies/skim_ht1200/*TTJets_TuneCUETP8M1_13TeV-madgraphMLM*");
+  //  s_tt.push_back(filestring("TT_TuneCUETP8M1_13TeV-powheg-pythia8"));
   s_tt.push_back(filestring("TTJets_DiLept_TuneCUETP8M1_13TeV-madgraphMLM-pythia8"));
   s_tt.push_back(filestring("TTJets_DiLept_TuneCUETP8M1_13TeV-madgraphMLM-pythia8_ext1"));
   s_tt.push_back(filestring("TTJets_SingleLeptFromT_TuneCUETP8M1_13TeV-madgraphMLM-pythia8"));
@@ -466,6 +481,7 @@ void makeVariations(std::string &syst){
   // Reading ntuples
   std::string blinding("((njets<10 && (nmus+nels)==0) || (nmus+nels==1 && njets<6))");
   std::vector<sfeats> Samples; 
+  Samples.push_back(sfeats(s_rpv_750, "#tilde{g}(750)", ra4::c_t1tttt, 1,cutandweightForVariations("1",signalWeight)));
   Samples.push_back(sfeats(s_rpv_1000, "#tilde{g}(1000)", ra4::c_t1tttt, 1,cutandweightForVariations("1",signalWeight)));
   Samples.push_back(sfeats(s_rpv_1100, "#tilde{g}(1100)", ra4::c_t1tttt, 1,cutandweightForVariations("1",signalWeight)));
   Samples.push_back(sfeats(s_rpv_1200, "#tilde{g}(1200)", ra4::c_t1tttt, 1,cutandweightForVariations("1",signalWeight)));
@@ -482,6 +498,7 @@ void makeVariations(std::string &syst){
 
   // convert pretty sample name to the name used in the datacard
   prettySampleName["Data"] = "data_obs";
+  prettySampleName["#tilde{g}(750)"] = "signal_M750";
   prettySampleName["#tilde{g}(1000)"] = "signal_M1000";
   prettySampleName["#tilde{g}(1100)"] = "signal_M1100";
   prettySampleName["#tilde{g}(1200)"] = "signal_M1200";

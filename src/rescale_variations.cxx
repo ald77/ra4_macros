@@ -12,6 +12,7 @@ int main()
     //    For signal injection studies(mconly), only want to use MC as nuisance parameters
     //    are different for data in sideband regions and MC
     std::string cardType="mconly"; 
+    cardType="data"; 
 
     std::string rootfile("variations/sum_rescaled.root");
     if(cardType=="mconly") rootfile = "variations/sum_rescaled_mconly.root";
@@ -19,7 +20,7 @@ int main()
 
     // samples for which MC statistics should be considered
     std::vector<std::string> mcStatisticsList = {
-        "signal_M1000", "signal_M1100", "signal_M1200", "signal_M1300", "signal_M1400", "qcd", "ttbar"};
+        "signal_M750", "signal_M1000", "signal_M1100", "signal_M1200", "signal_M1300", "signal_M1400", "qcd", "ttbar"};
     // systematics for which the template should be rescaled
     std::vector<std::string> rescaleList = {
         "qcd_flavor", "qcd_mur", "qcd_muf", "qcd_murf",
@@ -28,9 +29,9 @@ int main()
     
     // signal list
     std::vector<std::string> signalList = {
-        "signal_M1000", "signal_M1100", "signal_M1200", "signal_M1300", "signal_M1400"};
-    std::vector<std::string> signalRescaleList = {
-        "signal_mur", "signal_muf", "signal_murf"};
+        "signal_M7500", "signal_M1000", "signal_M1100", "signal_M1200", "signal_M1300", "signal_M1400"};
+    std::vector<std::string> signalRescaleList = {};
+        //"signal_mur", "signal_muf", "signal_murf"};
     std::vector<std::string> upAndDown = {"Up", "Down"}; 
 
     // Bins
@@ -40,7 +41,7 @@ int main()
         "bin6", "bin7", "bin8", "bin9",             // lower mj bins
         "bin10", "bin11", "bin12",                  // signal bins
         "bin13", "bin14", "bin15","bin16","bin17"}; // signal bins
-    std::vector<std::string> blindedBins={}; // bins where data_obs = sum of bkg mc
+    std::vector<std::string> blindedBins={};        // bins where data_obs = sum of bkg mc
     if(cardType=="control") blindedBins = {
         "bin10", "bin11", "bin12",
         "bin13", "bin14", "bin15","bin16","bin17"}; 
@@ -58,14 +59,18 @@ int main()
         std::string ttbar_pdf("ttbar_w_pdf");
         ttbar_pdf+=std::to_string(i);    
         rescaleList.push_back(ttbar_pdf);
-        for(auto isignal : signalList) {
-            std::string signal_pdf("w_pdf");
-            signal_pdf+=std::to_string(i);
-            signalRescaleList.push_back(signal_pdf);
-        }
+        //for(auto isignal : signalList) {
+        //    std::string signal_pdf("w_pdf");
+        //    signal_pdf+=std::to_string(i);
+        //    signalRescaleList.push_back(signal_pdf);
+        //}
     }
 
-    for(unsigned int ibin=0; ibin<nbins; ibin++) {
+    for(unsigned int ibin=0; ibin<nbins; ibin++) { 
+
+        // FIXME 
+        if(ibin>=6 && ibin<=9) continue; 
+
         TString binname(binNames.at(ibin).c_str());
         f->cd(binname);
         for(unsigned int isyst=0; isyst<rescaleList.size(); isyst++) {

@@ -90,7 +90,9 @@ int main()
     float data_err[18][5], qcd_err[18][5], ttbar_err[18][5], wjets_err[18][5], other_err[18][5],
           sig1000_err[18][5], sig1100_err[18][5], sig1200_err[18][5], sig1300_err[18][5], sig1400_err[18][5];
     for(int ibin=0; ibin<18; ibin++)  
-    {
+    { 
+
+        if(ibin>=6 && ibin<=9) continue;
         for(int inb=1; inb<5; inb++) 
         {
             data[ibin][inb] = 0;
@@ -119,6 +121,7 @@ int main()
     //
     for(int ibin=0; ibin<18; ibin++) 
     {
+        if(ibin>=6 && ibin<=9) continue;
         //TDirectory* dir = infile->GetDirectory(Form("bin%i", ibin));
 
         for(int inb=1; inb<5; inb++) 

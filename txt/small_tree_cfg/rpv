@@ -91,3 +91,5 @@ std::vector<float> fjets08_poscsv
 std::vector<int> fjets08_btags
 std::vector<int> fjets08_nconst
 
+################  syst   ##################
+std::vector<float> sys_bctag

@@ -37,7 +37,8 @@ int main(int argc, char *argv[])
 					                     "isr",
 					                     "ttbar_muf", "ttbar_mur", "ttbar_murf",
 					                     "wjets_muf", "wjets_mur", "wjets_murf",
-					                     "other_muf", "other_mur", "other_murf"};
+					                     "other_muf", "other_mur", "other_murf",
+					                     "fs_btag_bc", "fs_btag_udsg", "fs_lep_eff"};
 
   std::string gluinoMass;
   std::string signalBinName;
@@ -55,8 +56,8 @@ int main(int argc, char *argv[])
     processes.insert(processes.begin(), signalBinName);
 
     cardType=argv[2];
-    if(cardType!="control" && cardType!="default") {
-      std::cout << "Syntax: make_rpv_datacard.exe [gluino mass, in GeV] [default/control]" << std::endl;
+    if(cardType!="control" && cardType!="default" && cardType!="mconly") {
+      std::cout << "Syntax: make_rpv_datacard.exe [gluino mass, in GeV] [default/control/mconly]" << std::endl;
       return 1;
     }
 //    else {
@@ -77,7 +78,7 @@ int main(int argc, char *argv[])
     bins.push_back("bin8");
     bins.push_back("bin9");
   }
-  if(cardType!="control") {
+  if(cardType=="default" || cardType=="mconly") {
     bins.push_back("bin10");
     bins.push_back("bin11");
     bins.push_back("bin12");

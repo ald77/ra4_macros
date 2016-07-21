@@ -5,6 +5,7 @@ archive
 txt/data_card*
 varscripts
 variations
+datacard*
 
 # Compiled Object files
 *.slo
