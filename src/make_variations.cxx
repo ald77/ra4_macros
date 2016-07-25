@@ -377,6 +377,38 @@ void makeVariations(std::string &syst){
     qcdFlavorWeight=flavorWeightDown.Data();
     std::cout << qcdFlavorWeight << "\n" << std::endl;
   }
+  if(syst=="qcd_flavor45Up") {
+    TString tempFlavor(Form("((%s)*(njets==4 || njets==5) + 1*!(njets==4 || njets==5) )", flavorWeightUp.Data()));
+    qcdFlavorWeight=tempFlavor.Data();
+  }
+  if(syst=="qcd_flavor45Down") {
+    TString tempFlavor(Form("(1+(%s)*(njets==4 || njets==5) + 1*!(njets==4 || njets==5) )", flavorWeightDown.Data()));
+    qcdFlavorWeight=tempFlavor.Data();
+  }
+  if(syst=="qcd_flavor67Up") {
+    TString tempFlavor(Form("((%s)*(njets==6 || njets==7) + 1*!(njets==6 || njets==7) )", flavorWeightUp.Data()));
+    qcdFlavorWeight=tempFlavor.Data();
+  }
+  if(syst=="qcd_flavor67Down") {
+    TString tempFlavor(Form("((%s)*(njets==6 || njets==7) + 1*!(njets==6 || njets==7) )", flavorWeightDown.Data()));
+    qcdFlavorWeight=tempFlavor.Data();
+  }
+  if(syst=="qcd_flavor89Up") {
+    TString tempFlavor(Form("((%s)*(njets==8 || njets==9) + 1*!(njets==8 || njets==9) )", flavorWeightUp.Data()));
+    qcdFlavorWeight=tempFlavor.Data();
+  }
+  if(syst=="qcd_flavor89Down") {
+    TString tempFlavor(Form("((%s)*(njets==8 || njets==9) + 1*!(njets==8 || njets==9) )", flavorWeightDown.Data()));
+    qcdFlavorWeight=tempFlavor.Data();
+  }
+  if(syst=="qcd_flavor10InfUp") {
+    TString tempFlavor(Form("((%s)*(njets>=10) + 1*!(njets>=10) )", flavorWeightUp.Data()));
+    qcdFlavorWeight=tempFlavor.Data();
+  }
+  if(syst=="qcd_flavor10InfDown") {
+    TString tempFlavor(Form("((%s)*(njets>=10) + 1*!(njets>=10) )", flavorWeightDown.Data()));
+    qcdFlavorWeight=tempFlavor.Data();
+  }
   if(syst=="qcd_mufUp") qcdWeight="sys_muf[0]";
   if(syst=="qcd_mufDown") qcdWeight="sys_muf[1]";
   if(syst=="qcd_murUp") qcdWeight="sys_mur[0]";

@@ -53,6 +53,10 @@ VARLIST = ['nominal','btag_bc', 'btag_udsg',
            'lep_eff', 'ttbar_pt', 'pileup',
            'isr',
            'qcd_flavor',
+           # the following are njet-dependent
+           # versions of the previous variation
+           'qcd_flavor45', 'qcd_flavor67',
+           'qcd_flavor89', 'qcd_flavor10Inf',
            'qcd_mur', 'qcd_muf', 'qcd_murf',
            'ttbar_mur', 'ttbar_muf', 'ttbar_murf',
            'wjets_mur', 'wjets_muf', 'wjets_murf',
