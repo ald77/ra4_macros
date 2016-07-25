@@ -378,35 +378,35 @@ void makeVariations(std::string &syst){
     std::cout << qcdFlavorWeight << "\n" << std::endl;
   }
   if(syst=="qcd_flavor45Up") {
-    TString tempFlavor(Form("((%s)*(njets==4 || njets==5) + 1*!(njets==4 || njets==5) )", flavorWeightUp.Data()));
+    TString tempFlavor(Form("((%s)*(njets==4 || njets==5) + (%s)*!(njets==4 || njets==5) )", flavorWeightUp.Data(), flavorWeightCentral.Data()));
     qcdFlavorWeight=tempFlavor.Data();
   }
   if(syst=="qcd_flavor45Down") {
-    TString tempFlavor(Form("(1+(%s)*(njets==4 || njets==5) + 1*!(njets==4 || njets==5) )", flavorWeightDown.Data()));
+    TString tempFlavor(Form("(1+(%s)*(njets==4 || njets==5) + (%s)*!(njets==4 || njets==5) )", flavorWeightDown.Data(), flavorWeightCentral.Data()));
     qcdFlavorWeight=tempFlavor.Data();
   }
   if(syst=="qcd_flavor67Up") {
-    TString tempFlavor(Form("((%s)*(njets==6 || njets==7) + 1*!(njets==6 || njets==7) )", flavorWeightUp.Data()));
+    TString tempFlavor(Form("((%s)*(njets==6 || njets==7) + (%s)*!(njets==6 || njets==7) )", flavorWeightUp.Data(), flavorWeightCentral.Data()));
     qcdFlavorWeight=tempFlavor.Data();
   }
   if(syst=="qcd_flavor67Down") {
-    TString tempFlavor(Form("((%s)*(njets==6 || njets==7) + 1*!(njets==6 || njets==7) )", flavorWeightDown.Data()));
+    TString tempFlavor(Form("((%s)*(njets==6 || njets==7) + (%s)*!(njets==6 || njets==7) )", flavorWeightDown.Data(), flavorWeightCentral.Data()));
     qcdFlavorWeight=tempFlavor.Data();
   }
   if(syst=="qcd_flavor89Up") {
-    TString tempFlavor(Form("((%s)*(njets==8 || njets==9) + 1*!(njets==8 || njets==9) )", flavorWeightUp.Data()));
+    TString tempFlavor(Form("((%s)*(njets==8 || njets==9) + (%s)*!(njets==8 || njets==9) )", flavorWeightUp.Data(), flavorWeightCentral.Data()));
     qcdFlavorWeight=tempFlavor.Data();
   }
   if(syst=="qcd_flavor89Down") {
-    TString tempFlavor(Form("((%s)*(njets==8 || njets==9) + 1*!(njets==8 || njets==9) )", flavorWeightDown.Data()));
+    TString tempFlavor(Form("((%s)*(njets==8 || njets==9) + (%s)*!(njets==8 || njets==9) )", flavorWeightDown.Data(), flavorWeightCentral.Data()));
     qcdFlavorWeight=tempFlavor.Data();
   }
   if(syst=="qcd_flavor10InfUp") {
-    TString tempFlavor(Form("((%s)*(njets>=10) + 1*!(njets>=10) )", flavorWeightUp.Data()));
+    TString tempFlavor(Form("((%s)*(njets>=10) + (%s)*!(njets>=10) )", flavorWeightUp.Data(), flavorWeightCentral.Data()));
     qcdFlavorWeight=tempFlavor.Data();
   }
   if(syst=="qcd_flavor10InfDown") {
-    TString tempFlavor(Form("((%s)*(njets>=10) + 1*!(njets>=10) )", flavorWeightDown.Data()));
+    TString tempFlavor(Form("((%s)*(njets>=10) + (%s)*!(njets>=10) )", flavorWeightDown.Data(), flavorWeightCentral.Data()));
     qcdFlavorWeight=tempFlavor.Data();
   }
   if(syst=="qcd_mufUp") qcdWeight="sys_muf[0]";
