@@ -300,7 +300,7 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
       if (!doRatio) style.moveYAxisLabel(histo[0][var][firstplotted], maxpadLog, true);
       histo[0][var][firstplotted]->Draw("axis same");
       if(vars[var].cut>0) line.DrawLine(vars[var].cut, 0, vars[var].cut, maxhisto);
-      if(vars[var].cut>0) line2.DrawLine(250, 0, 250, maxhisto);
+      if(vars[var].varname=="mj14" && vars[var].cut>0) line2.DrawLine(250, 0, 250, maxhisto);
      
       //ratio
       TH1D* hratio_data(NULL), *hratio_mcscale(NULL);

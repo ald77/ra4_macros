@@ -3,6 +3,7 @@
 import sys
 import math
 import ROOT
+from array import array
 import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument("-i", "--input")
@@ -15,7 +16,7 @@ else:
   
 
 verbose = True
-one_pdf = True #put all plots in one pdf file
+one_pdf = False #put all plots in one pdf file
 
 # function to get pointers to histogram in root file
 def get_hist_with_overflow(file,histname):
@@ -119,6 +120,20 @@ def get_symmetrized_relative_errors(sysName,tot_data,total_nominal,procList,floa
     return systHistUp
 
 
+def set_palette_gray(ncontours=20):
+    #stops = [0.00, 0.25, 0.50, 0.75, 1.00]
+    stops = [0.00, 0.10, 0.50, 0.90, 1.00]
+    red   = [1.00, 0.80, 0.65, 0.50, 0.34]
+    green = [1.00, 0.80, 0.65, 0.50, 0.34]
+    blue  = [1.00, 0.80, 0.65, 0.50, 0.34]
+    s = array('d', stops)
+    r = array('d', red)
+    g = array('d', green)
+    b = array('d', blue)
+    npoints = len(s)
+    fi = ROOT.TColor.CreateGradientColorTable(npoints, s, r, g, b, ncontours)
+    ROOT.gStyle.SetNumberContours(ncontours)
+
 
 
 
@@ -134,12 +149,14 @@ ROOT.gStyle.SetTitleOffset(1.7,"z")
 ROOT.gStyle.SetPadLeftMargin(0.12)
 ROOT.gStyle.SetPadBottomMargin(0.12)
 ROOT.gStyle.SetPadTopMargin(0.08)
-
+ROOT.gStyle.SetPaintTextFormat("6.1f");
 
 ROOT.gStyle.SetLabelFont(42)
 ROOT.gStyle.SetLabelSize(0.05)
 ROOT.gStyle.SetTitleFont(42)
 ROOT.gStyle.SetTitleSize(0.07)
+
+set_palette_gray()
 
 #list of processes
 procList=["qcd","ttbar","wjets","other"]
@@ -152,21 +169,22 @@ systList=[]
 ##     if i == 26 or i == 46: continue
 ##     systList.append(["w_pdf"+str(i),"PDF "+str(i),i,1])
 systList.append(["btag_bc","b,c jet b-tag SF",2,1])
-systList.append(["btag_udsg","Light flavor jet b-tag SF",3,1])
+systList.append(["btag_udsg","u,d,s,g jet b-tag SF",3,1])
 systList.append(["jes","Jet energy scale",4,1])
 systList.append(["jer","Jet energy resolution",5,1])
 systList.append(["lep_eff","Lepton efficiency",6,1])
 systList.append(["pileup","Pileup",7,1])
 #systList.append(["gs","Gluon splitting",9,1])
 systList.append(["qcd_flavor","QCD flavor",8,1])
-systList.append(["gs45","Gluon splitting (Njet=4,5)",9,1])
-systList.append(["gs67","Gluon splitting (Njet=6,7)",10,1])
-systList.append(["gs89","Gluon splitting (Njet=8,9)",11,1])
-systList.append(["gs10Inf","Gluon splitting (Njet#geq10)",12,1])
-systList.append(["mur","Renormalization scale",13,1])
-systList.append(["muf","Factorization scale",14,1])
-systList.append(["murf","Renorm. and fact. scale",15,1])
-systList.append(["pdf","PDF",16,1])
+systList.append(["gs45","Gluon splitting (N_{jet}=4,5)",9,1])
+systList.append(["gs67","Gluon splitting (N_{jet}=6,7)",10,1])
+systList.append(["gs89","Gluon splitting (N_{jet}=8,9)",11,1])
+systList.append(["gs10Inf","Gluon splitting (N_{jet}#geq10)",12,1])
+systList.append(["ttbar_pt","Top quark p_{T}",13,1])
+systList.append(["mur","Renormalization scale",14,1])
+systList.append(["muf","Factorization scale",15,1])
+systList.append(["murf","Renorm. and fact. scale",16,1])
+systList.append(["pdf","PDF",17,1])
 systList.append(["mc_stat","MC statistics",1,2])
 
 nSyst = len(systList)
@@ -322,7 +340,7 @@ for ibin in binList:
        
         for i in range(1,systHist.GetNbinsX()+1):
             if systHist.GetBinContent(i) < 0.001: 
-                table.SetBinContent(i,isys,0.1)
+                table.SetBinContent(i,isys,0.04)
             else:
                 table.SetBinContent(i,isys,round(100*systHist.GetBinContent(i),1))
             if verbose:
@@ -374,7 +392,12 @@ for ibin in binList:
     ROOT.gStyle.SetPadLeftMargin(0.3)
     ROOT.gStyle.SetPadRightMargin(0.2)
     c2 = ROOT.TCanvas()
-    table.GetXaxis().SetNdivisions(505)
+    table.GetXaxis().SetBinLabel(1,"0");
+    table.GetXaxis().SetBinLabel(2,"1");
+    table.GetXaxis().SetBinLabel(3,"2");
+    table.GetXaxis().SetBinLabel(4,"3");
+    table.GetXaxis().SetBinLabel(5,"#geq 4");
+    table.GetXaxis().SetNdivisions(400,0)
     table.SetMaximum(20)
     table.SetMinimum(0)
     table.SetStats(0)
@@ -383,7 +406,7 @@ for ibin in binList:
     table.SetXTitle("N_{b}")
     table.SetZTitle("Uncertainty [%]")
     table.GetYaxis().SetTitleOffset(1.4)
-    table.GetYaxis().SetTitleSize(0.04)
+    table.GetYaxis().SetTitleSize(0.05)
     table.GetXaxis().SetTitleSize(0.04)
     table.Draw("colz text")
     ROOT.gPad.SetTicks(1,0)

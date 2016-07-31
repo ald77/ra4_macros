@@ -1,0 +1,613 @@
+diff --git a/run/rpv_bkg_syst.py b/run/rpv_bkg_syst.py
+index 5bd5942..255ce06 100755
+--- a/run/rpv_bkg_syst.py
++++ b/run/rpv_bkg_syst.py
+@@ -3,6 +3,7 @@
+ import sys
+ import math
+ import ROOT
++from array import array
+ import argparse
+ parser = argparse.ArgumentParser()
+ parser.add_argument("-i", "--input")
+@@ -15,7 +16,7 @@ else:
+   
+ 
+ verbose = True
+-one_pdf = True #put all plots in one pdf file
++one_pdf = False #put all plots in one pdf file
+ 
+ # function to get pointers to histogram in root file
+ def get_hist_with_overflow(file,histname):
+@@ -119,6 +120,20 @@ def get_symmetrized_relative_errors(sysName,tot_data,total_nominal,procList,floa
+     return systHistUp
+ 
+ 
++def set_palette_gray(ncontours=20):
++    #stops = [0.00, 0.25, 0.50, 0.75, 1.00]
++    stops = [0.00, 0.10, 0.50, 0.90, 1.00]
++    red   = [1.00, 0.80, 0.65, 0.50, 0.34]
++    green = [1.00, 0.80, 0.65, 0.50, 0.34]
++    blue  = [1.00, 0.80, 0.65, 0.50, 0.34]
++    s = array('d', stops)
++    r = array('d', red)
++    g = array('d', green)
++    b = array('d', blue)
++    npoints = len(s)
++    fi = ROOT.TColor.CreateGradientColorTable(npoints, s, r, g, b, ncontours)
++    ROOT.gStyle.SetNumberContours(ncontours)
++
+ 
+ 
+ 
+@@ -134,13 +149,15 @@ ROOT.gStyle.SetTitleOffset(1.7,"z")
+ ROOT.gStyle.SetPadLeftMargin(0.12)
+ ROOT.gStyle.SetPadBottomMargin(0.12)
+ ROOT.gStyle.SetPadTopMargin(0.08)
+-
++ROOT.gStyle.SetPaintTextFormat("6.1f");
+ 
+ ROOT.gStyle.SetLabelFont(42)
+ ROOT.gStyle.SetLabelSize(0.05)
+ ROOT.gStyle.SetTitleFont(42)
+ ROOT.gStyle.SetTitleSize(0.07)
+ 
++set_palette_gray()
++
+ #list of processes
+ procList=["qcd","ttbar","wjets","other"]
+ 
+@@ -152,21 +169,22 @@ systList=[]
+ ##     if i == 26 or i == 46: continue
+ ##     systList.append(["w_pdf"+str(i),"PDF "+str(i),i,1])
+ systList.append(["btag_bc","b,c jet b-tag SF",2,1])
+-systList.append(["btag_udsg","Light flavor jet b-tag SF",3,1])
++systList.append(["btag_udsg","u,d,s,g jet b-tag SF",3,1])
+ systList.append(["jes","Jet energy scale",4,1])
+ systList.append(["jer","Jet energy resolution",5,1])
+ systList.append(["lep_eff","Lepton efficiency",6,1])
+ systList.append(["pileup","Pileup",7,1])
+ #systList.append(["gs","Gluon splitting",9,1])
+ systList.append(["qcd_flavor","QCD flavor",8,1])
+-systList.append(["gs45","Gluon splitting (Njet=4,5)",9,1])
+-systList.append(["gs67","Gluon splitting (Njet=6,7)",10,1])
+-systList.append(["gs89","Gluon splitting (Njet=8,9)",11,1])
+-systList.append(["gs10Inf","Gluon splitting (Njet#geq10)",12,1])
+-systList.append(["mur","Renormalization scale",13,1])
+-systList.append(["muf","Factorization scale",14,1])
+-systList.append(["murf","Renorm. and fact. scale",15,1])
+-systList.append(["pdf","PDF",16,1])
++systList.append(["gs45","Gluon splitting (N_{jet}=4,5)",9,1])
++systList.append(["gs67","Gluon splitting (N_{jet}=6,7)",10,1])
++systList.append(["gs89","Gluon splitting (N_{jet}=8,9)",11,1])
++systList.append(["gs10Inf","Gluon splitting (N_{jet}#geq10)",12,1])
++systList.append(["ttbar_pt","Top quark p_{T}",13,1])
++systList.append(["mur","Renormalization scale",14,1])
++systList.append(["muf","Factorization scale",15,1])
++systList.append(["murf","Renorm. and fact. scale",16,1])
++systList.append(["pdf","PDF",17,1])
+ systList.append(["mc_stat","MC statistics",1,2])
+ 
+ nSyst = len(systList)
+@@ -322,7 +340,7 @@ for ibin in binList:
+        
+         for i in range(1,systHist.GetNbinsX()+1):
+             if systHist.GetBinContent(i) < 0.001: 
+-                table.SetBinContent(i,isys,0.1)
++                table.SetBinContent(i,isys,0.04)
+             else:
+                 table.SetBinContent(i,isys,round(100*systHist.GetBinContent(i),1))
+             if verbose:
+@@ -374,7 +392,12 @@ for ibin in binList:
+     ROOT.gStyle.SetPadLeftMargin(0.3)
+     ROOT.gStyle.SetPadRightMargin(0.2)
+     c2 = ROOT.TCanvas()
+-    table.GetXaxis().SetNdivisions(505)
++    table.GetXaxis().SetBinLabel(1,"0");
++    table.GetXaxis().SetBinLabel(2,"1");
++    table.GetXaxis().SetBinLabel(3,"2");
++    table.GetXaxis().SetBinLabel(4,"3");
++    table.GetXaxis().SetBinLabel(5,"#geq 4");
++    table.GetXaxis().SetNdivisions(400,0)
+     table.SetMaximum(20)
+     table.SetMinimum(0)
+     table.SetStats(0)
+@@ -383,7 +406,7 @@ for ibin in binList:
+     table.SetXTitle("N_{b}")
+     table.SetZTitle("Uncertainty [%]")
+     table.GetYaxis().SetTitleOffset(1.4)
+-    table.GetYaxis().SetTitleSize(0.04)
++    table.GetYaxis().SetTitleSize(0.05)
+     table.GetXaxis().SetTitleSize(0.04)
+     table.Draw("colz text")
+     ROOT.gPad.SetTicks(1,0)
+diff --git a/run/rpv_sig_syst.py b/run/rpv_sig_syst.py
+index ab3352c..90216ae 100755
+--- a/run/rpv_sig_syst.py
++++ b/run/rpv_sig_syst.py
+@@ -3,6 +3,7 @@
+ import sys
+ import math
+ import ROOT
++from array import array
+ import argparse
+ parser = argparse.ArgumentParser()
+ parser.add_argument("-i", "--input")
+@@ -16,7 +17,7 @@ else:
+ if (args.mass):
+   GLUINOMASS = args.mass
+ 
+-one_pdf = True #put all plots in one pdf file
++one_pdf = False #put all plots in one pdf file
+ verbose = True  
+ 
+ 
+@@ -63,17 +64,25 @@ def get_symmetrized_relative_errors(sysName,nominal,proc,sysFile,directory):
+         systHistUp.SetBinContent(i,abs(systHistUp.GetBinContent(i)))
+         systHistDown.SetBinContent(i,abs(systHistDown.GetBinContent(i)))
+ 
+-
+     #Fill histUp with symmetrized error by adding histDown and dividing by 2, then divide by nominal to get relative symmetrized error    
+     systHistUp.Add(systHistDown)
+     systHistUp.Scale(0.5)
+     systHistUp.Divide(nominal) # now systHistUp contains our relative errors
+     return systHistUp
+ 
+-
+-
+-  
+-
++def set_palette_gray(ncontours=20):
++    #stops = [0.00, 0.25, 0.50, 0.75, 1.00]
++    stops = [0.00, 0.10, 0.50, 0.90, 1.00]
++    red   = [1.00, 0.80, 0.65, 0.50, 0.34]
++    green = [1.00, 0.80, 0.65, 0.50, 0.34]
++    blue  = [1.00, 0.80, 0.65, 0.50, 0.34]
++    s = array('d', stops)
++    r = array('d', red)
++    g = array('d', green)
++    b = array('d', blue)
++    npoints = len(s)
++    fi = ROOT.TColor.CreateGradientColorTable(npoints, s, r, g, b, ncontours)
++    ROOT.gStyle.SetNumberContours(ncontours)
+ 
+ 
+ ROOT.gROOT.SetBatch(ROOT.kTRUE) #prevent th1->Draw() from trying to open X11 window
+@@ -86,6 +95,7 @@ ROOT.gStyle.SetTitleOffset(1.7,"z")
+ ROOT.gStyle.SetPadLeftMargin(0.12)
+ ROOT.gStyle.SetPadBottomMargin(0.12)
+ ROOT.gStyle.SetPadTopMargin(0.08)
++ROOT.gStyle.SetPaintTextFormat("6.1f");
+ 
+ 
+ ROOT.gStyle.SetLabelFont(42)
+@@ -93,24 +103,29 @@ ROOT.gStyle.SetLabelSize(0.05)
+ ROOT.gStyle.SetTitleFont(42)
+ ROOT.gStyle.SetTitleSize(0.07)
+ 
+-
++#set_palette()
++set_palette_gray()
+ 
+ #make list of systematics- name, title, plot color and line style
+ systList=[]
+ systList.append(["fs_btag_bc","FastSim b,c jet b-tag SF",2,1])
+-systList.append(["fs_btag_udsg","FastSim Light flavor jet b-tag SF",3,1])
+-systList.append(["fs_lep_eff","FastSim Lepton efficiency",4,1])
++systList.append(["fs_btag_udsg","FastSim u,d,s,g jet b-tag SF",3,1])
++systList.append(["fs_lep_eff","FastSim lepton efficiency",4,1])
+ systList.append(["btag_bc","b,c jet b-tag SF",5,1])
+-systList.append(["btag_udsg","Light flavor jet b-tag SF",6,1])
++systList.append(["btag_udsg","u,d,s,g jet b-tag SF",6,1])
+ systList.append(["jes","Jet energy scale",7,1])
+ systList.append(["jer","Jet energy resolution",8,1])
+ systList.append(["lep_eff","Lepton efficiency",9,1])
+ systList.append(["pileup","Pileup",10,1])
+ systList.append(["isr","Initial state radiation",11,1])
+-systList.append(["signal_mur","Renormalization scale",12,1])
+-systList.append(["signal_muf","Factorization scale",13,1])
+-systList.append(["signal_murf","Renorm. and fact. scale",14,1])
+-systList.append(["pdf","PDF",15,1])
++systList.append(["gs45","Gluon splitting (N_{jet}=4,5)",12,1])
++systList.append(["gs67","Gluon splitting (N_{jet}=6,7)",13,1])
++systList.append(["gs89","Gluon splitting (N_{jet}=8,9)",14,1])
++systList.append(["gs10Inf","Gluon splitting (N_{jet}#geq10)",15,1])
++systList.append(["signal_mur","Renormalization scale",16,1])
++systList.append(["signal_muf","Factorization scale",17,1])
++systList.append(["signal_murf","Renorm. and fact. scale",18,1])
++systList.append(["pdf","PDF",19,1])
+ systList.append(["mc_stat","MC statistics",1,2]) #must be done last!
+ 
+ nSyst = len(systList)
+@@ -202,7 +217,7 @@ for ibin in binList:
+         #normalize to percentage for humans            
+         for i in range(1,systHist.GetNbinsX()+1):
+             if systHist.GetBinContent(i) < 0.001: 
+-                table.SetBinContent(i,isys,0.1)
++                table.SetBinContent(i,isys,0.04)
+             else: 
+                 table.SetBinContent(i,isys,round(100*systHist.GetBinContent(i),1))
+             if verbose:
+@@ -259,7 +274,12 @@ for ibin in binList:
+     ROOT.gStyle.SetPadLeftMargin(0.3)
+     ROOT.gStyle.SetPadRightMargin(0.2)
+     c2 = ROOT.TCanvas()
+-    table.GetXaxis().SetNdivisions(505)
++    table.GetXaxis().SetBinLabel(1,"0");
++    table.GetXaxis().SetBinLabel(2,"1");
++    table.GetXaxis().SetBinLabel(3,"2");
++    table.GetXaxis().SetBinLabel(4,"3");
++    table.GetXaxis().SetBinLabel(5,"#geq 4");
++    table.GetXaxis().SetNdivisions(400,0) 
+     table.SetMaximum(20)
+     table.SetMinimum(0)
+     table.SetStats(0)
+@@ -268,7 +288,7 @@ for ibin in binList:
+     table.SetXTitle("N_{b}")
+     table.SetZTitle("Uncertainty [%]")
+     table.GetYaxis().SetTitleOffset(1.4)
+-    table.GetYaxis().SetTitleSize(0.04)
++    table.GetYaxis().SetTitleSize(0.054)
+     table.GetXaxis().SetTitleSize(0.04)
+     table.Draw("colz text")
+     ROOT.gPad.SetTicks(1,0)
+diff --git a/src/rescale_variations.cxx b/src/rescale_variations.cxx
+index 76b1055..3a95350 100644
+--- a/src/rescale_variations.cxx
++++ b/src/rescale_variations.cxx
+@@ -20,7 +20,7 @@ int main()
+ 
+     // samples for which MC statistics should be considered
+     std::vector<std::string> mcStatisticsList = {
+-        "signal_M750", "signal_M1000", "signal_M1100", "signal_M1200", "signal_M1300", "signal_M1400", "qcd", "ttbar"};
++        "signal_M750", "signal_M1000", "signal_M1100", "signal_M1200", "signal_M1300", "signal_M1400", "signal_M1500", "qcd", "ttbar"};
+     // systematics for which the template should be rescaled
+     std::vector<std::string> rescaleList = {
+         "qcd_flavor", "qcd_mur", "qcd_muf", "qcd_murf",
+@@ -29,7 +29,7 @@ int main()
+     
+     // signal list
+     std::vector<std::string> signalList = {
+-        "signal_M7500", "signal_M1000", "signal_M1100", "signal_M1200", "signal_M1300", "signal_M1400"};
++        "signal_M750", "signal_M1000", "signal_M1100", "signal_M1200", "signal_M1300", "signal_M1400", "signal_M1500"};
+     std::vector<std::string> signalRescaleList = {};
+         //"signal_mur", "signal_muf", "signal_murf"};
+     std::vector<std::string> upAndDown = {"Up", "Down"}; 
+diff --git a/src/table_rpv.cxx b/src/table_rpv.cxx
+index 77c2aeb..f7cc32e 100644
+--- a/src/table_rpv.cxx
++++ b/src/table_rpv.cxx
+@@ -8,18 +8,22 @@
+ #include "TH1F.h"
+ #include "TFile.h"
+ #include "TDirectory.h"
++#include "TMath.h"
+ 
+ using namespace std;
+ 
+-bool doLatex=true;
+-
++bool doLatex=false;
+ 
++float AddInQuad(float a, float b);
+ void printOneLine(int nb, 
+                   float data, float qcd, float ttbar, float wjets, float other, 
+                   float sig1000, float sig1100, float sig1200, float sig1300, float sig1400,
+                   float data_err, float qcd_err, float ttbar_err, float wjets_err, float other_err, 
+                   float sig1000_err, float sig1100_err, float sig1200_err, float sig1300_err, float sig1400_err, float doLatex);
+-
++void printYieldBin(int nb, float data,
++                   float qcd, float ttbar, float wjets, float other, float sig,
++                   float qcd_err, float ttbar_err, float wjets_err, float other_err,
++                   float dataovermc, bool doNorm);
+ 
+ 
+ //
+@@ -91,9 +95,8 @@ int main()
+           sig1000_err[18][5], sig1100_err[18][5], sig1200_err[18][5], sig1300_err[18][5], sig1400_err[18][5];
+     for(int ibin=0; ibin<18; ibin++)  
+     { 
+-
+         if(ibin>=6 && ibin<=9) continue;
+-        for(int inb=1; inb<5; inb++) 
++        for(int inb=0; inb<5; inb++) 
+         {
+             data[ibin][inb] = 0;
+             qcd[ibin][inb] = 0;
+@@ -149,8 +152,24 @@ int main()
+             sig1400_err[ibin][inb-1]= static_cast<TH1F*>(infile->Get(Form("bin%i/signal_M1400", ibin)))->GetBinError(inb+1);
+         }  
+     }
++        
++    float sig1000sum(0), sig1100sum(0), sig1200sum(0), sig1300sum(0), sig1400sum(0);
++    for(int ibin=0; ibin<18; ibin++) 
++    {
++      if(ibin>5 && ibin<10) continue; // skip low MJ bins 
++      for(int inb=1; inb<5; inb++)  
++      {
++          sig1000sum = sig1000sum + sig1000[ibin][inb-1]; 
++          sig1100sum = sig1100sum + sig1100[ibin][inb-1]; 
++          sig1200sum = sig1200sum + sig1200[ibin][inb-1]; 
++          sig1300sum = sig1300sum + sig1300[ibin][inb-1]; 
++          sig1400sum = sig1400sum + sig1400[ibin][inb-1]; 
++      }
++    }
+ 
+-    //
++    // -----------------------------------------------------
++    // table for AN
++    // -----------------------------------------------------
+     for(int ibin=0; ibin<18; ibin++) 
+     {
+ 
+@@ -183,11 +202,15 @@ int main()
+             setw(20) << "M=1400(S/B)" << " |" << endl;
+         } 
+ 
++
++
+         for(int inb=1; inb<5; inb++) 
+         { 
+             printOneLine(inb,
+                     data[ibin][inb-1], qcd[ibin][inb-1], ttbar[ibin][inb-1], wjets[ibin][inb-1], other[ibin][inb-1],
+-                    sig1000[ibin][inb-1], sig1100[ibin][inb-1], sig1200[ibin][inb-1], sig1300[ibin][inb-1], sig1400[ibin][inb-1],
++                    //sig1000[ibin][inb-1], sig1100[ibin][inb-1], sig1200[ibin][inb-1], sig1300[ibin][inb-1], sig1400[ibin][inb-1],
++                    sig1000[ibin][inb-1]/sig1000sum, sig1100[ibin][inb-1]/sig1100sum, sig1200[ibin][inb-1]/sig1200sum, 
++                        sig1300[ibin][inb-1]/sig1300sum, sig1400[ibin][inb-1]/sig1400sum,
+                     data_err[ibin][inb-1], qcd_err[ibin][inb-1], ttbar_err[ibin][inb-1], wjets_err[ibin][inb-1], other_err[ibin][inb-1],
+                     sig1000_err[ibin][inb-1], sig1100_err[ibin][inb-1], sig1200_err[ibin][inb-1], sig1300_err[ibin][inb-1], sig1400_err[ibin][inb-1],
+                     doLatex);
+@@ -206,6 +229,192 @@ int main()
+         }
+     }
+     
++    // -----------------------------------------------------
++    // table for supplementary material
++    // -----------------------------------------------------
++
++    // Get pre-fit errors
++    float err[4][18][4];
++
++    for(int ibin=0; ibin<18; ibin++)
++    {
++        for(int inb=0; inb<4; inb++)
++        {
++            err[0][ibin][inb] = 0;
++            err[1][ibin][inb] = 0;
++            err[2][ibin][inb] = 0;
++            err[3][ibin][inb] = 0;
++        }
++    }
++
++    for(int ibin=0; ibin<18; ibin++) {
++        
++        if(ibin>=6 && ibin<=9) continue;
++
++        for(int iproc=0; iproc<4; iproc++)
++        {
++            std::string process;
++            if(iproc==0)  process = "qcd";
++            if(iproc==1)  process = "ttbar";
++            if(iproc==2)  process = "wjets";
++            if(iproc==3)  process = "other";
++
++            // loop over nb bins
++            for(int inb=1; inb<5; inb++)
++            {
++                cout << "... " << process << endl;
++                float central;
++                float up;
++
++                if(infile->Get(Form("bin%i/%s", ibin, process.c_str()))==0x0) continue;
++                central = static_cast<TH1F*>(infile->Get(Form("bin%i/%s", ibin, process.c_str())))->GetBinContent(inb+1);
++
++                if(central !=0)
++                {
++                    // btag bc
++                    up = static_cast<TH1F*>(infile->Get(Form("bin%i/%s_btag_bcUp", ibin, process.c_str())))->GetBinContent(inb+1);
++                    err[iproc][ibin][inb-1] = TMath::Abs(up-central)/central;
++
++                    // btag udsg
++                    up = static_cast<TH1F*>(infile->Get(Form("bin%i/%s_btag_udsgUp", ibin, process.c_str())))->GetBinContent(inb+1);
++                    err[iproc][ibin][inb-1] = AddInQuad(err[iproc][ibin][inb-1],TMath::Abs(up-central)/central);
++
++                    // pileup
++                    up = static_cast<TH1F*>(infile->Get(Form("bin%i/%s_pileupUp", ibin, process.c_str())))->GetBinContent(inb+1);
++                    err[iproc][ibin][inb-1] = AddInQuad(err[iproc][ibin][inb-1],TMath::Abs(up-central)/central);
++
++                    // qcd flavor
++                    if(iproc==0)
++                    {
++                        up = static_cast<TH1F*>(infile->Get(Form("bin%i/%s_qcd_flavorUp", ibin, process.c_str())))->GetBinContent(inb+1);
++                        err[iproc][ibin][inb-1] = AddInQuad(err[iproc][ibin][inb-1],TMath::Abs(up-central)/central);
++                    }
++
++                    // scale variations
++                    up = static_cast<TH1F*>(infile->Get(Form("bin%i/%s_%s_murUp", ibin, process.c_str(), process.c_str())))->GetBinContent(inb+1);
++                    err[iproc][ibin][inb-1] = AddInQuad(err[iproc][ibin][inb-1],TMath::Abs(up-central)/central);
++                    up = static_cast<TH1F*>(infile->Get(Form("bin%i/%s_%s_mufUp", ibin, process.c_str(), process.c_str())))->GetBinContent(inb+1);
++                    err[iproc][ibin][inb-1] = AddInQuad(err[iproc][ibin][inb-1],TMath::Abs(up-central)/central);
++                    up = static_cast<TH1F*>(infile->Get(Form("bin%i/%s_%s_murfUp", ibin, process.c_str(), process.c_str())))->GetBinContent(inb+1);
++                    err[iproc][ibin][inb-1] = AddInQuad(err[iproc][ibin][inb-1],TMath::Abs(up-central)/central);
++
++                    // jer jes
++                    up = static_cast<TH1F*>(infile->Get(Form("bin%i/%s_jerUp", ibin, process.c_str())))->GetBinContent(inb+1);
++                    err[iproc][ibin][inb-1] = AddInQuad(err[iproc][ibin][inb-1],TMath::Abs(up-central)/central);
++                    up = static_cast<TH1F*>(infile->Get(Form("bin%i/%s_jesUp", ibin, process.c_str())))->GetBinContent(inb+1);
++                    err[iproc][ibin][inb-1] = AddInQuad(err[iproc][ibin][inb-1],TMath::Abs(up-central)/central);
++                    // pdf
++                    float pdferr=0;
++                    for(int ipdf=0; ipdf<100; ipdf++)
++                    {
++                        up = static_cast<TH1F*>(infile->Get(Form("bin%i/%s_w_pdf%iUp", ibin, process.c_str(), ipdf)))->GetBinContent(inb+1);
++                        pdferr  = AddInQuad(pdferr,TMath::Abs(up-central)/central);
++                    }
++                    err[iproc][ibin][inb-1] = AddInQuad(err[iproc][ibin][inb-1],pdferr/10);
++                    cout << "pdf: " <<  ibin << " " << inb << " " << pdferr << endl;
++
++                    // Stats
++                    if(infile->Get(Form("bin%i/%s_mcstat_%s_bin%i_nb%iUp", ibin, process.c_str(), process.c_str(),ibin,inb))!=0x0)
++                    {
++                        up = static_cast<TH1F*>(infile->Get(Form("bin%i/%s_mcstat_%s_bin%i_nb%iUp", ibin, process.c_str(), process.c_str(),ibin,inb)))->GetBinContent(inb+1);
++                        err[iproc][ibin][inb-1] = AddInQuad(err[iproc][ibin][inb-1],TMath::Abs(up-central)/central);
++                    }
++                }
++                cout << "both: " <<  ibin << " " << inb << " " << err[iproc][ibin][inb-1]<< endl;
++            }
++        }
++    }
++    
++    //
++    // 0-lepton
++    //
++    int tablebin_0lep[4]={16,17,10,13};
++    cout << "\\begin{table}" << endl;
++    cout << "\\centering" << endl;
++    cout << "\\begin{tabular}[tbp!]{ l | c  c  c  c | c |  c | c  }" << endl;
++    cout << "\\hline" << endl;
++    cout << "$N_{b}$ & QCD & $t\\bar{t}$ & W+jets & Other & All bkg. & Data & $m_{\\tilde{g}}=1200\\GeV$\\\\"  << endl;
++    cout << "\\hline\\hline" << endl;
++
++    for(int ibin=0; ibin<4; ibin++)
++    { 
++        int tablebin=tablebin_0lep[ibin];
++        
++        float databin(0), mcbin(0); 
++        for(int inb=1; inb<5; inb++) 
++        { 
++            databin = databin + data[tablebin][inb-1]; 
++            mcbin = mcbin + qcd[tablebin][inb-1] + ttbar[tablebin][inb-1] + wjets[tablebin][inb-1] + other[tablebin][inb-1]; 
++        }
++
++        cout <<"\\multicolumn{8}{c}{$" <<  binLatex[tablebin].Data() << "$} \\\\" << endl;
++        cout << "\\hline" << endl;
++        for(int inb=1; inb<5; inb++)
++            printYieldBin(inb,
++                    data[tablebin][inb-1],
++                    qcd[tablebin][inb-1],
++                    ttbar[tablebin][inb-1],
++                    wjets[tablebin][inb-1],
++                    other[tablebin][inb-1],
++                    sig1200[tablebin][inb-1],
++                    err[0][tablebin][inb-1]*qcd[tablebin][inb-1],
++                    err[1][tablebin][inb-1]*ttbar[tablebin][inb-1],
++                    err[2][tablebin][inb-1]*wjets[tablebin][inb-1],
++                    err[3][tablebin][inb-1]*other[tablebin][inb-1],
++                    databin/mcbin, true /*renormalize to data*/);
++        cout << "\\hline" << endl;
++    }
++    cout<< "\\hline" << endl;
++    cout << "\\end{tabular}"<<endl;
++    cout << "\\end{table}\n"<< endl;
++
++    cout << endl;
++    cout << endl;
++
++
++    //
++    // 1-lepton
++    //
++    int tablebin_1lep[4]={11,14,12,15};
++    cout << "\\begin{table}" << endl;
++    cout << "\\centering" << endl;
++    cout << "\\begin{tabular}[tbp!]{ l | c  c  c  c | c |  c | c  }" << endl;
++    cout << "\\hline" << endl;
++    cout << "$N_{b}$ & QCD & $t\\bar{t}$ & W+jets & Other & All bkg. & Data & $m_{\\tilde{g}}=1200\\GeV$\\\\"  << endl;
++    cout << "\\hline\\hline" << endl;
++
++    for(int ibin=0; ibin<4; ibin++)
++    { 
++        int tablebin=tablebin_1lep[ibin];
++        
++        float databin(0), mcbin(0); 
++        for(int inb=1; inb<5; inb++) 
++        { 
++            databin = databin + data[tablebin][inb-1]; 
++            mcbin = mcbin + qcd[tablebin][inb-1] + ttbar[tablebin][inb-1] + wjets[tablebin][inb-1] + other[tablebin][inb-1]; 
++        }
++
++        cout <<"\\multicolumn{8}{c}{$" <<  binLatex[tablebin].Data() << "$} \\\\" << endl;
++        cout << "\\hline" << endl;
++        for(int inb=1; inb<5; inb++)
++            printYieldBin(inb,
++                    data[tablebin][inb-1],
++                    qcd[tablebin][inb-1],
++                    ttbar[tablebin][inb-1],
++                    wjets[tablebin][inb-1],
++                    other[tablebin][inb-1],
++                    sig1200[tablebin][inb-1],
++                    err[0][tablebin][inb-1]*qcd[tablebin][inb-1],
++                    err[1][tablebin][inb-1]*ttbar[tablebin][inb-1],
++                    err[2][tablebin][inb-1]*wjets[tablebin][inb-1],
++                    err[3][tablebin][inb-1]*other[tablebin][inb-1],
++                    databin/mcbin, true /*renormalize to data*/);
++        cout << "\\hline" << endl;
++    }
++    cout<< "\\hline" << endl;
++    cout << "\\end{tabular}"<<endl;
++    cout << "\\end{table}\n"<< endl;
++
+     infile->Close();
+ 
+     return 0;
+@@ -255,5 +464,47 @@ void printOneLine(int nb,
+             setw(20) << Form("%.2f+-%.2f(%.2f)",sig1200,sig1200_err,sig1200/totbkg) << " |" << 
+             setw(20) << Form("%.2f+-%.2f(%.2f)",sig1400,sig1400_err,sig1400/totbkg) << " |" << endl;
+     }
++} 
++
++void printYieldBin(int nb, float data, 
++        float qcd, float ttbar, float wjets, float other, float sig,
++        float qcd_err, float ttbar_err, float wjets_err, float other_err, 
++        float dataovermc, bool doNorm)
++{
++    if(qcd==0) qcd_err=0;
++    if(ttbar==0) ttbar_err=0;
++    if(wjets==0) wjets_err=0;
++    if(other==0) other_err=0;
++
++    string nbbin;
++    if(nb==1) nbbin="$1$";
++    if(nb==2) nbbin="$2$";
++    if(nb==3) nbbin="$3$";
++    if(nb==4) nbbin="$\\geq 4$";
++   
++    if(doNorm)  
++    { 
++        qcd = qcd * dataovermc;     qcd_err = qcd_err * dataovermc; 
++        ttbar = ttbar * dataovermc; ttbar_err = ttbar_err * dataovermc; 
++        wjets = wjets * dataovermc; wjets_err = wjets_err * dataovermc; 
++        other = other * dataovermc; other_err = other_err * dataovermc; 
++    }
++
++    float tot_err = TMath::Sqrt(qcd_err*qcd_err+ttbar_err*ttbar_err+wjets_err*wjets_err+other_err*other_err);
++   
++    cout << nbbin << " & "
++        << Form("$%.1f \\pm %.1f$",qcd,qcd_err)  << " & "
++        << Form("$%.1f \\pm %.1f$",ttbar,ttbar_err) << " & "
++        << Form("$%.1f \\pm %.1f$",wjets,wjets_err) << " & "
++        << Form("$%.1f \\pm %.1f$",other,other_err) << " & "
++        << Form("$%.1f \\pm %.1f$",qcd+ttbar+wjets+other,tot_err) << " & "
++        << Form("$%.0f$",data) << " & "
++        << Form("$%.1f$",sig) << " \\\\ " << endl;
+ }
+ 
++float AddInQuad(float a, float b)
++{
++    return TMath::Sqrt(a*a+b*b);
++}
++
++
+diff --git a/src/utilities_macros_rohan.cpp b/src/utilities_macros_rohan.cpp
+index bdbe490..35b9bd5 100644
+--- a/src/utilities_macros_rohan.cpp
++++ b/src/utilities_macros_rohan.cpp
+@@ -300,7 +300,7 @@ void plot_distributions(vector<sfeats> Samples, vector<hfeats> vars, TString lum
+       if (!doRatio) style.moveYAxisLabel(histo[0][var][firstplotted], maxpadLog, true);
+       histo[0][var][firstplotted]->Draw("axis same");
+       if(vars[var].cut>0) line.DrawLine(vars[var].cut, 0, vars[var].cut, maxhisto);
+-      if(vars[var].cut>0) line2.DrawLine(250, 0, 250, maxhisto);
++      if(vars[var].varname=="mj14" && vars[var].cut>0) line2.DrawLine(250, 0, 250, maxhisto);
+      
+       //ratio
+       TH1D* hratio_data(NULL), *hratio_mcscale(NULL);

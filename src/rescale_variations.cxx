@@ -20,7 +20,7 @@ int main()
 
     // samples for which MC statistics should be considered
     std::vector<std::string> mcStatisticsList = {
-        "signal_M750", "signal_M1000", "signal_M1100", "signal_M1200", "signal_M1300", "signal_M1400", "qcd", "ttbar"};
+        "signal_M750", "signal_M1000", "signal_M1100", "signal_M1200", "signal_M1300", "signal_M1400", "signal_M1500", "qcd", "ttbar"};
     // systematics for which the template should be rescaled
     std::vector<std::string> rescaleList = {
         "qcd_flavor", "qcd_mur", "qcd_muf", "qcd_murf",
@@ -29,7 +29,7 @@ int main()
     
     // signal list
     std::vector<std::string> signalList = {
-        "signal_M7500", "signal_M1000", "signal_M1100", "signal_M1200", "signal_M1300", "signal_M1400"};
+        "signal_M750", "signal_M1000", "signal_M1100", "signal_M1200", "signal_M1300", "signal_M1400", "signal_M1500"};
     std::vector<std::string> signalRescaleList = {};
         //"signal_mur", "signal_muf", "signal_murf"};
     std::vector<std::string> upAndDown = {"Up", "Down"}; 
