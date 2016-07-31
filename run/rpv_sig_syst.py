@@ -270,9 +270,9 @@ for ibin in binList:
     c.Print(outname)
 
 
-    #ROOT.gStyle.SetPadLeftMargin(0.25)
-    ROOT.gStyle.SetPadLeftMargin(0.3)
+    ROOT.gStyle.SetPadLeftMargin(0.35)
     ROOT.gStyle.SetPadRightMargin(0.2)
+    ROOT.gStyle.SetPadBottomMargin(0.1)
     c2 = ROOT.TCanvas()
     table.GetXaxis().SetBinLabel(1,"0");
     table.GetXaxis().SetBinLabel(2,"1");
@@ -289,13 +289,14 @@ for ibin in binList:
     table.SetZTitle("Uncertainty [%]")
     table.GetYaxis().SetTitleOffset(1.4)
     table.GetYaxis().SetTitleSize(0.054)
+    table.GetYaxis().SetLabelSize(0.045)
     table.GetXaxis().SetTitleSize(0.04)
     table.Draw("colz text")
     ROOT.gPad.SetTicks(1,0)
     table.Draw("axis y+ same")
     tla = ROOT.TLatex()
     tla.SetTextSize(0.038)
-    tla.DrawLatexNDC(0.3,0.93,"#font[62]{CMS} #scale[0.8]{#font[52]{Simulation}}")
+    tla.DrawLatexNDC(0.35,0.93,"#font[62]{CMS} #scale[0.8]{#font[52]{Simulation}}")
     tla.SetTextFont(42)
     tla.DrawLatexNDC(0.66,0.93,"#sqrt{s} = 13 TeV")
     if one_pdf:
